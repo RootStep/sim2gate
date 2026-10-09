@@ -17,6 +17,16 @@ Isaac Lab 3.0.0 has no `--headless` flag: it runs without a display unless a vis
   5.0.1, also gated. Isaac Lab 2.x uses rsl-rl-lib 3.x and will not work.)
 - About an hour of GPU time.
 
+### Easiest: RootStep's Brev launchable
+
+[`deploy/brev`](../deploy/brev/README.md) sets up Arena (pinned), Isaac Lab 3.0.0 and Sim2Gate on a Brev L40S
+instance with the fixes found on Oct 9. Then the whole smoke test is one command with automatic pass/fail:
+
+```bash
+cd /workspaces/isaaclab_arena
+python -m sim2gate.training.smoke_go2
+```
+
 ### Recommended: Isaac Lab-Arena on an NVIDIA Brev GPU instance
 
 The MVP is built on Isaac Lab-Arena, so run step 1 inside Arena's own container: the same environment then
