@@ -15,7 +15,7 @@ Isaac Lab 3.0.0 (unified entry point; this is the default):
 Isaac Lab 3.0 beta (per-library script, task ids ending in -v0): add --isaaclab-script:
     ./isaaclab.sh -p -m sim2gate.training.isaaclab_launch --eta 1.0 \\
         --isaaclab-script scripts/reinforcement_learning/rsl_rl/train.py -- \\
-        --task Isaac-Velocity-Flat-Unitree-Go2-v0 --seed 1 --max_iterations 20
+        --task Isaac-Velocity-Flat-Unitree-Go2-v0 --headless --seed 1 --max_iterations 20
 """
 import argparse
 import importlib.metadata as metadata
