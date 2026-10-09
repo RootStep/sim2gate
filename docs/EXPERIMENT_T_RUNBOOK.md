@@ -4,7 +4,7 @@ Goal: confirm that Sim2Gate's training monitor and BSRS trainer run inside Isaac
 sensible signals and cost almost nothing, before the 20-policy grid. This is not data for Experiment T; the
 grid waits until the MVP checks pass validation (see the MVP design plan).
 
-Status of the code: tested on CPU with rsl-rl-lib 5.0.1 and 5.5.1 (training is bit-identical with the monitor
+Status of the code: tested on CPU with rsl-rl-lib 5.0.1, 5.4.1 and 5.5.1 (training is bit-identical with the monitor
 on; ρ matches the RSL-RL acceptance gate to 1e-6). **Not yet run inside Isaac Lab.** Step 1 is that run.
 
 ## What you need
@@ -15,7 +15,30 @@ on; ρ matches the RSL-RL acceptance gate to 1e-6). **Not yet run inside Isaac L
   5.0.1, also gated. Isaac Lab 2.x uses rsl-rl-lib 3.x and will not work.)
 - About an hour of GPU time.
 
-### Cloud option
+### Recommended: Isaac Lab-Arena on an NVIDIA Brev GPU instance
+
+The MVP is built on Isaac Lab-Arena, so run step 1 inside Arena's own container: the same environment then
+serves training now and Arena evaluation later. Arena's container installs Isaac Sim 6.0.1 and Isaac Lab
+3.0.0 with RSL-RL (rsl-rl-lib 5.4.1, gated) and Isaac Lab's tasks, Go2 included.
+
+1. On brev.nvidia.com, create a GPU instance with an RTX-class GPU (L40S, RTX PRO 6000 or similar; not A100 or
+   H100) and Docker with the NVIDIA container toolkit. Brev shows the hourly price before you deploy.
+2. On the instance:
+   ```bash
+   git clone --branch main --recurse-submodules https://github.com/isaac-sim/IsaacLab-Arena.git
+   cd IsaacLab-Arena && ./docker/run_docker.sh        # first build takes a while
+   ```
+3. Inside the container, Isaac Lab is at `submodules/IsaacLab` and Python is `/isaac-sim/python.sh`.
+   Use these in place of `./isaaclab.sh -p` below, e.g.
+   `/isaac-sim/python.sh -m pip install "sim2gate[rslrl] @ git+https://github.com/RootStep/sim2gate@experiment-t-step1"`.
+   The plain-Isaac-Lab baseline in step 2 becomes
+   `/isaac-sim/python.sh submodules/IsaacLab/scripts/reinforcement_learning/train.py --rl_library rsl_rl $ARGS`.
+4. Stop the instance when done; Brev bills running instances by the hour.
+
+Quicker but without Arena: Brev's Isaac Launchable (VS Code in the browser, Isaac Lab 3.0.0-beta2,
+rsl-rl-lib 5.0.1, gated). It works for step 1 using the 3.0 beta commands, but Arena would have to be added later.
+
+### Other clouds
 
 Isaac Lab's Isaac Automator deploys Isaac Lab to AWS, GCP, Azure or Alibaba Cloud. On AWS, a g6e instance
 (one NVIDIA L40S, 48 GB) fits: g6e.xlarge lists at about $1.86/hour on demand in us-east-1 (Oct 2026), so the
@@ -30,7 +53,7 @@ From the Isaac Lab folder:
 ./isaaclab.sh -p -c "import sim2gate, rsl_rl, importlib.metadata as m; print(sim2gate.__version__, m.version('rsl-rl-lib'))"
 ```
 
-The second line should print `0.1.0.dev0` and `5.5.1`. If pip tries to change rsl-rl-lib, stop and send the
+The second line should print `0.1.0.dev0` and the rsl-rl-lib version (`5.4.1` in Arena's container, `5.5.1` on Isaac Lab 3.0.0). If pip tries to change rsl-rl-lib, stop and send the
 output back.
 
 ## 2. Baseline timing: stock PPO, monitor off and on

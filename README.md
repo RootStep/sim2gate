@@ -52,7 +52,7 @@ runner.learn(1500)
 ```
 
 The monitor is read-only: training with and without it gives bit-identical parameters (tested). Its math
-matches a reference implementation that passed an acceptance gate against rsl-rl-lib 5.0.1 and 5.5.1, down
+matches a reference implementation that passed an acceptance gate against rsl-rl-lib 5.0.1, 5.4.1 and 5.5.1, down
 to the actor gradient. With Isaac Lab 3.x, use the launcher, which leaves Isaac Lab untouched:
 
 ```bash

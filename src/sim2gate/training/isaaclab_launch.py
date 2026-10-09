@@ -5,8 +5,8 @@ runner, (1) the algorithm class is swapped for BSRSPPO with the requested eta (o
 (2) a TrainingMonitor is attached, writing one JSON line per PPO iteration. Then it hands the remaining arguments
 to Isaac Lab's training entry point unchanged.
 
-Requires Isaac Lab 3.x with rsl-rl-lib 5.x. The math was gated on rsl-rl-lib 5.5.1 (Isaac Lab 3.0.0's pin)
-and 5.0.1 (Isaac Lab 3.0 beta's). Single GPU only (every rank would write its own file).
+Requires Isaac Lab 3.x with rsl-rl-lib 5.x. The math was gated on rsl-rl-lib 5.5.1 (Isaac Lab 3.0.0's pin),
+5.4.1 (the Isaac Lab inside Isaac Lab-Arena) and 5.0.1 (Isaac Lab 3.0 beta's). Single GPU only (every rank would write its own file).
 
 Isaac Lab 3.0.0 (unified entry point; this is the default):
     ./isaaclab.sh -p -m sim2gate.training.isaaclab_launch --eta 1.0 -- \\
@@ -23,7 +23,7 @@ import os
 import runpy
 import sys
 
-GATED_RSL_RL = {"5.0.1", "5.5.1"}
+GATED_RSL_RL = {"5.0.1", "5.4.1", "5.5.1"}
 
 
 def _split(argv):
