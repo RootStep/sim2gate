@@ -58,7 +58,7 @@ to the actor gradient. With Isaac Lab 3.x, use the launcher, which leaves Isaac 
 ```bash
 pip install "sim2gate[rslrl]"
 ./isaaclab.sh -p -m sim2gate.training.isaaclab_launch --eta 0 -- \
-    --task Isaac-Velocity-Flat-Unitree-Go2-v0 --headless
+    --task Isaac-Velocity-Flat-UnitreeGo2 --headless
 ```
 
 `--eta` above 0 trains with same-critic BSRS (`sim2gate.training.BSRSPPO`), for research runs.

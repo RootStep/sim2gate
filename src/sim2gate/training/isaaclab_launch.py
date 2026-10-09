@@ -5,17 +5,17 @@ runner, (1) the algorithm class is swapped for BSRSPPO with the requested eta (o
 (2) a TrainingMonitor is attached, writing one JSON line per PPO iteration. Then it hands the remaining arguments
 to Isaac Lab's training entry point unchanged.
 
-Requires Isaac Lab 3.x with rsl-rl-lib 5.x. The math was gated on rsl-rl-lib 5.0.1 (Isaac Lab 3.0 beta's pin)
-and 5.5.1. Single GPU only (every rank would write its own file).
+Requires Isaac Lab 3.x with rsl-rl-lib 5.x. The math was gated on rsl-rl-lib 5.5.1 (Isaac Lab 3.0.0's pin)
+and 5.0.1 (Isaac Lab 3.0 beta's). Single GPU only (every rank would write its own file).
 
-Isaac Lab 3.0 beta (script entry point):
+Isaac Lab 3.0.0 (unified entry point; this is the default):
+    ./isaaclab.sh -p -m sim2gate.training.isaaclab_launch --eta 1.0 -- \\
+        --task Isaac-Velocity-Flat-UnitreeGo2 --headless --seed 1 --max_iterations 20
+
+Isaac Lab 3.0 beta (per-library script, task ids ending in -v0): add --isaaclab-script:
     ./isaaclab.sh -p -m sim2gate.training.isaaclab_launch --eta 1.0 \\
         --isaaclab-script scripts/reinforcement_learning/rsl_rl/train.py -- \\
         --task Isaac-Velocity-Flat-Unitree-Go2-v0 --headless --seed 1 --max_iterations 20
-
-Isaac Lab main (unified entry point, task ids without the -v0 suffix): omit --isaaclab-script:
-    ./isaaclab.sh -p -m sim2gate.training.isaaclab_launch --eta 1.0 -- \\
-        --task Isaac-Velocity-Flat-UnitreeGo2 --headless --seed 1 --max_iterations 20
 """
 import argparse
 import importlib.metadata as metadata
@@ -74,6 +74,13 @@ def main(argv=None):
                    help="path to Isaac Lab's rsl_rl/train.py (3.0 beta); omit to use isaaclab_rl's entry point")
     p.add_argument("--no-monitor", action="store_true", help="only swap in BSRSPPO, log nothing extra")
     args = p.parse_args(ours)
+    if not args.isaaclab_script:
+        # as Isaac Lab 3.0's train.py does: set before anything defines Warp kernels (halves cold kernel builds)
+        try:
+            import warp as wp
+            wp.config.enable_backward = False
+        except ImportError:
+            pass
     install(args.eta, args.signals, args.what_if_eta, monitor=not args.no_monitor)
     if args.isaaclab_script:
         script = os.path.abspath(args.isaaclab_script)

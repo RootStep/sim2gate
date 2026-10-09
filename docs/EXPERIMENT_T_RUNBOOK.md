@@ -9,9 +9,17 @@ on; ρ matches the RSL-RL acceptance gate to 1e-6). **Not yet run inside Isaac L
 
 ## What you need
 
-- Linux with an NVIDIA RTX GPU that Isaac Sim supports, and Isaac Lab 3.x installed (3.0 beta pins
-  rsl-rl-lib 5.0.1, which is gated; Isaac Lab 2.x uses rsl-rl-lib 3.x and will not work)
-- About an hour
+- A Linux GPU machine Isaac Sim supports: an RTX-class GPU with RT cores and at least 16 GB of memory, Ubuntu
+  22.04 or 24.04. Data-center GPUs without RT cores (A100, H100) are not supported by Isaac Sim.
+- Isaac Lab 3.0.0, which pins rsl-rl-lib 5.5.1, the version the acceptance gate used. (Isaac Lab 3.0 beta pins
+  5.0.1, also gated. Isaac Lab 2.x uses rsl-rl-lib 3.x and will not work.)
+- About an hour of GPU time.
+
+### Cloud option
+
+Isaac Lab's Isaac Automator deploys Isaac Lab to AWS, GCP, Azure or Alibaba Cloud. On AWS, a g6e instance
+(one NVIDIA L40S, 48 GB) fits: g6e.xlarge lists at about $1.86/hour on demand in us-east-1 (Oct 2026), so the
+smoke test costs a few dollars. Stop the instance when done; a forgotten one costs about $1,360 a month.
 
 ## 1. Install Sim2Gate into Isaac Lab's Python
 
@@ -22,19 +30,19 @@ From the Isaac Lab folder:
 ./isaaclab.sh -p -c "import sim2gate, rsl_rl, importlib.metadata as m; print(sim2gate.__version__, m.version('rsl-rl-lib'))"
 ```
 
-The second line should print `0.1.0.dev0` and `5.0.1` (or `5.5.1`).
+The second line should print `0.1.0.dev0` and `5.5.1`. If pip tries to change rsl-rl-lib, stop and send the
+output back.
 
 ## 2. Baseline timing: stock PPO, monitor off and on
 
-Isaac Lab 3.0 beta task ids end in `-v0`; on Isaac Lab main use `Isaac-Velocity-Flat-UnitreeGo2` and drop
-`--isaaclab-script`.
+Commands for Isaac Lab 3.0.0. On 3.0 beta, the task id is `Isaac-Velocity-Flat-Unitree-Go2-v0` and the launcher
+needs `--isaaclab-script scripts/reinforcement_learning/rsl_rl/train.py`.
 
 ```bash
-T=scripts/reinforcement_learning/rsl_rl/train.py
-ARGS="--task Isaac-Velocity-Flat-Unitree-Go2-v0 --headless --seed 1 --max_iterations 30"
+ARGS="--task Isaac-Velocity-Flat-UnitreeGo2 --headless --seed 1 --max_iterations 30"
 
-./isaaclab.sh -p $T $ARGS                                                        # plain Isaac Lab
-./isaaclab.sh -p -m sim2gate.training.isaaclab_launch --eta 0 --isaaclab-script $T -- $ARGS
+./isaaclab.sh train --rl_library rsl_rl $ARGS                        # plain Isaac Lab
+./isaaclab.sh -p -m sim2gate.training.isaaclab_launch --eta 0 -- $ARGS
 ```
 
 Compare the iteration times Isaac Lab prints. The monitor adds one critic pass and three short recursions per
@@ -44,7 +52,7 @@ iteration; expect under 2% overhead. With `--eta 0`, the final rewards of the tw
 ## 3. BSRS run
 
 ```bash
-./isaaclab.sh -p -m sim2gate.training.isaaclab_launch --eta 1 --isaaclab-script $T -- $ARGS
+./isaaclab.sh -p -m sim2gate.training.isaaclab_launch --eta 1 -- $ARGS
 ```
 
 ## 4. Check the signals
