@@ -35,6 +35,24 @@ serves training now and Arena evaluation later. Arena's container installs Isaac
    `/isaac-sim/python.sh submodules/IsaacLab/scripts/reinforcement_learning/train.py --rl_library rsl_rl $ARGS`.
 4. Stop the instance when done; Brev bills running instances by the hour.
 
+Faster setup: the community "Isaac Lab Arena" Brev Launchable
+([dorperetz/IsaacLab-Arena-launchable](https://github.com/dorperetz/IsaacLab-Arena-launchable), 1× L40S on AWS,
+listed at $2.73/hour in Oct 2026). Its setup script builds Arena's own, unmodified Dockerfile from
+isaac-sim/IsaacLab-Arena and adds VS Code in the browser; first boot takes 45 to 90 minutes and needs at least
+250 GB of disk. In its VS Code terminal, `python` is `/isaac-sim/python.sh` and the Arena clone is
+`/workspaces/isaaclab_arena`:
+
+```bash
+cd /workspaces/isaaclab_arena
+python -m pip install "sim2gate[rslrl] @ git+https://github.com/RootStep/sim2gate@experiment-t-step1"
+#   (if pip reports a permission error: sudo /isaac-sim/python.sh -m pip install ...)
+ARGS="--task Isaac-Velocity-Flat-UnitreeGo2 --headless --seed 1 --max_iterations 30"
+python submodules/IsaacLab/scripts/reinforcement_learning/train.py --rl_library rsl_rl $ARGS   # plain Isaac Lab
+python -m sim2gate.training.isaaclab_launch --eta 0 -- $ARGS
+python -m sim2gate.training.isaaclab_launch --eta 1 -- $ARGS
+python -m sim2gate.cli signals logs/rsl_rl/unitree_go2_flat/*/sim2gate_signals.jsonl
+```
+
 Quicker but without Arena: Brev's Isaac Launchable (VS Code in the browser, Isaac Lab 3.0.0-beta2,
 rsl-rl-lib 5.0.1, gated). It works for step 1 using the 3.0 beta commands, but Arena would have to be added later.
 
