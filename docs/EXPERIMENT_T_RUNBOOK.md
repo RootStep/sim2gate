@@ -5,7 +5,9 @@ sensible signals and cost almost nothing, before the 20-policy grid. This is not
 grid waits until the MVP checks pass validation (see the MVP design plan).
 
 Status of the code: tested on CPU with rsl-rl-lib 5.0.1, 5.4.1 and 5.5.1 (training is bit-identical with the monitor
-on; ρ matches the RSL-RL acceptance gate to 1e-6). **Not yet run inside Isaac Lab.** Step 1 is that run.
+on; ρ matches the RSL-RL acceptance gate to 1e-6). **Step 1 passed on Oct 9, 2026** (results at the end).
+
+Isaac Lab 3.0.0 has no `--headless` flag: it runs without a display unless a visualizer is requested.
 
 ## What you need
 
@@ -46,7 +48,7 @@ isaac-sim/IsaacLab-Arena and adds VS Code in the browser; first boot takes 45 to
 cd /workspaces/isaaclab_arena
 python -m pip install "sim2gate[rslrl] @ git+https://github.com/RootStep/sim2gate@experiment-t-step1"
 #   (if pip reports a permission error: sudo /isaac-sim/python.sh -m pip install ...)
-ARGS="--task Isaac-Velocity-Flat-UnitreeGo2 --headless --seed 1 --max_iterations 30"
+ARGS="--task Isaac-Velocity-Flat-UnitreeGo2 --seed 1 --max_iterations 30"
 python submodules/IsaacLab/scripts/reinforcement_learning/train.py --rl_library rsl_rl $ARGS   # plain Isaac Lab
 python -m sim2gate.training.isaaclab_launch --eta 0 -- $ARGS
 python -m sim2gate.training.isaaclab_launch --eta 1 -- $ARGS
@@ -80,7 +82,7 @@ Commands for Isaac Lab 3.0.0. On 3.0 beta, the task id is `Isaac-Velocity-Flat-U
 needs `--isaaclab-script scripts/reinforcement_learning/rsl_rl/train.py`.
 
 ```bash
-ARGS="--task Isaac-Velocity-Flat-UnitreeGo2 --headless --seed 1 --max_iterations 30"
+ARGS="--task Isaac-Velocity-Flat-UnitreeGo2 --seed 1 --max_iterations 30"
 
 ./isaaclab.sh train --rl_library rsl_rl $ARGS                        # plain Isaac Lab
 ./isaaclab.sh -p -m sim2gate.training.isaaclab_launch --eta 0 -- $ARGS
@@ -127,3 +129,28 @@ Send the two JSONL files and the console logs back; they decide whether the grid
 - Grid: `for eta in 0 0.5 1 2; do for s in 1 2 3 4 5; do ... --eta $eta ... --seed $s; done; done`
 - Summary per policy: `sim2gate signals --last 0.2` gives mean 1 − ρ and reversal share over the last 20%
   of training, the plan's training-signal summary.
+
+
+## Step 1 result: PASS (Oct 9, 2026)
+
+Brev, AWS g6e.2xlarge (1× L40S), community Isaac Lab Arena launchable: Isaac Sim 6.0.1, Isaac Lab 3.0.0 (Arena's
+submodule), rsl-rl-lib 5.4.1. Go2 flat, seed 1, 30 iterations, 4,096 environments.
+
+| Check | Result |
+|---|---|
+| One record per iteration | 30 per run |
+| `num_samples` | 98,304 |
+| `identity_residual` | 4.2e-7 |
+| `rho` vs `predicted_rho` | 0.9099416138 vs 0.9099416135 |
+| `eta_is_training_eta` | false at `--eta 0`, true at `--eta 1` |
+| Reward terms | all 10 Go2 terms, shares sum to 1 |
+| Timeouts, terminations (last iteration) | 67, 19 |
+| Iteration time | 0.59 s stock Isaac Lab; 0.58 to 0.61 s with Sim2Gate attached |
+
+Signals over the last 20% of iterations (smoke test, not Experiment T data): 1 − ρ was 0.128 (η = 1 what-if on
+stock PPO) and 0.102 (training with η = 1); regime partial throughout, no reversal, zero-tail fraction 0.
+
+Launchable fixes needed on this host: the image's second build step fails under Docker Compose's bake builder
+("pass --allow=network.host"); removing `network: host` from `docker-compose.override.yml` and rerunning
+`./build.sh -s` fixed it. Brev then marks setup as failed and creates no Secure Link; use `brev shell`, `tmux`
+and `docker exec -it isaac-arena-vscode su ubuntu`, or `brev port-forward <instance> -p 8080:80`.
