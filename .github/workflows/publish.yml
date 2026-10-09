@@ -3,9 +3,10 @@
 # owner "RootStep", repository "sim2gate", workflow "publish.yml", environment "pypi".
 name: Publish to PyPI
 
+# Release by pushing a version tag, e.g.: git tag v0.0.2 && git push origin v0.0.2
 on:
-  release:
-    types: [published]
+  push:
+    tags: ["v*"]
 
 jobs:
   build:
