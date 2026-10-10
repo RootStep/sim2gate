@@ -1,0 +1,109 @@
+# SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+volumes:
+  ov-cache:
+  ov-local-share:
+  omniverse:
+
+services:
+
+  # The landing container: IsaacLab Arena (Isaac Sim + Isaac Lab + Arena) with
+  # code-server on top. Isaac Sim runs here, launched by hand from the VS Code
+  # terminal; nothing auto-starts.
+  vscode:
+    container_name: isaac-arena-vscode
+    image: isaac-arena-launchable/vscode:latest
+    network_mode: "host"
+    runtime: nvidia
+    # Isaac Sim renders through Vulkan, which needs the *graphics* driver libraries
+    # (libGLX_nvidia, libnvidia-glcore), not just compute+utility. Requesting them via
+    # NVIDIA_DRIVER_CAPABILITIES alone was not enough on a Brev L40S host: nvidia-smi and
+    # CUDA worked, but /etc/vulkan/icd.d/nvidia_icd.json pointed at a libGLX_nvidia.so.0
+    # that was absent, so vkCreateInstance failed with ERROR_INCOMPATIBLE_DRIVER and Kit
+    # started with no renderer at all - the viewer then waits forever for a stream that
+    # is never produced. Naming the capabilities explicitly here makes the toolkit inject
+    # them. Verify inside the container with:
+    #   ldconfig -p | grep libGLX_nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, compute, utility, graphics, display, video]
+    # Required by Isaac Sim, and matched to IsaacLab-Arena/docker/run_docker.sh.
+    privileged: true
+    ipc: host
+    ulimits:
+      memlock: -1
+      stack: -1
+    volumes:
+      # The Arena clone on the host. The build arg WORKDIR in build.sh must match
+      # this path, since the editable installs inside the image bake it in.
+      - "${ARENA_REPO:?ARENA_REPO must be set - see .env.example}:/workspaces/isaaclab_arena"
+      - "${DATASETS_DIR:-${HOME}/datasets}:/datasets"
+      - "${MODELS_DIR:-${HOME}/models}:/models"
+      - "${EVAL_DIR:-${HOME}/eval}:/eval"
+      # Shader / asset caches, so only the first Isaac Sim launch is slow.
+      - "ov-cache:/home/${HOST_USER:-ubuntu}/.cache/ov"
+      - "ov-local-share:/home/${HOST_USER:-ubuntu}/.local/share/ov"
+      - "omniverse:/home/${HOST_USER:-ubuntu}/.nvidia-omniverse"
+      - "/tmp:/tmp"
+    environment:
+      # NB: CUDA_VISIBLE_DEVICES is deliberately not pinned to 0 - Arena's
+      # distributed evaluation path (torch.distributed.run) needs every GPU.
+      - NVIDIA_VISIBLE_DEVICES=all
+      # Spelled out rather than "all": some toolkit versions do not expand "all" to
+      # include graphics, which is the capability Vulkan actually needs.
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics,display,video
+      - ACCEPT_EULA=Y
+      - OMNI_KIT_ACCEPT_EULA=YES
+      - PRIVACY_CONSENT=Y
+      - TZ=Etc/UTC
+      - ISAACLAB_PATH=/workspaces/isaaclab_arena/submodules/IsaacLab
+      - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+      - WORKSPACE_DIR=/workspaces
+      - PASSWORD=${VSCODE_PASSWORD:-}
+      - ALLOW_NO_AUTH=${ALLOW_NO_AUTH:-0}
+      # Consumed by the Arena entrypoint to recreate the host user inside the
+      # container, so files written to the bind mount keep the right ownership.
+      - DOCKER_RUN_USER_ID=${HOST_UID:-1000}
+      - DOCKER_RUN_USER_NAME=${HOST_USER:-ubuntu}
+      - DOCKER_RUN_GROUP_ID=${HOST_GID:-1000}
+      - DOCKER_RUN_GROUP_NAME=${HOST_GROUP:-ubuntu}
+    restart: unless-stopped
+
+  # Reverse proxy on port 80: / -> code-server, /viewer/ -> web viewer,
+  # /sign_in -> the Kit WebRTC signaling server.
+  nginx:
+    container_name: isaac-arena-nginx
+    network_mode: "host"
+    environment:
+      - VIEWER_PASSWORD=${VSCODE_PASSWORD:-}
+      - ALLOW_NO_AUTH=${ALLOW_NO_AUTH:-0}
+    depends_on:
+      - vscode
+    restart: unless-stopped
+
+  web-viewer:
+    container_name: isaac-arena-web-viewer
+    network_mode: "host"
+    environment:
+      # brev: resolve the media server via the instance's public IP, since WebRTC
+      # media bypasses nginx on the raw UDP ports. Use `localhost` when running
+      # this stack on your own machine.
+      - ENV=${VIEWER_ENV:-brev}
+    restart: unless-stopped

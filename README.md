@@ -62,7 +62,9 @@ pip install "sim2gate[rslrl]"
 ```
 
 `--eta` above 0 trains with same-critic BSRS (`sim2gate.training.BSRSPPO`), for research runs.
-See [docs/EXPERIMENT_T_RUNBOOK.md](docs/EXPERIMENT_T_RUNBOOK.md).
+See [docs/EXPERIMENT_T_RUNBOOK.md](docs/EXPERIMENT_T_RUNBOOK.md). For a ready GPU workspace (Isaac Lab-Arena plus
+Sim2Gate on NVIDIA Brev), see [deploy/brev](deploy/brev/README.md); `python -m sim2gate.training.smoke_go2` then runs
+the Go2 smoke test with automatic pass/fail.
 
 ## Usage
 
