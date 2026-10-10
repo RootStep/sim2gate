@@ -36,6 +36,9 @@ ARENA_REPO_URL="${ARENA_REPO_URL:-https://github.com/isaac-sim/IsaacLab-Arena}"
 # pulls it instead of building for an hour. If the registry needs a login, also set REGISTRY, REGISTRY_USER
 # and REGISTRY_TOKEN (for NGC: REGISTRY=nvcr.io, REGISTRY_USER='$oauthtoken', REGISTRY_TOKEN=<NGC API key>).
 ARENA_IMAGE="${ARENA_IMAGE:-}"
+# Only an image reference counts (registry/name:tag); anything else (a stray value in the environment) is ignored.
+case "${ARENA_IMAGE}" in *[!A-Za-z0-9._:/@-]*|"") ARENA_IMAGE="" ;; esac
+export -n ARENA_IMAGE 2>/dev/null || true
 # --------------------------------------------------------------------------------------------------------
 
 ARENA_REPO="${ARENA_REPO:-$HOME/IsaacLab-Arena}"
@@ -104,6 +107,7 @@ if [ -n "${ARENA_IMAGE}" ]; then
     fi
     if docker pull "${ARENA_IMAGE}"; then
         echo "ARENA_IMAGE=${ARENA_IMAGE}" >> .env
+        export ARENA_IMAGE
         BUILD_ARGS="-s"
     else
         echo "WARNING: could not pull ${ARENA_IMAGE}; building Arena from source instead." >&2
