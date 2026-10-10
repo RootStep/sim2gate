@@ -147,7 +147,9 @@ sleep 5
     echo "arena_commit=$(git -C "${ARENA_REPO}" rev-parse HEAD)"
     echo "isaaclab_commit=$(git -C "${ARENA_REPO}/submodules/IsaacLab" rev-parse HEAD)"
     echo "sim2gate_commit=${SIM2GATE_COMMIT}"
-    echo "arena_image_id=$(docker image inspect --format '{{.Id}}' "$(grep -E '^ARENA_IMAGE=' .env | cut -d= -f2- || true)" 2>/dev/null || docker image inspect --format '{{.Id}}' isaaclab_arena:latest)"
+    ARENA_IMAGE_USED=$(grep -E '^ARENA_IMAGE=' .env | cut -d= -f2- || true)
+    echo "arena_image=${ARENA_IMAGE_USED:-isaaclab_arena:latest}"
+    echo "arena_image_id=$(docker image inspect --format '{{.Id}}' "${ARENA_IMAGE_USED:-isaaclab_arena:latest}")"
     echo "vscode_image_id=$(docker image inspect --format '{{.Id}}' isaac-arena-launchable/vscode:latest)"
     docker exec isaac-arena-vscode /isaac-sim/python.sh -c \
         "import importlib.metadata as m, json; d = m.distribution('sim2gate'); u = d.read_text('direct_url.json'); print('sim2gate', d.version, json.loads(u).get('vcs_info', {}).get('commit_id') if u else ''); print('rsl-rl-lib', m.version('rsl-rl-lib'))"

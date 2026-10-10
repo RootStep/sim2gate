@@ -75,17 +75,23 @@ exceeds its speed limit; flagged above 1%), and action jitter (share of action p
 control frequency). In Isaac Lab 3.x, it runs Isaac Lab's own play entry point unchanged:
 
 ```bash
-python -m sim2gate.checks.isaaclab_exploits --steps 1000 -- --task Isaac-Velocity-Flat-UnitreeGo2 --num_envs 64
+python -m sim2gate.checks.isaaclab_exploits --steps 1000 -- --task Isaac-Velocity-Flat-UnitreeGo2 --num_envs 64 \
+    --checkpoint logs/rsl_rl/unitree_go2_flat/<run>/model_<iter>.pt
 ```
+
+Name the policy explicitly (`--checkpoint`, or `--load_run`): without it Isaac Lab plays the newest run, and check 2
+refuses to start unless you pass `--allow-latest`. The report records the loaded checkpoint's path and SHA-256 under
+`checkpoint`, and the play arguments under `play_args`.
 
 How to read the report:
 
 - **When it measures.** Isaac Lab resets environments that ended inside `step()`, so reading the scene afterwards
   would show the respawned robot instead of the fall. Check 2 snapshots the scene after the reward computation and
   before any reset, on every step; `sources.state_read` in the report says which steps used which read.
-- **Contact force** is the maximum over the contact sensor's history (all physics substeps of a control step when
-  its `history_length` is at least the decimation), in body weights computed from the masses in effect, randomized
-  ones included.
+- **Contact force** is the maximum over the contact sensor's history, in body weights computed from the masses in
+  effect, randomized ones included. The history covers every physics substep only if the sensor's `history_length`
+  is at least the env's decimation; Isaac Lab's Go2 task keeps 3 samples at decimation 4, so peaks cover 3 of 4
+  substeps. `contact_force_substeps` in the report gives the covered share, and a note appears when it is below 1.
 - **Missing data is never "ok".** A channel that was not measured is `null`. The actuator flag is `ok` only when
   both channels (torque clipping and joint speed) were measured on every step; `coverage` gives the share for each.
   A violation in a partially measured run is still flagged.
@@ -95,15 +101,15 @@ How to read the report:
 - **Percentiles** use contact samples from the whole run; past 2 million samples they are thinned uniformly in
   time (`contact_sample_stride`).
 - **Thresholds.** Only the actuator-limit flag has a fixed threshold (1% of steps). The others stay
-  `uncalibrated` until you pass a versioned thresholds file set from calibration baselines (P0 seeds 1 to 3,
-  x1.5); its path and SHA-256 are recorded in the report:
+  `uncalibrated` until you pass a versioned thresholds file. `sim2gate.checks.calibrate` makes one from the check 2
+  reports of the calibration baselines (clean policies, P0 seeds 1 to 3), by the plan's rule: the largest value
+  across the baselines times 1.5. It refuses fewer than three baselines, a repeated or unrecorded checkpoint, reports
+  measured with different settings, and missing metrics, and it records each report's and checkpoint's SHA-256:
 
 ```bash
+python -m sim2gate.checks.calibrate --out thresholds_go2_flat.json p0_s1.json p0_s2.json p0_s3.json
 python -m sim2gate.checks.isaaclab_exploits --steps 1000 --thresholds thresholds_go2_flat.json -- \
-    --task Isaac-Velocity-Flat-UnitreeGo2 --num_envs 64
-# thresholds_go2_flat.json: {"version": 1, "calibration": "P0 seeds 1-3 x1.5",
-#                            "thresholds": {"foot_slip_p95_mps": ..., "contact_force_p99_bw": ...,
-#                                           "ground_penetration_m": ..., "action_jitter_high_freq_power_share": ...}}
+    --task Isaac-Velocity-Flat-UnitreeGo2 --num_envs 64 --checkpoint <policy>.pt
 ```
 
 These are indicators of simulator-dependent behavior, not proof of an exploit or of real-world transfer.
