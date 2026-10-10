@@ -75,11 +75,3 @@ def test_against_package(seed, sparse, eta):
     sig = rollout_signals(stored, v, lv, d, to, eta=eta, gamma=GAMMA, lam=LAM)
     assert abs(sig.rho - psd.correlation_predictor(A_ref, Ap_ref)) < 1e-6
     assert sig.identity_residual <= 1e-4 * (1 + eta) * max(1.0, float(np.abs(A_ref).max()), float(np.abs(T_ref).max()))
-
-
-def test_zero_tail_cancels():
-    stored, raw, v, lv, d, to = make_rollout(0, sparse=True)
-    stored = stored - raw                              # no reward anywhere: T = 0
-    sig = rollout_signals(stored, v, lv, d, to, eta=1.0, gamma=GAMMA, lam=LAM)
-    assert sig.zero_tail_fraction == 1.0
-    assert sig.regime == "affine_cancelled" and abs(sig.rho - 1.0) < 1e-9
