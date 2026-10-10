@@ -3,7 +3,9 @@ Apache License 2.0), whose nginx/ and web-viewer-sample/ directories are unmodif
 https://github.com/isaac-sim/isaac-launchable (Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES,
 Apache License 2.0). File headers keep their original copyright notices.
 
-RootStep changes: setup.sh (pinned Arena commit, Sim2Gate checkout, optional prebuilt image, pipefail,
+RootStep changes: nginx/nginx.conf and nginx/entrypoint.sh (port 443 TLS server, /lab token route and Lua
+modules removed; basic auth on the viewer routes), vscode/launch-code-server.sh (fails closed without a
+password, no shell tracing), setup.sh (pinned Arena commit, Sim2Gate checkout, optional prebuilt image, pipefail,
 version record), docker-compose.override.yml (no host networking on builds; SIM2GATE_REF build arg),
 vscode/Dockerfile (Sim2Gate install with an rsl-rl-lib guard), vscode/workspace-README.md (Sim2Gate
 section), push_arena_image.sh and README.md (new). The Justfile was dropped.

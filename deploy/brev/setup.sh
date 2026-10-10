@@ -85,6 +85,27 @@ fi
 
 mkdir -p "$HOME/datasets" "$HOME/models" "$HOME/eval"
 
+# The image installs exactly the Sim2Gate commit checked out here (a branch name could move between the two).
+SIM2GATE_COMMIT=$(git -C "${SIM2GATE_DIR}" rev-parse HEAD)
+
+# VS Code password: required (launch-code-server.sh refuses to start without one). Generated once, kept in a
+# file only this user can read, never echoed. Tracing is off while it is handled.
+set +x
+PASSWORD_FILE="$HOME/sim2gate-vscode-password.txt"
+if [ -z "${VSCODE_PASSWORD:-}" ]; then
+    if [ -s "${PASSWORD_FILE}" ]; then
+        VSCODE_PASSWORD=$(cat "${PASSWORD_FILE}")
+    else
+        VSCODE_PASSWORD=$(openssl rand -hex 16)
+    fi
+fi
+umask 077
+printf '%s\n' "${VSCODE_PASSWORD}" > "${PASSWORD_FILE}"
+umask 022
+set -x
+
+set +x
+umask 077
 cat > .env <<ENVEOF
 ARENA_REPO=${ARENA_REPO}
 HOST_UID=$(id -u)
@@ -95,8 +116,11 @@ DATASETS_DIR=$HOME/datasets
 MODELS_DIR=$HOME/models
 EVAL_DIR=$HOME/eval
 VIEWER_ENV=brev
-SIM2GATE_REF=${SIM2GATE_REF}
+SIM2GATE_REF=${SIM2GATE_COMMIT}
+VSCODE_PASSWORD=${VSCODE_PASSWORD}
 ENVEOF
+umask 022
+set -x
 
 BUILD_ARGS=""
 if [ -n "${ARENA_IMAGE}" ]; then
@@ -122,8 +146,10 @@ sleep 5
 {
     echo "arena_commit=$(git -C "${ARENA_REPO}" rev-parse HEAD)"
     echo "isaaclab_commit=$(git -C "${ARENA_REPO}/submodules/IsaacLab" rev-parse HEAD)"
-    echo "sim2gate_commit=$(git -C "${SIM2GATE_DIR}" rev-parse HEAD)"
+    echo "sim2gate_commit=${SIM2GATE_COMMIT}"
+    echo "arena_image_id=$(docker image inspect --format '{{.Id}}' "$(grep -E '^ARENA_IMAGE=' .env | cut -d= -f2- || true)" 2>/dev/null || docker image inspect --format '{{.Id}}' isaaclab_arena:latest)"
+    echo "vscode_image_id=$(docker image inspect --format '{{.Id}}' isaac-arena-launchable/vscode:latest)"
     docker exec isaac-arena-vscode /isaac-sim/python.sh -c \
-        "import importlib.metadata as m; print('sim2gate', m.version('sim2gate')); print('rsl-rl-lib', m.version('rsl-rl-lib'))"
+        "import importlib.metadata as m, json; d = m.distribution('sim2gate'); u = d.read_text('direct_url.json'); print('sim2gate', d.version, json.loads(u).get('vcs_info', {}).get('commit_id') if u else ''); print('rsl-rl-lib', m.version('rsl-rl-lib'))"
 } | tee "$HOME/sim2gate-versions.txt"
-echo "Setup complete. Open the 'isaac' Secure Link for VS Code."
+echo "Setup complete. Open the 'isaac' Secure Link for VS Code; its password is in ${PASSWORD_FILE}."

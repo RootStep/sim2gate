@@ -18,10 +18,25 @@ found during the Experiment T step 1 run on Oct 9, 2026.
    viewer, also TCP/UDP 1024, 47998 and 49100; training and the smoke test don't.
 7. Keep the launchable private to your Brev account or team.
 
+## Access and security
+
+- VS Code **requires a password**. `setup.sh` generates one and stores it in `~/sim2gate-vscode-password.txt`
+  on the instance (readable only by that user): `brev shell <instance>`, then `cat ~/sim2gate-vscode-password.txt`.
+  The streamed-viewer routes (`/viewer/`, `/sign_in`) use HTTP basic auth: user `sim2gate`, same password.
+  `ALLOW_NO_AUTH=1` in `.env` turns authentication off; don't.
+- nginx serves plain HTTP on port 80 only, for Brev's Secure Link, which adds TLS and Brev login. There is no
+  TLS listener on 443 and no token-in-URL login route.
+- Don't add public port rules for 80. The streaming ports (1024, 47998, 49100) are only needed for the live
+  viewer; leave them closed otherwise.
+- Check direct exposure from your own computer: `curl -m 5 -sI http://<instance public IP>/` should time out
+  (port closed). If it answers, it must be a redirect to `./login`, never the editor itself.
+- The VS Code container runs privileged with host networking because Isaac Sim needs GPU and device access.
+  Treat anyone with the password as having root on the instance.
+
 ## Use it
 
-Deploy, wait for the build (45 to 90 minutes the first time), open the `isaac` Secure Link, then in a VS Code
-terminal:
+Deploy, wait for the build (45 to 90 minutes the first time), open the `isaac` Secure Link, log in with the password from
+`~/sim2gate-vscode-password.txt`, then in a VS Code terminal:
 
 ```bash
 cd /workspaces/isaaclab_arena
