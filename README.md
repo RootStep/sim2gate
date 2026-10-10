@@ -78,8 +78,35 @@ control frequency). In Isaac Lab 3.x, it runs Isaac Lab's own play entry point u
 python -m sim2gate.checks.isaaclab_exploits --steps 1000 -- --task Isaac-Velocity-Flat-UnitreeGo2 --num_envs 64
 ```
 
-Only the actuator-limit flag has a threshold so far; the others are reported uncalibrated until thresholds are set
-from calibration baseline policies.
+How to read the report:
+
+- **When it measures.** Isaac Lab resets environments that ended inside `step()`, so reading the scene afterwards
+  would show the respawned robot instead of the fall. Check 2 snapshots the scene after the reward computation and
+  before any reset, on every step; `sources.state_read` in the report says which steps used which read.
+- **Contact force** is the maximum over the contact sensor's history (all physics substeps of a control step when
+  its `history_length` is at least the decimation), in body weights computed from the masses in effect, randomized
+  ones included.
+- **Missing data is never "ok".** A channel that was not measured is `null`. The actuator flag is `ok` only when
+  both channels (torque clipping and joint speed) were measured on every step; `coverage` gives the share for each.
+  A violation in a partially measured run is still flagged.
+- **Ground penetration** is measured only on flat ground (`terrain_type == "plane"`), from body-origin heights:
+  foot origin minus the foot radius (`--foot-radius`, 0.022 m for the Go2), and other bodies' origins only. On any
+  other terrain it is `null`.
+- **Percentiles** use contact samples from the whole run; past 2 million samples they are thinned uniformly in
+  time (`contact_sample_stride`).
+- **Thresholds.** Only the actuator-limit flag has a fixed threshold (1% of steps). The others stay
+  `uncalibrated` until you pass a versioned thresholds file set from calibration baselines (P0 seeds 1 to 3,
+  x1.5); its path and SHA-256 are recorded in the report:
+
+```bash
+python -m sim2gate.checks.isaaclab_exploits --steps 1000 --thresholds thresholds_go2_flat.json -- \
+    --task Isaac-Velocity-Flat-UnitreeGo2 --num_envs 64
+# thresholds_go2_flat.json: {"version": 1, "calibration": "P0 seeds 1-3 x1.5",
+#                            "thresholds": {"foot_slip_p95_mps": ..., "contact_force_p99_bw": ...,
+#                                           "ground_penetration_m": ..., "action_jitter_high_freq_power_share": ...}}
+```
+
+These are indicators of simulator-dependent behavior, not proof of an exploit or of real-world transfer.
 
 ## Usage
 
