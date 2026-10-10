@@ -66,6 +66,21 @@ See [docs/EXPERIMENT_T_RUNBOOK.md](docs/EXPERIMENT_T_RUNBOOK.md). For a ready GP
 Sim2Gate on NVIDIA Brev), see [deploy/brev](deploy/brev/README.md); `python -m sim2gate.training.smoke_go2` then runs
 the Go2 smoke test with automatic pass/fail.
 
+## Check 2: simulator exploits (experimental)
+
+Measures, on a trained policy, the behaviors that only work because of simulator artifacts: foot slip (95th
+percentile horizontal foot speed in contact), ground penetration, contact-force spikes (99th percentile foot force
+in body weights), actuator limits (share of steps where the actuator model clips the torque demand or a joint
+exceeds its speed limit; flagged above 1%), and action jitter (share of action power above a quarter of the
+control frequency). In Isaac Lab 3.x, it runs Isaac Lab's own play entry point unchanged:
+
+```bash
+python -m sim2gate.checks.isaaclab_exploits --steps 1000 -- --task Isaac-Velocity-Flat-UnitreeGo2 --num_envs 64
+```
+
+Only the actuator-limit flag has a threshold so far; the others are reported uncalibrated until thresholds are set
+from calibration baseline policies.
+
 ## Usage
 
 ```bash
