@@ -51,6 +51,27 @@ def test_checks_fail_on_missing_records():
     assert not all(r["ok"] for r in res)
 
 
+def _rec(**sig):
+    base = {"num_samples": 10, "identity_residual": 1e-7, "trainer_signal_residual": 1e-7,
+            "trainer_normalization_residual": 1e-7, "normalization_group": "rollout", "rho": 0.9,
+            "predicted_rho": 0.9, "timeouts": 1, "terminations": 1}
+    base.update(sig)
+    return {"eta": 1.0, "eta_is_training_eta": True, "signals": base, "reward_terms": {"a": 1.0},
+            "reward_term_abs_share": {"a": 1.0}}
+
+
+def test_checks_reject_malformed_numbers():
+    rc = {"stock": 0, "eta0": 0, "eta1": 0}
+    good0 = [dict(_rec(), eta_is_training_eta=False)]
+    for bad in (float("-inf"), float("nan"), None):
+        res = smoke_go2.checks(1, good0, [_rec(identity_residual=bad)], rc)
+        assert not next(r for r in res if r["name"].startswith("BSRS identity"))["ok"]
+    res = smoke_go2.checks(1, good0, [_rec()], {})
+    assert not res[0]["ok"]                      # no return codes at all is a failure, not a pass
+    res = smoke_go2.checks(1, good0, [_rec(trainer_signal_residual=0.3)], rc)
+    assert not next(r for r in res if r["name"].startswith("reconstruction"))["ok"]
+
+
 def test_overhead_check():
     base = "\n".join(f"Iteration time: {0.59:.2f}s" for _ in range(10))
     slow = "\n".join(f"Iteration time: {0.70:.2f}s" for _ in range(10))

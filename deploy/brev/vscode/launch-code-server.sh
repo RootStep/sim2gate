@@ -13,17 +13,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-set -eux
+set -eu
+# No `set -x`: PASSWORD is in the environment and must never reach a log.
 
 WORKSPACE_DIR=${WORKSPACE_DIR:-/workspaces}
 CODE_SERVER_EXTENSIONS_DIR=${CODE_SERVER_EXTENSIONS_DIR:-/opt/code-server/extensions}
 
-# Set auth mode based on PASSWORD env var. With a Brev Secure Link the link
-# itself is authenticated, so an unset password is the normal case.
-if [ -z "${PASSWORD:-}" ]; then
+# RootStep: fail closed. code-server requires a password unless ALLOW_NO_AUTH=1 is set explicitly; setup.sh
+# generates one. nginx listens on the host network, so a Secure Link alone does not protect the editor.
+if [ -n "${PASSWORD:-}" ]; then
+    AUTH_MODE="password"
+elif [ "${ALLOW_NO_AUTH:-0}" = "1" ]; then
+    echo "WARNING: code-server running WITHOUT authentication (ALLOW_NO_AUTH=1)" >&2
     AUTH_MODE="none"
 else
-    AUTH_MODE="password"
+    echo "ERROR: no PASSWORD set for code-server; refusing to start without authentication." >&2
+    echo "       Set VSCODE_PASSWORD in .env (setup.sh generates one), or ALLOW_NO_AUTH=1 to override." >&2
+    exit 1
 fi
 
 # Bind to loopback only: nginx is the sole front door for this stack.
