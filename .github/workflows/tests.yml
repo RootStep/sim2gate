@@ -1,0 +1,24 @@
+name: Tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rsl-rl: ["5.0.1", "5.4.1", "5.5.1"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - run: python -m pip install -e ".[dev]" "rsl-rl-lib==${{ matrix.rsl-rl }}"
+      # tests/test_signals.py needs ppo-shaping-diagnostics (not on PyPI yet) and is the only test allowed to skip;
+      # tests/test_signals_reference.py checks the same math against committed reference outputs instead.
+      - run: python -m pytest -q -rs tests
+        env:
+          SIM2GATE_ALLOWED_SKIPS: tests/test_signals.py
