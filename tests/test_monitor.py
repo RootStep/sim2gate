@@ -147,6 +147,13 @@ def test_minibatch_groups_drive_the_summary(tmp_path):
     assert abs(s["mean_one_minus_rho"] - sum(1 - x for x in gate) / 4) < 1e-6
 
 
+def test_monitor_uses_captured_raw_rewards(tmp_path):
+    """Fourth review: raw rewards are recorded before RSL-RL adds the timeout bonus, not recovered from storage."""
+    _, recs = train("sparse", 1, 0.0, False, alg_for(0.0), tmp_path / "m.jsonl")
+    assert all(r["signals"]["raw_reward_source"] == "captured" for r in recs)
+    assert all(r["signals"]["trainer_signal_residual"] < 1e-4 for r in recs)
+
+
 def test_recurrent_models_are_refused():
     import types
     alg = types.SimpleNamespace(actor=types.SimpleNamespace(is_recurrent=True), critic=None)

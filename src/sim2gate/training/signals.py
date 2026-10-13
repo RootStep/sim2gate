@@ -17,19 +17,24 @@ F32_EPS = float(torch.finfo(torch.float32).eps)
 
 
 def recover_raw_rewards(stored, values, time_outs, gamma):
-    """Undo RSL-RL's timeout bonus: raw = stored - gamma * V(s_t) on time-limit steps.
+    """Undo RSL-RL's timeout bonus: raw = stored - gamma * V(s_t) on time-limit steps. Values are returned as
+    computed, never snapped: on a timeout step they carry float32 rounding of a few ulp of the bonus, so a reward
+    smaller than that cannot be told apart from zero here (it was already blurred when RSL-RL stored r + gamma*V).
+    The monitor avoids this entirely by capturing raw rewards before RSL-RL adds the bonus (rollout_signals'
+    raw_rewards); this function is the fallback when only storage is available. See recovered_zero_mask."""
+    to = time_outs.bool()
+    return stored - gamma * values * to
 
-    Where the raw reward was 0, float32 rounding of stored = r + gamma * V and of the subtraction can leave a
-    residue of a few ulp of the larger operand; that residue is snapped to 0 so zero tails stay zero. The tolerance
-    scales with the operands themselves (no absolute floor), so a genuine small reward survives whenever float32
-    could represent it next to the bonus: with V = 0 nothing is subtracted and nothing is snapped. A reward below
-    float32 resolution at the bonus's magnitude was already lost when RSL-RL stored it and cannot be recovered."""
+
+def recovered_zero_mask(stored, values, time_outs, gamma, recovered):
+    """Which recovered rewards count as zero, for zero-tail statistics only (the reward values are not changed):
+    exactly 0 on ordinary steps; on timeout steps, within 8 float32 ulp of the larger of the stored reward and the
+    bonus, i.e. indistinguishable from 0 after RSL-RL's float32 addition. A genuine reward that small is
+    classified as zero here, which is why captured raw rewards are preferred."""
     to = time_outs.bool()
     bonus = gamma * values * to
-    raw = stored - bonus
     scale = torch.maximum(stored.abs(), bonus.abs())
-    snap = to & (raw.abs() <= 8 * F32_EPS * scale)
-    return torch.where(snap, torch.zeros_like(raw), raw)
+    return torch.where(to, recovered.abs() <= 8 * F32_EPS * scale, recovered == 0)
 
 
 def _successor_values(values, last_values, dones, time_outs):
@@ -125,6 +130,7 @@ class RolloutSignals:
     beta: float | None
     residual_ratio: float | None
     zero_tail_fraction: float
+    raw_reward_source: str            # "captured" (exact, before RSL-RL's timeout bonus) or "recovered" (storage)
     identity_residual: float          # max |A' - ((1+eta) A - eta T)|, a coupling sanity check
     mean_raw_reward: float
     timeouts: int
@@ -142,7 +148,8 @@ class RolloutSignals:
 
 def rollout_signals(stored_rewards, values, last_values, dones, time_outs, *, eta, gamma, lam,
                     minibatch_indices=None, trainer_advantages=None, trainer_normalized=None,
-                    training_eta=False, minibatch_capture=None, normalization_group=None, minibatch_yielded=None):
+                    training_eta=False, minibatch_capture=None, normalization_group=None, minibatch_yielded=None,
+                    raw_rewards=None):
     """All per-rollout signals from RSL-RL storage tensors ([T, N] or [T, N, 1]).
 
     minibatch_indices: list of 1-D index tensors into the time-major flattened rollout (t * N + e), when RSL-RL
@@ -153,7 +160,10 @@ def rollout_signals(stored_rewards, values, last_values, dones, time_outs, *, et
     normalization_group: "rollout" or "minibatch" (default: minibatch iff minibatch_indices is given). In
     minibatch mode without indices, the group statistics are left empty instead of falling back to the rollout.
     minibatch_yielded: the unnormalized advantages the trainer's minibatch generator yielded, one per group; their
-    normalization (as the trainer does it) is compared with the normalized reconstruction of the same group."""
+    normalization (as the trainer does it) is compared with the normalized reconstruction of the same group.
+    raw_rewards: the environment's rewards as passed to the trainer, before RSL-RL adds its timeout bonus. When
+    given they are used as they are and zero means exactly zero; otherwise they are recovered from storage, and
+    the zero-tail fraction uses recovered_zero_mask's tolerance (raw_reward_source says which)."""
     if normalization_group is None:
         normalization_group = "minibatch" if minibatch_indices is not None else "rollout"
     if normalization_group not in ("rollout", "minibatch"):
@@ -163,9 +173,18 @@ def rollout_signals(stored_rewards, values, last_values, dones, time_outs, *, et
     sq = lambda x: x[..., 0] if x.dim() == 3 else x
     r_st, v, d, to = sq(stored_rewards), sq(values), sq(dones).bool(), sq(time_outs).bool()
     lv = last_values.reshape(-1).to(v.dtype)
-    raw = recover_raw_rewards(r_st, v, to, gamma)
+    if raw_rewards is not None:
+        raw = sq(raw_rewards).to(v.dtype).to(v.device)
+        if raw.shape != v.shape:
+            raise ValueError(f"raw_rewards shape {tuple(raw.shape)} does not match values {tuple(v.shape)}")
+        source, is_zero = "captured", raw == 0
+    else:
+        raw = recover_raw_rewards(r_st, v, to, gamma)
+        source, is_zero = "recovered", recovered_zero_mask(r_st, v, to, gamma, raw)
     A = gae(raw, v, lv, d, to, gamma=gamma, lam=lam)
     T = reward_tail(raw, d, gamma=gamma, lam=lam)
+    # zero tail: no reward ahead within the segment (on the zero classification, not on rounding residue)
+    T_nz = reward_tail(torch.where(is_zero, torch.zeros_like(raw), torch.ones_like(raw)), d, gamma=gamma, lam=lam)
     Ap = gae(shaped_rewards(raw, v, lv, d, to, eta=eta, gamma=gamma), v, lv, d, to, gamma=gamma, lam=lam)
     ident = float((Ap.double() - ((1 + eta) * A.double() - eta * T.double())).abs().max())
     tp = tail_predictor(A, T, eta)
@@ -194,7 +213,8 @@ def rollout_signals(stored_rewards, values, last_values, dones, time_outs, *, et
     return RolloutSignals(
         eta=float(eta), normalization_group=normalization_group,
         num_samples=int(A.numel()), rho=correlation(A, Ap), predicted_rho=tp["rho"], regime=tp["regime"],
-        beta=tp["beta"], residual_ratio=tp["residual_ratio"], zero_tail_fraction=float((T == 0).double().mean()),
+        beta=tp["beta"], residual_ratio=tp["residual_ratio"], zero_tail_fraction=float((T_nz == 0).double().mean()),
+        raw_reward_source=source,
         identity_residual=ident, mean_raw_reward=float(raw.double().mean()),
         timeouts=int(to.sum()), terminations=int((d & ~to).sum()), minibatch_rho=mb, groups=groups,
         trainer_signal_residual=sig_res, trainer_normalization_residual=norm_res,

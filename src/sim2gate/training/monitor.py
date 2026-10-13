@@ -49,8 +49,13 @@ class TrainingMonitor:
         self.use_writer = writer
         self.f = open(path, "a", buffering=1)
         self.iteration = 0
+        if getattr(self.alg, "rnd", None):
+            raise NotImplementedError("TrainingMonitor does not support RND: intrinsic rewards are added to the stored "
+                                      "rewards inside the trainer, so the captured environment rewards would not match")
         st = self.alg.storage
         self._time_outs = torch.zeros(st.num_transitions_per_env, st.num_envs, device=st.device, dtype=torch.bool)
+        # environment rewards as passed to the trainer, before RSL-RL adds gamma * V on time-limit steps
+        self._raw = torch.zeros(st.num_transitions_per_env, st.num_envs, device=st.device, dtype=st.rewards.dtype)
         self._terms = {}
         self._pending = None
         self._mb = None
@@ -69,6 +74,7 @@ class TrainingMonitor:
                 self._time_outs[step].copy_(to.to(self._time_outs.device).reshape(-1).bool())
             else:
                 self._time_outs[step].zero_()
+            self._raw[step].copy_(rewards.detach().reshape(-1).to(self._raw.dtype))   # RSL-RL adds to a clone
             log = extras.get("log", extras.get("episode"))
             if isinstance(log, dict):
                 for k, val in log.items():
@@ -84,7 +90,8 @@ class TrainingMonitor:
             with torch.inference_mode():
                 last_values = alg.critic(obs).detach().clone()
                 self._pending = dict(stored=st.rewards.clone(), values=st.values.clone(), dones=st.dones.clone(),
-                                     time_outs=self._time_outs.clone(), last_values=last_values)
+                                     time_outs=self._time_outs.clone(), last_values=last_values,
+                                     raw=self._raw.clone())
             out = orig_cr(obs)
             # what the trainer actually produced: unnormalized advantages, and what it will train on
             self._pending["trainer_adv"] = (st.returns - st.values).detach().clone()
@@ -172,7 +179,7 @@ class TrainingMonitor:
                                   eta=self.eta, gamma=alg.gamma, lam=alg.lam, minibatch_indices=mb_ix,
                                   trainer_advantages=p.get("trainer_adv"), trainer_normalized=p.get("trainer_norm"),
                                   training_eta=self.measured, minibatch_capture=capture,
-                                  normalization_group=group, minibatch_yielded=yielded)
+                                  normalization_group=group, minibatch_yielded=yielded, raw_rewards=p["raw"])
         terms = {k: sum(v) / len(v) for k, v in self._terms.items() if v}
         total = sum(abs(x) for x in terms.values())
         shares = {k: (abs(x) / total if total > 0 else None) for k, x in terms.items()}

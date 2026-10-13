@@ -39,7 +39,9 @@ found during the Experiment T step 1 run on Oct 9, 2026.
 - What the Oct 13 check found listening beyond loopback: nginx (80) and sshd (22, key-only), Brev's own
   influxd (8086) and NetBird (DNS on its private 100.x address, WireGuard on UDP 51820), and the viewer dev
   server (5173). From the internet, 22, 80, 5173 and 8086 were closed or filtered. The viewer now listens on
-  127.0.0.1 only, so it is reachable solely through nginx and its password check.
+  127.0.0.1 only, so it is reachable solely through nginx and its password check. After a rebuild, confirm it on
+  the instance with `bash deploy/brev/verify_viewer.sh` (loopback-only listener; `/viewer/` refused without the
+  password, served with it).
 - The VS Code container runs privileged with host networking because Isaac Sim needs GPU and device access.
   Treat anyone with the password as having root on the instance.
 

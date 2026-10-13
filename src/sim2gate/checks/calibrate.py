@@ -67,6 +67,14 @@ def calibrate(reports, factor=1.5, min_baselines=3, require_checkpoint=True):
     samples = {(d.get("contact_force_substeps") or {}).get("samples_per_control_step") for d in docs}
     if len(samples) > 1:
         raise CalibrationError(f"reports differ in contact-force samples per control step: {sorted(samples, key=str)}")
+    if not all(isinstance(n, int) and not isinstance(n, bool) and n >= 1 for n in samples):
+        raise CalibrationError(f"reports do not record contact-force samples per control step: {sorted(samples, key=str)}")
+    contexts = {json.dumps(d.get("physics_context"), sort_keys=True) for d in docs}
+    if len(contexts) > 1:
+        raise CalibrationError(f"reports were measured under different physics paths or overrides: {sorted(contexts)}")
+    context = docs[0].get("physics_context")
+    if not isinstance(context, dict):
+        raise CalibrationError("reports do not record the physics context (older check 2?)")
     thresholds, maxima = {}, {}
     for m in CALIBRATED_METRICS:
         vals = [d["metrics"].get(m) for d in docs]
@@ -87,6 +95,7 @@ def calibrate(reports, factor=1.5, min_baselines=3, require_checkpoint=True):
             "baseline_maxima": maxima, "thresholds": thresholds, "sources": sources,
             "measurement_config": {k: docs[0]["config"].get(k) for k in SAME_CONFIG},
             "contact_force_samples_per_step": samples.pop(),
+            "physics_context": context,
             "sim2gate_version": version}
 
 

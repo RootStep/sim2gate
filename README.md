@@ -51,7 +51,13 @@ monitor = TrainingMonitor(runner, "sim2gate_signals.jsonl")   # runner: rsl_rl O
 runner.learn(1500)
 ```
 
-The monitor is read-only: training with and without it gives bit-identical parameters (tested). Its math
+Raw rewards are recorded as the environment hands them to the trainer, before RSL-RL adds its timeout bonus, so no
+reward is reconstructed or rounded away (`raw_reward_source: "captured"` in each record).
+
+The monitor is read-only: training with and without it gives bit-identical parameters (tested on CPU, full
+training). On GPU, Isaac Lab training is not bit-reproducible run to run, so the GPU evidence is narrower: one PPO
+update (`compute_returns` + `update`) replayed from the same saved state is bit-identical with and without Sim2Gate
+(`--update-identity`); the monitor's per-step rollout hook and complete training are covered by the CPU test only. Its math
 matches a reference implementation that passed an acceptance gate against rsl-rl-lib 5.0.1, 5.4.1 and 5.5.1, down
 to the actor gradient. With Isaac Lab 3.x, use the launcher, which leaves Isaac Lab untouched:
 
@@ -94,11 +100,16 @@ How to read the report:
   When Newton runs the whole decimation block in one call (all actuators CUDA-graph-safe), the scene updates once per
   control step and only the last substep is visible. `contact_force_substeps` in the report gives the samples per
   step, the covered share and which path ran, and a note appears when coverage is below 1. The sensor's history
-  buffer is not used: what it spans depends on that update cadence.
+  buffer is not used: what it spans depends on that update cadence. On Isaac Lab 3.0's Go2 flat task the default
+  (Newton with Newton actuators) is the single-call path, so 1 of 4 substeps; `env.sim.use_newton_actuators=false`
+  (same Newton physics, Isaac Lab's actuator path) or `physics=physx` gives 4 of 4. Full coverage was shown for those
+  settings only, not for the default path. The report records the physics path and these overrides
+  (`physics_context`).
 - **Thresholds carry their measurement settings.** A thresholds file records the settings it was calibrated under
   (control step, contact threshold, foot radius, penetration tolerance, jitter window, flat ground, measurement
-  version) and the contact-force samples per step. Check 2 refuses a thresholds file whose settings differ from the
-  run, and does not apply calibrated flags when the force sampling differs.
+  version), the contact-force samples per step and the physics context (whether the engine ran the decimation
+  block, and any physics overrides). All are required. Check 2 refuses a thresholds file whose settings differ from
+  the run, and does not apply calibrated flags when the force sampling or the physics context differs.
 - **Missing data is never "ok".** A channel that was not measured is `null`. The actuator flag is `ok` only when
   both channels (torque clipping and joint speed) were measured on every step; `coverage` gives the share for each.
   A violation in a partially measured run is still flagged.

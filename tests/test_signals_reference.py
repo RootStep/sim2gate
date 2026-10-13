@@ -5,7 +5,7 @@ import pytest
 import torch
 
 from sim2gate.training.signals import (gae, reward_tail, shaped_rewards, recover_raw_rewards, tail_predictor,
-                                       correlation, rollout_signals)
+                                       correlation, rollout_signals, recovered_zero_mask)
 
 REF = json.load(gzip.open(os.path.join(os.path.dirname(__file__), "fixtures", "signals_reference.json.gz"), "rt"))
 G, L = REF["gamma"], REF["lam"]
@@ -71,12 +71,49 @@ def test_tiny_reward_at_timeout_with_zero_value_is_kept_exactly(r):
     assert float(rec[0, 0]) == float(stored[0, 0]) != 0.0
 
 
-@pytest.mark.parametrize("value", [0.37, 5.0, 123.456, -42.0, 1e4])
-def test_zero_reward_residue_is_still_snapped(value):
-    """The other half of the rule: a zero raw reward next to any bonus magnitude still recovers to exactly 0."""
+@pytest.mark.parametrize("value", [0.37, 5.0, 123.456, -42.0, 1e4, 1.0 / 3.0, 7.77777])
+def test_zero_reward_at_timeout_is_classified_zero(value):
+    """A zero raw reward next to any bonus magnitude counts as zero for the zero tail, whatever residue the float32
+    round trip leaves in the recovered value."""
     v = torch.full((1, 1), value, dtype=torch.float32); to = torch.tensor([[True]])
     stored = torch.zeros(1, 1) + 0.99 * v * to          # what RSL-RL stores for a zero reward at a timeout
-    assert float(recover_raw_rewards(stored, v, to, 0.99)[0, 0]) == 0.0
+    rec = recover_raw_rewards(stored, v, to, 0.99)
+    assert bool(recovered_zero_mask(stored, v, to, 0.99, rec)[0, 0])
+
+
+def test_fourth_review_case_recovered_value_is_not_erased():
+    """Fourth review: V = 1, gamma = 0.99, genuine reward 2e-7. float32 storage leaves ~1.79e-7 after undoing the
+    bonus. The recovered value is kept as is (never snapped); only the zero classification, used for the zero
+    tail and labeled as tolerance-based, calls it zero, because float32 cannot tell it from rounding there."""
+    v = torch.ones(1, 1); to = torch.tensor([[True]])
+    stored = torch.tensor([[2e-7]], dtype=torch.float32) + 0.99 * v
+    rec = recover_raw_rewards(stored, v, to, 0.99)
+    assert float(rec[0, 0]) != 0.0 and abs(float(rec[0, 0]) - 2e-7) < 1e-7
+    assert bool(recovered_zero_mask(stored, v, to, 0.99, rec)[0, 0])        # indistinguishable: classified zero
+
+
+@pytest.mark.parametrize("r", [2e-7, 1e-12, -3e-9])
+def test_captured_raw_rewards_are_exact_next_to_a_bonus(r):
+    """With captured raw rewards (what the monitor passes), nothing is recovered: a tiny reward at a timeout
+    with V = 1 counts, and the zero tail is not inflated."""
+    T_, N = 3, 1
+    v = torch.ones(T_, N); lv = torch.ones(N)
+    d = torch.tensor([[False], [False], [True]]); to = torch.tensor([[False], [False], [True]])
+    raw = torch.tensor([[0.0], [0.0], [r]], dtype=torch.float32)
+    stored = raw + 0.99 * v * to
+    cap = rollout_signals(stored, v, lv, d, to, eta=1.0, gamma=0.99, lam=0.95, raw_rewards=raw)
+    rec = rollout_signals(stored, v, lv, d, to, eta=1.0, gamma=0.99, lam=0.95)
+    assert cap.raw_reward_source == "captured" and rec.raw_reward_source == "recovered"
+    assert cap.zero_tail_fraction == 0.0                 # every step has the tiny reward ahead of it
+    assert rec.zero_tail_fraction == 1.0                 # recovered: below float32 resolution next to the bonus
+    assert cap.mean_raw_reward == pytest.approx(r / 3, rel=1e-6)
+
+
+def test_captured_raw_rewards_shape_is_checked():
+    v = torch.ones(2, 2)
+    with pytest.raises(ValueError, match="raw_rewards shape"):
+        rollout_signals(v, v, torch.ones(2), v.bool(), v.bool(), eta=1.0, gamma=0.99, lam=0.95,
+                        raw_rewards=torch.ones(3, 2))
 
 
 def test_reward_representable_next_to_bonus_survives():
