@@ -141,13 +141,18 @@ def check_outside(path, sshd=None):
     total = re.search(r"^# (\d+) of (\d+) probed TCP ports reachable$", text, re.M)
     code = re.search(r"^exit code (\d+)$", text, re.M)
     opened = re.findall(r"^tcp (\d+) OPEN$", text, re.M)
-    probed = re.findall(r"^tcp (\d+) (?:OPEN|closed-or-filtered)$", text, re.M)
-    detail = {"probed_ports": probed, "open_ports": opened, "summary": total and total.group(0),
+    intercepted = re.findall(r"^tcp (\d+) INTERCEPTED-LOCALLY$", text, re.M)
+    probed = re.findall(r"^tcp (\d+) (?:OPEN|closed-or-filtered|INTERCEPTED-LOCALLY)$", text, re.M)
+    controlled = "# control:" in text
+    detail = {"probed_ports": probed, "open_ports": opened, "intercepted_ports": intercepted,
+              "control_probe": controlled, "summary": total and total.group(0),
               "exit_code": code and int(code.group(1))}
     if not total or not code:
         return "failed", {**detail, "problem": "probe summary or saved exit code missing"}
     n_open, n_probed, rc = int(total.group(1)), int(total.group(2)), int(code.group(1))
-    if n_probed == 0 or n_probed != len(probed) or n_open != len(opened) or (rc == 0) != (n_open == 0):
+    want_rc = 1 if n_open else 3 if intercepted else 0
+    if n_probed == 0 or n_probed != len(probed) or n_open != len(opened) or rc != (want_rc if controlled else
+                                                                                   (1 if n_open else 0)):
         return "failed", {**detail, "problem": "probe output is inconsistent or probed nothing"}
     unexpected = [q for q in opened if q != "22"]
     if "22" in opened:
@@ -159,7 +164,14 @@ def check_outside(path, sshd=None):
             unexpected.append("22")
     if unexpected:
         detail["unexpected_open_ports"] = unexpected
+        if not controlled:
+            detail["note"] = ("probe ran without the interception control (older check_exposure.sh); an OPEN port "
+                              "may be answered by the probing network itself")
         return "failed", detail
+    if intercepted:
+        detail["note"] = (f"ports {', '.join(intercepted)} are answered by the probing network itself, so their "
+                          "exposure could not be measured from there")
+        return "inconclusive", detail
     return "passed", detail
 
 

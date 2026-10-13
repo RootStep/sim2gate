@@ -147,3 +147,29 @@ def test_any_other_open_port_fails_even_with_key_only_ssh(tmp_path):
     out = _probe_text(tmp_path, [(22, True), (80, True), (5173, False)])
     rc, doc = _verify(_folder(tmp_path), out, _sshd(tmp_path))
     assert rc == 1 and doc["items"]["ingress from outside"]["detail"]["unexpected_open_ports"] == ["80"]
+
+
+def test_intercepted_port_is_inconclusive_not_open(tmp_path):
+    p = tmp_path / "exposure_outside.txt"
+    p.write_text("# control: ...\ntcp 22 closed-or-filtered\ntcp 53 INTERCEPTED-LOCALLY\ntcp 80 closed-or-filtered\n"
+                 "# 0 of 3 probed TCP ports reachable\n# 1 of 3 probed TCP ports intercepted\nexit code 3\n")
+    rc, doc = _verify(_folder(tmp_path), str(p))
+    item = doc["items"]["ingress from outside"]
+    assert rc == 3 and item["status"] == "inconclusive" and item["detail"]["intercepted_ports"] == ["53"]
+
+
+def test_script_probe_with_control(tmp_path):
+    """The real script against localhost: a listener is OPEN, a closed port is closed, and the control address
+    (unroutable) never answers, so nothing is marked intercepted."""
+    import socket
+    import subprocess
+    srv = socket.socket(); srv.bind(("127.0.0.1", 0)); srv.listen(1)
+    port = srv.getsockname()[1]
+    script = os.path.join(HERE, "..", "deploy", "brev", "check_exposure.sh")
+    try:
+        r = subprocess.run(["bash", script, "--probe", "127.0.0.1", str(port), "9"], capture_output=True, text=True,
+                           timeout=30)
+    finally:
+        srv.close()
+    assert f"tcp {port} OPEN" in r.stdout and "tcp 9 closed-or-filtered" in r.stdout
+    assert "INTERCEPTED" not in r.stdout and r.stdout.rstrip().endswith("exit code 1") and r.returncode == 1
