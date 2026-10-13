@@ -85,8 +85,8 @@ def check_update_identity(folder):
                                             "note")}
 
 
-def check_contact(folder, ck_sha, steps):
-    rep, err = _load(os.path.join(folder, "sim2gate_check2_eta1_v2.json"))
+def check_contact(folder, ck_sha, steps, name="sim2gate_check2_eta1_v2.json"):
+    rep, err = _load(os.path.join(folder, name))
     if err:
         return "failed", err
     cs = rep.get("contact_force_substeps") or {}
@@ -105,6 +105,7 @@ def check_contact(folder, ck_sha, steps):
               "covered_share": cs.get("covered_share"), "physics_handles_decimation": cs.get("physics_handles_decimation"),
               "scene_updates_per_step_histogram": cs.get("scene_updates_per_step_histogram"),
               "method": cs.get("method"), "checkpoint": ck, "control_steps": rep.get("control_steps"),
+              "play_args": rep.get("play_args"),
               "metrics": rep.get("metrics"), "problems": problems}
     return ("failed" if problems else "passed"), detail
 
@@ -181,6 +182,7 @@ def main(argv=None):
     p.add_argument("--commit", required=True, help="full 40-character sim2gate commit the run must use")
     p.add_argument("--checkpoint-sha256", required=True, help="SHA-256 of the policy check 2 must measure")
     p.add_argument("--steps", type=int, default=1000)
+    p.add_argument("--check2", default="sim2gate_check2_eta1_v2.json", help="check 2 report file in the folder")
     p.add_argument("--outside", default=None, help="saved output of check_exposure.sh --probe, with its exit code")
     p.add_argument("--sshd", default=None, help="saved `sshd -T` authentication settings, needed if port 22 is open")
     a = p.parse_args(argv)
@@ -189,7 +191,7 @@ def main(argv=None):
     ident, smoke = check_smoke(a.folder)
     items = {"pinned commit": check_commit(a.folder, a.commit), "eta 0 identity, final checkpoints": ident,
              "eta 0 identity, one update": check_update_identity(a.folder), "smoke test": smoke,
-             "contact force 4/4": check_contact(a.folder, a.checkpoint_sha256, a.steps),
+             "contact force 4/4": check_contact(a.folder, a.checkpoint_sha256, a.steps, a.check2),
              "ingress from outside": check_outside(a.outside, a.sshd)}
     statuses = [s for s, _ in items.values()]
     overall = "failed" if "failed" in statuses else "inconclusive" if "inconclusive" in statuses else "passed"
