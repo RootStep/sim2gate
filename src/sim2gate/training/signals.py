@@ -18,10 +18,17 @@ F32_EPS = float(torch.finfo(torch.float32).eps)
 
 def recover_raw_rewards(stored, values, time_outs, gamma):
     """Undo RSL-RL's timeout bonus: raw = stored - gamma * V(s_t) on time-limit steps.
-    The float32 residue left where the raw reward was 0 is snapped to 0, so zero tails stay zero."""
+
+    Where the raw reward was 0, float32 rounding of stored = r + gamma * V and of the subtraction can leave a
+    residue of a few ulp of the larger operand; that residue is snapped to 0 so zero tails stay zero. The tolerance
+    scales with the operands themselves (no absolute floor), so a genuine small reward survives whenever float32
+    could represent it next to the bonus: with V = 0 nothing is subtracted and nothing is snapped. A reward below
+    float32 resolution at the bonus's magnitude was already lost when RSL-RL stored it and cannot be recovered."""
     to = time_outs.bool()
-    raw = stored - gamma * values * to
-    snap = to & (raw.abs() <= 8 * F32_EPS * stored.abs().clamp_min(1.0))
+    bonus = gamma * values * to
+    raw = stored - bonus
+    scale = torch.maximum(stored.abs(), bonus.abs())
+    snap = to & (raw.abs() <= 8 * F32_EPS * scale)
     return torch.where(snap, torch.zeros_like(raw), raw)
 
 
@@ -112,7 +119,7 @@ class RolloutSignals:
     eta: float
     normalization_group: str          # "rollout" or "minibatch": the groups RSL-RL normalizes advantages over
     num_samples: int
-    rho: float | None                 # rollout-level corr(A, A') (the statistic itself only in rollout mode)
+    rho: float | None                 # rollout-level corr(A, A'); the trained statistic only in rollout mode
     predicted_rho: float | None       # rollout-level rho predicted from (A, T) alone, before A' exists
     regime: str                       # rollout-level regime
     beta: float | None
@@ -123,7 +130,8 @@ class RolloutSignals:
     timeouts: int
     terminations: int
     minibatch_rho: list | None = None # per minibatch, when advantages are normalized per minibatch
-    groups: list | None = None        # one {rho, predicted_rho, regime} per actual normalization group
+    groups: list | None = None        # one {rho, predicted_rho, regime} per actual normalization group; None
+                                      # when those groups could not be established (see minibatch_capture)
     trainer_signal_residual: float | None = None         # reconstruction vs the trainer's own returns - values
     trainer_normalization_residual: float | None = None  # normalized reconstruction vs advantages trained on
     minibatch_capture: str | None = None                 # "ok", or why minibatch groups are unavailable
@@ -134,14 +142,24 @@ class RolloutSignals:
 
 def rollout_signals(stored_rewards, values, last_values, dones, time_outs, *, eta, gamma, lam,
                     minibatch_indices=None, trainer_advantages=None, trainer_normalized=None,
-                    training_eta=False, minibatch_capture=None):
+                    training_eta=False, minibatch_capture=None, normalization_group=None, minibatch_yielded=None):
     """All per-rollout signals from RSL-RL storage tensors ([T, N] or [T, N, 1]).
 
     minibatch_indices: list of 1-D index tensors into the time-major flattened rollout (t * N + e), when RSL-RL
     normalizes advantages per minibatch; the per-group statistics are then computed for each minibatch.
     trainer_advantages: the trainer's own unnormalized advantages (storage returns - values) after
     compute_returns; compared with the reconstructed A' if training_eta else A, so a trainer whose shaping differs
-    from the claimed eta is caught. trainer_normalized: the advantages the trainer will train on (rollout mode)."""
+    from the claimed eta is caught. trainer_normalized: the advantages the trainer will train on (rollout mode).
+    normalization_group: "rollout" or "minibatch" (default: minibatch iff minibatch_indices is given). In
+    minibatch mode without indices, the group statistics are left empty instead of falling back to the rollout.
+    minibatch_yielded: the unnormalized advantages the trainer's minibatch generator yielded, one per group; their
+    normalization (as the trainer does it) is compared with the normalized reconstruction of the same group."""
+    if normalization_group is None:
+        normalization_group = "minibatch" if minibatch_indices is not None else "rollout"
+    if normalization_group not in ("rollout", "minibatch"):
+        raise ValueError(f"normalization_group must be 'rollout' or 'minibatch', got {normalization_group!r}")
+    if normalization_group == "rollout" and minibatch_indices is not None:
+        raise ValueError("minibatch_indices given for rollout normalization")
     sq = lambda x: x[..., 0] if x.dim() == 3 else x
     r_st, v, d, to = sq(stored_rewards), sq(values), sq(dones).bool(), sq(time_outs).bool()
     lv = last_values.reshape(-1).to(v.dtype)
@@ -154,20 +172,27 @@ def rollout_signals(stored_rewards, values, last_values, dones, time_outs, *, et
     trained = Ap if training_eta else A
     sig_res = None if trainer_advantages is None else _rel_max_abs(sq(trainer_advantages), trained)
     norm_res = None
-    if trainer_normalized is not None and minibatch_indices is None:
+    if trainer_normalized is not None and normalization_group == "rollout":
         norm_res = _rel_max_abs(sq(trainer_normalized), _normalize(trained))
     groups, mb = None, None
-    if minibatch_indices is not None:
-        Af, Apf, Tf = A.reshape(-1), Ap.reshape(-1), T.reshape(-1)
-        groups = []
-        for ix in minibatch_indices:
-            g = tail_predictor(Af[ix], Tf[ix], eta)
-            groups.append({"rho": correlation(Af[ix], Apf[ix]), "predicted_rho": g["rho"], "regime": g["regime"]})
-        mb = [g["rho"] for g in groups]
+    if normalization_group == "minibatch":
+        if minibatch_indices is not None:
+            Af, Apf, Tf, trf = A.reshape(-1), Ap.reshape(-1), T.reshape(-1), trained.reshape(-1)
+            groups = []
+            for ix in minibatch_indices:
+                g = tail_predictor(Af[ix], Tf[ix], eta)
+                groups.append({"rho": correlation(Af[ix], Apf[ix]), "predicted_rho": g["rho"], "regime": g["regime"]})
+            mb = [g["rho"] for g in groups]
+            if minibatch_yielded is not None:
+                if len(minibatch_yielded) != len(minibatch_indices):
+                    raise ValueError("one yielded tensor per minibatch is required")
+                norm_res = max(_rel_max_abs(_normalize(y.reshape(-1).to(trf.dtype).to(trf.device)),
+                                            _normalize(trf[ix]))
+                               for y, ix in zip(minibatch_yielded, minibatch_indices))
     else:
         groups = [{"rho": correlation(A, Ap), "predicted_rho": tp["rho"], "regime": tp["regime"]}]
     return RolloutSignals(
-        eta=float(eta), normalization_group="minibatch" if minibatch_indices is not None else "rollout",
+        eta=float(eta), normalization_group=normalization_group,
         num_samples=int(A.numel()), rho=correlation(A, Ap), predicted_rho=tp["rho"], regime=tp["regime"],
         beta=tp["beta"], residual_ratio=tp["residual_ratio"], zero_tail_fraction=float((T == 0).double().mean()),
         identity_residual=ident, mean_raw_reward=float(raw.double().mean()),

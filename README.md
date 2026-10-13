@@ -88,10 +88,17 @@ How to read the report:
 - **When it measures.** Isaac Lab resets environments that ended inside `step()`, so reading the scene afterwards
   would show the respawned robot instead of the fall. Check 2 snapshots the scene after the reward computation and
   before any reset, on every step; `sources.state_read` in the report says which steps used which read.
-- **Contact force** is the maximum over the contact sensor's history, in body weights computed from the masses in
-  effect, randomized ones included. The history covers every physics substep only if the sensor's `history_length`
-  is at least the env's decimation; Isaac Lab's Go2 task keeps 3 samples at decimation 4, so peaks cover 3 of 4
-  substeps. `contact_force_substeps` in the report gives the covered share, and a note appears when it is below 1.
+- **Contact force** is the largest current sensor reading over every scene update inside the control step, in body
+  weights computed from the masses in effect, randomized ones included. When Isaac Lab steps the physics itself
+  (PhysX, or Newton with eager actuators) the scene updates after every physics substep, so every substep is seen.
+  When Newton runs the whole decimation block in one call (all actuators CUDA-graph-safe), the scene updates once per
+  control step and only the last substep is visible. `contact_force_substeps` in the report gives the samples per
+  step, the covered share and which path ran, and a note appears when coverage is below 1. The sensor's history
+  buffer is not used: what it spans depends on that update cadence.
+- **Thresholds carry their measurement settings.** A thresholds file records the settings it was calibrated under
+  (control step, contact threshold, foot radius, penetration tolerance, jitter window, flat ground, measurement
+  version) and the contact-force samples per step. Check 2 refuses a thresholds file whose settings differ from the
+  run, and does not apply calibrated flags when the force sampling differs.
 - **Missing data is never "ok".** A channel that was not measured is `null`. The actuator flag is `ok` only when
   both channels (torque clipping and joint speed) were measured on every step; `coverage` gives the share for each.
   A violation in a partially measured run is still flagged.

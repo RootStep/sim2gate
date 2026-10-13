@@ -30,10 +30,14 @@ FAKE_TRAIN = textwrap.dedent('''
     runner.alg.update = update
     with contextlib.redirect_stdout(sys.__stdout__):
         runner.learn(a.max_iterations, init_at_random_ep_len=True)
+    import os, time as _t                       # like Isaac Lab: a timestamped run folder under logs/rsl_rl/<exp>
+    d = os.path.join("logs", "rsl_rl", "fake", str(_t.time_ns())); os.makedirs(d)
+    runner.save(os.path.join(d, f"model_{a.max_iterations - 1}.pt"))
 ''')
 
 
 def test_smoke_end_to_end(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)                         # the fake trainer writes logs/rsl_rl/... into the cwd
     script = tmp_path / "train.py"; script.write_text(FAKE_TRAIN)
     here = os.path.dirname(__file__)
     monkeypatch.setenv("ISAAC_PYTHON", sys.executable)
@@ -54,7 +58,8 @@ def test_checks_fail_on_missing_records():
 def _rec(**sig):
     base = {"num_samples": 10, "identity_residual": 1e-7, "trainer_signal_residual": 1e-7,
             "trainer_normalization_residual": 1e-7, "normalization_group": "rollout", "rho": 0.9,
-            "predicted_rho": 0.9, "timeouts": 1, "terminations": 1}
+            "predicted_rho": 0.9, "timeouts": 1, "terminations": 1,
+            "groups": [{"rho": 0.9, "predicted_rho": 0.9, "regime": "partial"}]}
     base.update(sig)
     return {"eta": 1.0, "eta_is_training_eta": True, "signals": base, "reward_terms": {"a": 1.0},
             "reward_term_abs_share": {"a": 1.0}}
@@ -77,3 +82,53 @@ def test_overhead_check():
     slow = "\n".join(f"Iteration time: {0.70:.2f}s" for _ in range(10))
     assert smoke_go2.overhead_check(base, base)["ok"]
     assert not smoke_go2.overhead_check(base, slow)["ok"]
+
+
+
+# ---- third review: GPU eta-zero identity evidence --------------------------------------------------------------
+
+def test_identity_mode_end_to_end(tmp_path, monkeypatch):
+    """Deterministic CPU stand-in: two stock runs agree bit for bit, and so does the eta 0 run with Sim2Gate."""
+    script = tmp_path / "train.py"; script.write_text(FAKE_TRAIN)
+    here = os.path.dirname(__file__)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("ISAAC_PYTHON", sys.executable)
+    monkeypatch.setenv("PYTHONPATH", os.pathsep.join([here, os.environ.get("PYTHONPATH", "")]))
+    rc = smoke_go2.main(["--iterations", "3", "--out", "out", "--isaaclab-script", str(script), "--task", "Fake",
+                         "--identity", "--no-control"])
+    report = json.load(open(tmp_path / "out" / "report.json"))
+    ident = [c for c in report["checks"] if c["name"].startswith("eta 0 with Sim2Gate")]
+    assert rc == 0 and len(ident) == 1 and ident[0]["ok"], ident
+    d = ident[0]["detail"]
+    assert d["stock_vs_repeat"]["differing"] == 0 and d["stock_vs_eta0"]["differing"] == 0
+    assert d["stock_vs_eta0"]["tensors"] > 4 and d["stock_vs_eta0"]["keys_match"]
+    assert set(report["run_dirs"]) == {"stock", "stock_repeat", "eta0", "eta1"} and all(report["run_dirs"].values())
+
+
+def _ckpt(path, scale=1.0, extra=0.0):
+    import torch
+    torch.save({"actor_state_dict": {"w": torch.ones(3, 3) * scale}, "optimizer_state_dict": {"m": torch.zeros(2) + extra}},
+               path)
+    return str(path)
+
+
+def test_identity_check_catches_a_different_eta0_run(tmp_path):
+    a = _ckpt(tmp_path / "a.pt"); r = _ckpt(tmp_path / "r.pt"); e = _ckpt(tmp_path / "e.pt", extra=1e-7)
+    res = smoke_go2.identity_check(a, r, e)
+    assert not res["ok"] and res["detail"]["stock_vs_eta0"]["differing"] == 1
+    assert res["detail"]["stock_vs_eta0"]["first_differing"] == ["/optimizer_state_dict/m"]
+
+
+def test_identity_check_is_not_fooled_by_an_irreproducible_setup(tmp_path):
+    a = _ckpt(tmp_path / "a.pt"); r = _ckpt(tmp_path / "r.pt", scale=1.0001); e = _ckpt(tmp_path / "e.pt")
+    res = smoke_go2.identity_check(a, r, e)
+    assert not res["ok"] and "not reproducible" in res["detail"]["note"]
+    assert not smoke_go2.identity_check(a, None, e)["ok"]
+
+
+def test_checks_require_groups_in_every_record():
+    rc = {"stock": 0, "eta0": 0, "eta1": 0}
+    good = _rec()
+    bad = _rec(); bad["signals"] = dict(bad["signals"], normalization_group="minibatch", groups=None)
+    res = {c["name"]: c["ok"] for c in smoke_go2.checks(1, [good], [bad], rc)}
+    assert res["statistics computed on the trainer's own normalization groups in every record"] is False

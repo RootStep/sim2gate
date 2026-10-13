@@ -9,8 +9,14 @@ It trains Isaac Lab's Go2 flat-ground task with identical settings: stock Isaac 
 attached to stock PPO (--eta 0), Sim2Gate with BSRS (--eta 1), and a negative control that claims eta 1 but trains
 without it, which the trainer-match check must catch. Then it checks the pass
 conditions from docs/EXPERIMENT_T_RUNBOOK.md and writes report.json next to the logs. Exit code 0 = PASS.
+
+--identity adds a second stock run with the same seed and compares final checkpoints (every tensor, optimizer
+state included): the eta = 0 run with Sim2Gate attached must be bit-identical to stock Isaac Lab. The repeat
+shows whether the setup is reproducible at all; if two stock runs already differ, identity cannot be shown by
+checkpoint comparison and the check says so instead of passing.
 """
 import argparse
+import glob
 import json
 import math
 import os
@@ -82,7 +88,7 @@ def checks(iterations, eta0, eta1, returncodes, eta=1.0, control=None):
     out = []
     add = lambda name, ok, detail: out.append({"name": name, "ok": bool(ok), "detail": detail})
     need = [k for k in REQUIRED_RUNS if k != "control" or control is not None]
-    add("all runs exited cleanly", all(k in returncodes for k in need) and all(returncodes[k] == 0 for k in need),
+    add("all runs exited cleanly", all(k in returncodes for k in need) and all(v == 0 for v in returncodes.values()),
         returncodes)
     add("one record per iteration", len(eta0) == iterations and len(eta1) == iterations,
         {"eta0": len(eta0), "eta1": len(eta1), "expected": iterations})
@@ -121,6 +127,10 @@ def checks(iterations, eta0, eta1, returncodes, eta=1.0, control=None):
         {"records_with_terms": len(with_terms), "terms": sorted(with_terms[-1]["reward_terms"]) if with_terms else []})
     to = sum(s.get("timeouts", 0) for s in S); te = sum(s.get("terminations", 0) for s in S)
     add("time limits and terminations both seen", to > 0 and te > 0, {"timeouts": to, "terminations": te})
+    missing_groups = [r.get("iteration") for r in recs if r["signals"].get("groups") is None]
+    add("statistics computed on the trainer's own normalization groups in every record", not missing_groups,
+        {"records_without_groups": len(missing_groups),
+         "normalization_group": sorted({s.get("normalization_group") for s in S}, key=str)})
     if control is not None:
         cr = [r["signals"].get("trainer_signal_residual") for r in control]
         worst = max((x for x in cr if _fin(x)), default=None)
@@ -128,6 +138,66 @@ def checks(iterations, eta0, eta1, returncodes, eta=1.0, control=None):
             len(control) == iterations and worst is not None and worst > CONTROL_MIN,
             {"records": len(control), "worst_residual": worst, "must_exceed": CONTROL_MIN})
     return out
+
+
+def _run_dirs(root="logs"):
+    return {d for d in glob.glob(os.path.join(root, "rsl_rl", "*", "*")) if os.path.isdir(d)}
+
+
+def _last_checkpoint(run_dir):
+    if not run_dir:
+        return None
+    ckpts = glob.glob(os.path.join(run_dir, "model_*.pt"))
+    def it(p):
+        m = re.search(r"model_(\d+)\.pt$", p)
+        return int(m.group(1)) if m else -1
+    return max(ckpts, key=it) if ckpts else None
+
+
+def _tensors(obj, prefix=""):
+    import torch
+    if torch.is_tensor(obj):
+        yield prefix, obj
+    elif isinstance(obj, dict):
+        for k in sorted(obj, key=str):
+            yield from _tensors(obj[k], f"{prefix}/{k}")
+    elif isinstance(obj, (list, tuple)):
+        for i, v in enumerate(obj):
+            yield from _tensors(v, f"{prefix}/{i}")
+
+
+def checkpoint_diff(a, b):
+    """Compare every tensor in two checkpoints (weights and optimizer state)."""
+    import torch
+    ta = dict(_tensors(torch.load(a, map_location="cpu", weights_only=False)))
+    tb = dict(_tensors(torch.load(b, map_location="cpu", weights_only=False)))
+    common = sorted(set(ta) & set(tb))
+    diffs = {}
+    for k in common:
+        x, y = ta[k], tb[k]
+        if x.shape != y.shape or x.dtype != y.dtype:
+            diffs[k] = float("inf")
+        elif not torch.equal(x, y):
+            diffs[k] = float((x.double() - y.double()).abs().max())
+    return {"tensors": len(common), "keys_match": set(ta) == set(tb), "differing": len(diffs),
+            "max_abs_diff": max(diffs.values(), default=0.0), "first_differing": sorted(diffs)[:3]}
+
+
+def identity_check(stock_ckpt, repeat_ckpt, eta0_ckpt):
+    name = "eta 0 with Sim2Gate attached is bit-identical to stock (final checkpoints)"
+    missing = [k for k, v in (("stock", stock_ckpt), ("stock_repeat", repeat_ckpt), ("eta0", eta0_ckpt)) if not v]
+    if missing:
+        return {"name": name, "ok": False, "detail": f"checkpoint not found for {missing}"}
+    rep_d = checkpoint_diff(stock_ckpt, repeat_ckpt)
+    eta_d = checkpoint_diff(stock_ckpt, eta0_ckpt)
+    reproducible = rep_d["keys_match"] and rep_d["differing"] == 0
+    identical = eta_d["keys_match"] and eta_d["differing"] == 0
+    detail = {"stock_vs_repeat": rep_d, "stock_vs_eta0": eta_d,
+              "checkpoints": {"stock": stock_ckpt, "stock_repeat": repeat_ckpt, "eta0": eta0_ckpt}}
+    if not reproducible:
+        detail["note"] = ("two stock runs with the same seed already differ, so this setup is not reproducible "
+                          "run to run; identity cannot be shown by checkpoint comparison")
+    return {"name": name, "ok": reproducible and identical, "detail": detail}
 
 
 def overhead_check(base_text, eta0_text, max_overhead=0.10):
@@ -148,6 +218,8 @@ def main(argv=None):
     p.add_argument("--eta", type=float, default=1.0)
     p.add_argument("--out", default=None, help="output folder (default sim2gate_smoke/<time>)")
     p.add_argument("--no-control", action="store_true", help="skip the negative-control run (saves a minute)")
+    p.add_argument("--identity", action="store_true",
+                   help="also repeat the stock run and require the eta 0 run to be bit-identical to stock")
     p.add_argument("--isaaclab-script", default=None,
                    help="Isaac Lab 3.0 beta only: path to scripts/reinforcement_learning/rsl_rl/train.py")
     args = p.parse_args(argv)
@@ -168,20 +240,33 @@ def main(argv=None):
         if os.path.exists(f):
             os.remove(f)
     launch = py + ["-m", "sim2gate.training.isaaclab_launch"]
-    rc = {}
-    rc["stock"], plain_text = run(plain, os.path.join(out, "run_stock.log"))
-    rc["eta0"], eta0_text = run(launch + ["--eta", "0", "--signals", s0] + extra + ["--"] + common,
-                                os.path.join(out, "run_eta0.log"))
-    rc["eta1"], _ = run(launch + ["--eta", str(args.eta), "--signals", s1] + extra + ["--"] + common,
-                        os.path.join(out, "run_eta1.log"))
+    rc, dirs = {}, {}
+
+    def tracked(name, cmd, log):
+        before = _run_dirs()
+        code, text = run(cmd, log)
+        new = sorted(_run_dirs() - before)
+        dirs[name] = new[0] if len(new) == 1 else None
+        return code, text
+
+    rc["stock"], plain_text = tracked("stock", plain, os.path.join(out, "run_stock.log"))
+    if args.identity:
+        rc["stock_repeat"], _ = tracked("stock_repeat", plain, os.path.join(out, "run_stock_repeat.log"))
+    rc["eta0"], eta0_text = tracked("eta0", launch + ["--eta", "0", "--signals", s0] + extra + ["--"] + common,
+                                    os.path.join(out, "run_eta0.log"))
+    rc["eta1"], _ = tracked("eta1", launch + ["--eta", str(args.eta), "--signals", s1] + extra + ["--"] + common,
+                            os.path.join(out, "run_eta1.log"))
     control = None
     if not args.no_control:
-        rc["control"], _ = run(launch + ["--eta", str(args.eta), "--negative-control", "--signals", sc] + extra
-                               + ["--"] + common, os.path.join(out, "run_control.log"))
+        rc["control"], _ = tracked("control", launch + ["--eta", str(args.eta), "--negative-control", "--signals", sc]
+                                   + extra + ["--"] + common, os.path.join(out, "run_control.log"))
         control = load(sc)
     eta0, eta1 = load(s0), load(s1)
     results = checks(args.iterations, eta0, eta1, rc, eta=args.eta, control=control)
     results.append(overhead_check(plain_text, eta0_text))
+    if args.identity:
+        results.append(identity_check(_last_checkpoint(dirs.get("stock")), _last_checkpoint(dirs.get("stock_repeat")),
+                                      _last_checkpoint(dirs.get("eta0"))))
     from .summary import summarize
     summaries = [summarize(f, 0.2) for f in (s0, s1) if load(f)]
     try:
@@ -191,6 +276,7 @@ def main(argv=None):
         versions = {}
     passed = all(r["ok"] for r in results)
     report = {"result": "PASS" if passed else "FAIL", "task": args.task, "iterations": args.iterations,
+              "run_dirs": dirs,
               "seed": args.seed, "eta": args.eta, "versions": versions, "checks": results, "summaries": summaries}
     json.dump(report, open(os.path.join(out, "report.json"), "w"), indent=1)
     width = shutil.get_terminal_size((100, 20)).columns
@@ -202,6 +288,8 @@ def main(argv=None):
         print(f"signals  eta={s['eta']} training={s['eta_is_training_eta']}: "
               f"1-rho={'n/a' if omr is None else f'{omr:.4f}'} reversal={s['reversal_share'] or 0:.2f} "
               f"zero_tail={s['mean_zero_tail_fraction']:.2f}  (last 20% of iterations)")
+    if dirs.get("eta1"):
+        print(f"eta={args.eta} policy for check 2: --checkpoint {_last_checkpoint(dirs['eta1']) or dirs['eta1']}")
     print(f"\nSMOKE TEST {report['result']}  (report: {os.path.join(out, 'report.json')})")
     return 0 if passed else 1
 

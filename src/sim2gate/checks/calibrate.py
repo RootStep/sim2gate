@@ -19,9 +19,9 @@ import math
 import os
 import sys
 
-from .isaaclab_exploits import CALIBRATED_METRICS
+from .isaaclab_exploits import CALIBRATED_METRICS, MEASUREMENT_KEYS
 
-SAME_CONFIG = ("dt", "contact_force_n", "foot_radius_m", "penetration_tol_m", "jitter_window", "flat_ground")
+SAME_CONFIG = MEASUREMENT_KEYS
 
 
 class CalibrationError(ValueError):
@@ -64,6 +64,9 @@ def calibrate(reports, factor=1.5, min_baselines=3, require_checkpoint=True):
         vals = {d.get(k) for d in docs}
         if len(vals) > 1:
             raise CalibrationError(f"reports differ in {k}: {sorted(vals, key=str)}")
+    samples = {(d.get("contact_force_substeps") or {}).get("samples_per_control_step") for d in docs}
+    if len(samples) > 1:
+        raise CalibrationError(f"reports differ in contact-force samples per control step: {sorted(samples, key=str)}")
     thresholds, maxima = {}, {}
     for m in CALIBRATED_METRICS:
         vals = [d["metrics"].get(m) for d in docs]
@@ -83,6 +86,7 @@ def calibrate(reports, factor=1.5, min_baselines=3, require_checkpoint=True):
             "rule": {"statistic": "max", "factor": factor, "baselines": len(docs)},
             "baseline_maxima": maxima, "thresholds": thresholds, "sources": sources,
             "measurement_config": {k: docs[0]["config"].get(k) for k in SAME_CONFIG},
+            "contact_force_samples_per_step": samples.pop(),
             "sim2gate_version": version}
 
 

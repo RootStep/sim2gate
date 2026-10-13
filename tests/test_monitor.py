@@ -127,8 +127,8 @@ def test_reconstruction_matches_trainer(tmp_path, run):
         assert s["trainer_signal_residual"] < 1e-5
         if not per_mb:
             assert s["trainer_normalization_residual"] < 1e-5
-        else:
-            assert s["trainer_normalization_residual"] is None and s["minibatch_capture"] == "ok"
+        else:   # per minibatch: the generator's yielded tensors, normalized as the trainer does, vs ours
+            assert s["trainer_normalization_residual"] < 1e-5 and s["minibatch_capture"] == "ok"
             assert len(s["groups"]) == 4
 
 
@@ -152,3 +152,58 @@ def test_recurrent_models_are_refused():
     alg = types.SimpleNamespace(actor=types.SimpleNamespace(is_recurrent=True), critic=None)
     with pytest.raises(NotImplementedError):
         TrainingMonitor(types.SimpleNamespace(alg=alg), "/dev/null")
+
+
+
+# ---- third review: a minibatch capture that fails must not be reported as rollout statistics -------------------
+
+def _patched_generator(monkeypatch, mutate):
+    from rsl_rl.storage import RolloutStorage
+    orig = RolloutStorage.mini_batch_generator
+
+    def gen(self, num_mini_batches, num_epochs=8):
+        return mutate(self, orig(self, num_mini_batches, num_epochs))
+    monkeypatch.setattr(RolloutStorage, "mini_batch_generator", gen)
+
+
+def _assert_unavailable(tmp_path, recs, reason):
+    from sim2gate.training.summary import summarize
+    assert recs and all(r["signals"]["normalization_group"] == "minibatch" for r in recs)
+    assert all(r["signals"]["groups"] is None and reason in r["signals"]["minibatch_capture"] for r in recs)
+    s = summarize(tmp_path / "m.jsonl", last_fraction=1.0)
+    assert s["normalization_group"] == "minibatch" and s["groups"] == 0
+    assert s["mean_one_minus_rho"] is None and s["reversal_share"] is None
+    assert s["records_without_groups"] == len(recs) and reason in s["groups_unavailable"][0]["reason"]
+
+
+def test_extra_shuffle_makes_groups_unavailable_not_rollout(tmp_path, monkeypatch):
+    def extra_shuffle(st, g):
+        # a second rollout-sized shuffle inside the generator: which one set the minibatches is ambiguous. The
+        # previous monitor silently relabelled this case as rollout statistics.
+        torch.randperm(st.num_envs * st.num_transitions_per_env)
+        yield from g
+    _patched_generator(monkeypatch, extra_shuffle)
+    _, recs = train("sparse", 1, 1.0, True, BSRSPPO, tmp_path / "m.jsonl")
+    _assert_unavailable(tmp_path, recs, "one shuffle")
+
+
+def test_yielded_tensors_that_do_not_match_make_groups_unavailable(tmp_path, monkeypatch):
+    def tampered(st, g):
+        for b in g:
+            b.advantages = b.advantages + 1.0    # not the trainer's advantages at the recorded indices
+            yield b
+    _patched_generator(monkeypatch, tampered)
+    _, recs = train("sparse", 1, 1.0, True, BSRSPPO, tmp_path / "m.jsonl")
+    _assert_unavailable(tmp_path, recs, "not the trainer's")
+
+
+def test_generator_wrapper_is_removed_on_close(tmp_path):
+    torch.manual_seed(1)
+    env = VecMountainCar(num_envs=16, reward="sparse", max_episode_length=64, seed=1, init_velocity=True)
+    with contextlib.redirect_stdout(io.StringIO()):
+        runner = OnPolicyRunner(env, cfg(BSRSPPO, 1.0, True), log_dir=None, device="cpu")
+    st = runner.alg.storage
+    mon = TrainingMonitor(runner, tmp_path / "m.jsonl")
+    assert "mini_batch_generator" in vars(st)
+    mon.close()
+    assert "mini_batch_generator" not in vars(st)

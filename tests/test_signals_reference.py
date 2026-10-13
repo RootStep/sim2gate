@@ -54,9 +54,33 @@ def test_zero_tail_cancels():
 
 
 def test_tiny_real_reward_on_timeout_step_survives():
-    """recover_raw_rewards snaps only float32 rounding residue (8 ulp of the stored value) to zero."""
+    """recover_raw_rewards snaps only float32 rounding residue (8 ulp of the larger operand) to zero."""
     v = torch.full((2, 1), 5.0); to = torch.tensor([[True], [False]])
     raw = torch.tensor([[1e-3], [0.0]])
     stored = raw + 0.99 * v * to
     rec = recover_raw_rewards(stored, v, to, 0.99)
     assert abs(float(rec[0, 0]) - 1e-3) < 1e-5 and float(rec[1, 0]) == 0.0
+
+
+@pytest.mark.parametrize("r", [1e-7, 1e-12, -3e-9])
+def test_tiny_reward_at_timeout_with_zero_value_is_kept_exactly(r):
+    """Third review: with V = 0 there is nothing to undo, so even a reward far below 1e-6 must survive unchanged."""
+    v = torch.zeros(1, 1); to = torch.tensor([[True]])
+    stored = torch.tensor([[r]], dtype=torch.float32)
+    rec = recover_raw_rewards(stored, v, to, 0.99)
+    assert float(rec[0, 0]) == float(stored[0, 0]) != 0.0
+
+
+@pytest.mark.parametrize("value", [0.37, 5.0, 123.456, -42.0, 1e4])
+def test_zero_reward_residue_is_still_snapped(value):
+    """The other half of the rule: a zero raw reward next to any bonus magnitude still recovers to exactly 0."""
+    v = torch.full((1, 1), value, dtype=torch.float32); to = torch.tensor([[True]])
+    stored = torch.zeros(1, 1) + 0.99 * v * to          # what RSL-RL stores for a zero reward at a timeout
+    assert float(recover_raw_rewards(stored, v, to, 0.99)[0, 0]) == 0.0
+
+
+def test_reward_representable_next_to_bonus_survives():
+    """1e-3 next to a bonus of ~5 is far above float32 resolution there (~5e-7), so it must survive."""
+    v = torch.full((1, 1), 5.0); to = torch.tensor([[True]])
+    stored = torch.tensor([[1e-3]]) + 0.99 * v
+    assert abs(float(recover_raw_rewards(stored, v, to, 0.99)[0, 0]) - 1e-3) < 1e-6
