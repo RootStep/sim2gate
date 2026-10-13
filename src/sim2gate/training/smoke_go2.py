@@ -183,21 +183,38 @@ def checkpoint_diff(a, b):
             "max_abs_diff": max(diffs.values(), default=0.0), "first_differing": sorted(diffs)[:3]}
 
 
+def _sha256(path):
+    import hashlib
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for b in iter(lambda: f.read(1 << 20), b""):
+            h.update(b)
+    return h.hexdigest()
+
+
 def identity_check(stock_ckpt, repeat_ckpt, eta0_ckpt):
+    """status: "passed" (stock reproducible and eta 0 identical), "failed" (stock reproducible, eta 0 differs) or
+    "inconclusive" (two stock runs already differ, so a difference proves nothing and a match proves little)."""
     name = "eta 0 with Sim2Gate attached is bit-identical to stock (final checkpoints)"
     missing = [k for k, v in (("stock", stock_ckpt), ("stock_repeat", repeat_ckpt), ("eta0", eta0_ckpt)) if not v]
     if missing:
-        return {"name": name, "ok": False, "detail": f"checkpoint not found for {missing}"}
+        return {"name": name, "ok": False, "status": "failed", "detail": f"checkpoint not found for {missing}"}
     rep_d = checkpoint_diff(stock_ckpt, repeat_ckpt)
     eta_d = checkpoint_diff(stock_ckpt, eta0_ckpt)
     reproducible = rep_d["keys_match"] and rep_d["differing"] == 0
     identical = eta_d["keys_match"] and eta_d["differing"] == 0
-    detail = {"stock_vs_repeat": rep_d, "stock_vs_eta0": eta_d,
-              "checkpoints": {"stock": stock_ckpt, "stock_repeat": repeat_ckpt, "eta0": eta0_ckpt}}
+    detail = {"method": "every tensor in the checkpoint (model and optimizer state) compared with torch.equal; "
+                        "file bytes are not compared",
+              "stock_vs_repeat": rep_d, "stock_vs_eta0": eta_d,
+              "checkpoints": {k: {"path": v, "sha256": _sha256(v)} for k, v in
+                              (("stock", stock_ckpt), ("stock_repeat", repeat_ckpt), ("eta0", eta0_ckpt))}}
     if not reproducible:
+        status = "inconclusive"
         detail["note"] = ("two stock runs with the same seed already differ, so this setup is not reproducible "
                           "run to run; identity cannot be shown by checkpoint comparison")
-    return {"name": name, "ok": reproducible and identical, "detail": detail}
+    else:
+        status = "passed" if identical else "failed"
+    return {"name": name, "ok": status == "passed", "status": status, "detail": detail}
 
 
 def overhead_check(base_text, eta0_text, max_overhead=0.10):
@@ -274,15 +291,18 @@ def main(argv=None):
         versions = {k: m.version(k) for k in ("sim2gate", "rsl-rl-lib")}
     except Exception:
         versions = {}
-    passed = all(r["ok"] for r in results)
-    report = {"result": "PASS" if passed else "FAIL", "task": args.task, "iterations": args.iterations,
+    failed = [r for r in results if not r["ok"] and r.get("status") != "inconclusive"]
+    inconclusive = [r for r in results if r.get("status") == "inconclusive"]
+    result = "FAIL" if failed else "INCONCLUSIVE" if inconclusive else "PASS"
+    report = {"result": result, "task": args.task, "iterations": args.iterations,
               "run_dirs": dirs,
               "seed": args.seed, "eta": args.eta, "versions": versions, "checks": results, "summaries": summaries}
     json.dump(report, open(os.path.join(out, "report.json"), "w"), indent=1)
     width = shutil.get_terminal_size((100, 20)).columns
     print("\n" + "=" * min(width, 100))
     for r in results:
-        print(f"{'PASS' if r['ok'] else 'FAIL'}  {r['name']}: {r['detail']}")
+        label = "INCONCLUSIVE" if r.get("status") == "inconclusive" else "PASS" if r["ok"] else "FAIL"
+        print(f"{label}  {r['name']}: {r['detail']}")
     for s in summaries:
         omr = s["mean_one_minus_rho"]
         print(f"signals  eta={s['eta']} training={s['eta_is_training_eta']}: "
@@ -291,7 +311,7 @@ def main(argv=None):
     if dirs.get("eta1"):
         print(f"eta={args.eta} policy for check 2: --checkpoint {_last_checkpoint(dirs['eta1']) or dirs['eta1']}")
     print(f"\nSMOKE TEST {report['result']}  (report: {os.path.join(out, 'report.json')})")
-    return 0 if passed else 1
+    return {"PASS": 0, "FAIL": 1, "INCONCLUSIVE": 3}[result]
 
 
 if __name__ == "__main__":

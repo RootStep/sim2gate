@@ -98,32 +98,56 @@ def test_identity_mode_end_to_end(tmp_path, monkeypatch):
                          "--identity", "--no-control"])
     report = json.load(open(tmp_path / "out" / "report.json"))
     ident = [c for c in report["checks"] if c["name"].startswith("eta 0 with Sim2Gate")]
-    assert rc == 0 and len(ident) == 1 and ident[0]["ok"], ident
+    assert rc == 0 and len(ident) == 1 and ident[0]["ok"] and ident[0]["status"] == "passed", ident
+    assert report["result"] == "PASS"
     d = ident[0]["detail"]
+    assert set(d["checkpoints"]) == {"stock", "stock_repeat", "eta0"}
+    assert all(len(c["sha256"]) == 64 for c in d["checkpoints"].values())
     assert d["stock_vs_repeat"]["differing"] == 0 and d["stock_vs_eta0"]["differing"] == 0
     assert d["stock_vs_eta0"]["tensors"] > 4 and d["stock_vs_eta0"]["keys_match"]
     assert set(report["run_dirs"]) == {"stock", "stock_repeat", "eta0", "eta1"} and all(report["run_dirs"].values())
 
 
-def _ckpt(path, scale=1.0, extra=0.0):
+def _ckpt(path, scale=1.0, extra=0.0, meta=None):
     import torch
-    torch.save({"actor_state_dict": {"w": torch.ones(3, 3) * scale}, "optimizer_state_dict": {"m": torch.zeros(2) + extra}},
-               path)
+    torch.save({"actor_state_dict": {"w": torch.ones(3, 3) * scale}, "optimizer_state_dict": {"m": torch.zeros(2) + extra},
+                "infos": meta}, path)
     return str(path)
+
+
+def test_identity_compares_tensors_not_file_bytes(tmp_path):
+    """Runner metadata (paths, timestamps) can differ between runs without any difference in training state."""
+    a = _ckpt(tmp_path / "a.pt", meta={"log_dir": "run_a"}); r = _ckpt(tmp_path / "r.pt", meta={"log_dir": "run_b"})
+    e = _ckpt(tmp_path / "e.pt", meta={"log_dir": "run_c", "note": "eta0"})
+    assert open(a, "rb").read() != open(e, "rb").read()
+    res = smoke_go2.identity_check(a, r, e)
+    assert res["ok"] and res["status"] == "passed" and res["detail"]["stock_vs_eta0"]["tensors"] == 2
 
 
 def test_identity_check_catches_a_different_eta0_run(tmp_path):
     a = _ckpt(tmp_path / "a.pt"); r = _ckpt(tmp_path / "r.pt"); e = _ckpt(tmp_path / "e.pt", extra=1e-7)
     res = smoke_go2.identity_check(a, r, e)
-    assert not res["ok"] and res["detail"]["stock_vs_eta0"]["differing"] == 1
+    assert not res["ok"] and res["status"] == "failed" and res["detail"]["stock_vs_eta0"]["differing"] == 1
     assert res["detail"]["stock_vs_eta0"]["first_differing"] == ["/optimizer_state_dict/m"]
 
 
 def test_identity_check_is_not_fooled_by_an_irreproducible_setup(tmp_path):
     a = _ckpt(tmp_path / "a.pt"); r = _ckpt(tmp_path / "r.pt", scale=1.0001); e = _ckpt(tmp_path / "e.pt")
     res = smoke_go2.identity_check(a, r, e)
-    assert not res["ok"] and "not reproducible" in res["detail"]["note"]
-    assert not smoke_go2.identity_check(a, None, e)["ok"]
+    assert not res["ok"] and res["status"] == "inconclusive" and "not reproducible" in res["detail"]["note"]
+    assert smoke_go2.identity_check(a, None, e)["status"] == "failed"
+
+
+def test_irreproducible_stock_makes_the_smoke_test_inconclusive_not_passed(tmp_path, monkeypatch):
+    script = tmp_path / "train.py"; script.write_text(FAKE_TRAIN)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("ISAAC_PYTHON", sys.executable)
+    monkeypatch.setenv("PYTHONPATH", os.pathsep.join([os.path.dirname(__file__), os.environ.get("PYTHONPATH", "")]))
+    monkeypatch.setattr(smoke_go2, "identity_check", lambda *a: {"name": "eta 0 identity", "ok": False,
+                                                                  "status": "inconclusive", "detail": {}})
+    rc = smoke_go2.main(["--iterations", "3", "--out", "out", "--isaaclab-script", str(script), "--task", "Fake",
+                         "--identity", "--no-control"])
+    assert rc == 3 and json.load(open(tmp_path / "out" / "report.json"))["result"] == "INCONCLUSIVE"
 
 
 def test_checks_require_groups_in_every_record():

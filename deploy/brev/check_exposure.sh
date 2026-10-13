@@ -9,7 +9,8 @@
 #     the command to run from outside.
 #
 #   From another machine:  bash check_exposure.sh --probe <public-ip> <port> [<port> ...] > exposure_outside.txt
-#     tries a TCP connection to each port (3 s timeout) and reports open / closed-or-filtered. Needs only bash.
+#     tries a TCP connection to each port (3 s timeout) and reports open / closed-or-filtered, then prints its own
+#     exit code as the last line ("exit code 0" = nothing reachable). Needs only bash.
 #     UDP cannot be probed this way; the inside listing shows which UDP ports are bound.
 #
 # Expected for a correctly locked-down instance: from outside, every port is closed-or-filtered; access goes through
@@ -29,7 +30,10 @@ probe() {
         fi
     done
     echo "# $open of $# probed TCP ports reachable"
-    [ "$open" -eq 0 ]
+    local rc=0
+    [ "$open" -eq 0 ] || rc=1
+    echo "exit code $rc"            # saved with the output, so the evidence file carries the verdict
+    return "$rc"
 }
 
 if [ "${1:-}" = "--probe" ]; then
