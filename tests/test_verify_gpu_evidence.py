@@ -50,8 +50,16 @@ def _outside(tmp_path, open_ports=(), code=0, probed=3, with_code=True):
     return str(p)
 
 
-def _verify(folder, outside=None):
+def _sshd(tmp_path, password="no", kbd="no", pubkey="yes"):
+    p = tmp_path / "sshd_auth.txt"
+    p.write_text(f"pubkeyauthentication {pubkey}\npasswordauthentication {password}\n"
+                 f"kbdinteractiveauthentication {kbd}\npermitrootlogin without-password\n")
+    return str(p)
+
+
+def _verify(folder, outside=None, sshd=None):
     argv = [str(folder), "--commit", SHA, "--checkpoint-sha256", CK] + (["--outside", outside] if outside else [])
+    argv += ["--sshd", sshd] if sshd else []
     rc = v.main(argv)
     return rc, json.load(open(folder / "VERIFY.json"))
 
@@ -105,3 +113,37 @@ def test_missing_outside_probe_is_inconclusive(tmp_path):
 def test_short_commit_is_refused(tmp_path):
     with pytest.raises(SystemExit):
         v.main([str(_folder(tmp_path)), "--commit", "979a49e", "--checkpoint-sha256", CK])
+
+
+def _probe_text(tmp_path, results):
+    lines = [f"tcp {p} {'OPEN' if o else 'closed-or-filtered'}" for p, o in results]
+    n = sum(o for _, o in results)
+    lines += [f"# {n} of {len(results)} probed TCP ports reachable", f"exit code {1 if n else 0}"]
+    p = tmp_path / "exposure_outside.txt"
+    p.write_text("\n".join(lines) + "\n")
+    return str(p)
+
+
+BREV_PORTS = [(22, True), (53, False), (80, False), (5173, False), (8086, False)]
+
+
+def test_open_ssh_passes_only_with_key_only_sshd(tmp_path):
+    out = _probe_text(tmp_path, BREV_PORTS)
+    rc, doc = _verify(_folder(tmp_path), out, _sshd(tmp_path))
+    item = doc["items"]["ingress from outside"]
+    assert rc == 0 and item["status"] == "passed" and "22" in item["detail"]["allowed_exceptions"][0]
+
+
+@pytest.mark.parametrize("kw", [{}, {"password": "yes"}, {"kbd": "yes"}, {"pubkey": "no"}])
+def test_open_ssh_without_key_only_evidence_fails(tmp_path, kw):
+    out = _probe_text(tmp_path, BREV_PORTS)
+    sshd = _sshd(tmp_path, **kw) if kw else None
+    rc, doc = _verify(_folder(tmp_path), out, sshd)
+    item = doc["items"]["ingress from outside"]
+    assert rc == 1 and item["status"] == "failed" and "22" in item["detail"]["unexpected_open_ports"]
+
+
+def test_any_other_open_port_fails_even_with_key_only_ssh(tmp_path):
+    out = _probe_text(tmp_path, [(22, True), (80, True), (5173, False)])
+    rc, doc = _verify(_folder(tmp_path), out, _sshd(tmp_path))
+    assert rc == 1 and doc["items"]["ingress from outside"]["detail"]["unexpected_open_ports"] == ["80"]

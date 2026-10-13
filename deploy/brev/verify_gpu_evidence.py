@@ -16,7 +16,9 @@ and, when given, the outside probe's saved output. Writes VERIFY.json and prints
 - smoke test:      the other smoke checks passed
 - contact force:   check 2 measured the intended policy, every physics substep (samples == decimation, covered
                    share 1.0) with the per-update sampling method, for the full 1000 steps
-- ingress:         the outside probe ran, probed at least one port, found none open, and exited 0
+- ingress:         the outside probe ran, probed at least one port, and found none open (exit code 0). The one
+                   exception: port 22 may be open when --sshd shows SSH accepts keys only (password and
+                   keyboard-interactive authentication off, public-key on); it is then listed as an allowed exception
 
 Exit code: 0 all passed, 1 any failed, 3 none failed but something is inconclusive. Standard library only.
 """
@@ -107,7 +109,29 @@ def check_contact(folder, ck_sha, steps):
     return ("failed" if problems else "passed"), detail
 
 
-def check_outside(path):
+SSHD_REQUIRED = {"passwordauthentication": "no", "kbdinteractiveauthentication": "no", "pubkeyauthentication": "yes"}
+
+
+def sshd_key_only(path):
+    """(True, settings) if `sshd -T` output shows key-only authentication; (False, reason) otherwise."""
+    if not path:
+        return False, "no sshd settings supplied"
+    try:
+        text = open(path).read()
+    except OSError as e:
+        return False, str(e)
+    got = {}
+    for line in text.splitlines():
+        parts = line.strip().lower().split()
+        if len(parts) == 2:
+            got[parts[0]] = parts[1]
+    bad = {k: got.get(k) for k, v in SSHD_REQUIRED.items() if got.get(k) != v}
+    if bad:
+        return False, {"required": SSHD_REQUIRED, "found": bad}
+    return True, {k: got[k] for k in sorted(got)}
+
+
+def check_outside(path, sshd=None):
     if not path:
         return "inconclusive", "outside probe output not supplied"
     try:
@@ -117,11 +141,26 @@ def check_outside(path):
     total = re.search(r"^# (\d+) of (\d+) probed TCP ports reachable$", text, re.M)
     code = re.search(r"^exit code (\d+)$", text, re.M)
     opened = re.findall(r"^tcp (\d+) OPEN$", text, re.M)
-    detail = {"open_ports": opened, "summary": total and total.group(0), "exit_code": code and int(code.group(1))}
+    probed = re.findall(r"^tcp (\d+) (?:OPEN|closed-or-filtered)$", text, re.M)
+    detail = {"probed_ports": probed, "open_ports": opened, "summary": total and total.group(0),
+              "exit_code": code and int(code.group(1))}
     if not total or not code:
         return "failed", {**detail, "problem": "probe summary or saved exit code missing"}
-    ok = int(total.group(1)) == 0 and int(total.group(2)) > 0 and not opened and int(code.group(1)) == 0
-    return ("passed" if ok else "failed"), detail
+    n_open, n_probed, rc = int(total.group(1)), int(total.group(2)), int(code.group(1))
+    if n_probed == 0 or n_probed != len(probed) or n_open != len(opened) or (rc == 0) != (n_open == 0):
+        return "failed", {**detail, "problem": "probe output is inconsistent or probed nothing"}
+    unexpected = [q for q in opened if q != "22"]
+    if "22" in opened:
+        ok, why = sshd_key_only(sshd)
+        detail["ssh_port_22"] = {"allowed": ok, "sshd": why}
+        if ok:
+            detail["allowed_exceptions"] = ["22 (SSH, key-only authentication; used by brev shell and scp)"]
+        else:
+            unexpected.append("22")
+    if unexpected:
+        detail["unexpected_open_ports"] = unexpected
+        return "failed", detail
+    return "passed", detail
 
 
 def main(argv=None):
@@ -131,6 +170,7 @@ def main(argv=None):
     p.add_argument("--checkpoint-sha256", required=True, help="SHA-256 of the policy check 2 must measure")
     p.add_argument("--steps", type=int, default=1000)
     p.add_argument("--outside", default=None, help="saved output of check_exposure.sh --probe, with its exit code")
+    p.add_argument("--sshd", default=None, help="saved `sshd -T` authentication settings, needed if port 22 is open")
     a = p.parse_args(argv)
     if not re.fullmatch(r"[0-9a-f]{40}", a.commit):
         p.error("--commit must be the full 40-character SHA")
@@ -138,7 +178,7 @@ def main(argv=None):
     items = {"pinned commit": check_commit(a.folder, a.commit), "eta 0 identity, final checkpoints": ident,
              "eta 0 identity, one update": check_update_identity(a.folder), "smoke test": smoke,
              "contact force 4/4": check_contact(a.folder, a.checkpoint_sha256, a.steps),
-             "ingress from outside": check_outside(a.outside)}
+             "ingress from outside": check_outside(a.outside, a.sshd)}
     statuses = [s for s, _ in items.values()]
     overall = "failed" if "failed" in statuses else "inconclusive" if "inconclusive" in statuses else "passed"
     out = {"overall": overall, "items": {k: {"status": s, "detail": d} for k, (s, d) in items.items()},
