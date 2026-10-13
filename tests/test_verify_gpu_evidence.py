@@ -173,3 +173,13 @@ def test_script_probe_with_control(tmp_path):
         srv.close()
     assert f"tcp {port} OPEN" in r.stdout and "tcp 9 closed-or-filtered" in r.stdout
     assert "INTERCEPTED" not in r.stdout and r.stdout.rstrip().endswith("exit code 1") and r.returncode == 1
+
+
+def test_only_checks_the_named_items(tmp_path):
+    f = _folder(tmp_path, samples=1)                     # contact force would fail, but it is not checked here
+    rc = v.main([str(f), "--commit", SHA, "--checkpoint-sha256", CK, "--only", "smoke test;eta 0 identity, one update"])
+    doc = json.load(open(f / "VERIFY.json"))
+    assert rc == 0 and set(doc["items"]) == {"pinned commit", "smoke test", "eta 0 identity, one update"}
+    assert "contact force 4/4" in doc["not_checked_here"]
+    with pytest.raises(SystemExit):
+        v.main([str(f), "--commit", SHA, "--checkpoint-sha256", CK, "--only", "nonsense"])

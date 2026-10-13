@@ -183,6 +183,9 @@ def main(argv=None):
     p.add_argument("--checkpoint-sha256", required=True, help="SHA-256 of the policy check 2 must measure")
     p.add_argument("--steps", type=int, default=1000)
     p.add_argument("--check2", default="sim2gate_check2_eta1_v2.json", help="check 2 report file in the folder")
+    p.add_argument("--only", default=None,
+                   help="semicolon-separated item names to check, for evidence split across runs (the pinned commit "
+                        "is always checked); VERIFY.json lists the items left out")
     p.add_argument("--outside", default=None, help="saved output of check_exposure.sh --probe, with its exit code")
     p.add_argument("--sshd", default=None, help="saved `sshd -T` authentication settings, needed if port 22 is open")
     a = p.parse_args(argv)
@@ -193,9 +196,18 @@ def main(argv=None):
              "eta 0 identity, one update": check_update_identity(a.folder), "smoke test": smoke,
              "contact force 4/4": check_contact(a.folder, a.checkpoint_sha256, a.steps, a.check2),
              "ingress from outside": check_outside(a.outside, a.sshd)}
+    skipped = []
+    if a.only:
+        want = {x.strip() for x in a.only.split(";") if x.strip()} | {"pinned commit"}
+        unknown = want - set(items)
+        if unknown:
+            p.error(f"--only: unknown items {sorted(unknown)}; choose from {sorted(items)}")
+        skipped = [k for k in items if k not in want]
+        items = {k: v for k, v in items.items() if k in want}
     statuses = [s for s, _ in items.values()]
     overall = "failed" if "failed" in statuses else "inconclusive" if "inconclusive" in statuses else "passed"
     out = {"overall": overall, "items": {k: {"status": s, "detail": d} for k, (s, d) in items.items()},
+           "not_checked_here": skipped,
            "inputs": {"commit": a.commit, "checkpoint_sha256": a.checkpoint_sha256, "steps": a.steps,
                       "outside": a.outside and os.path.basename(a.outside)}}
     with open(os.path.join(a.folder, "VERIFY.json"), "w") as f:
