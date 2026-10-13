@@ -15,7 +15,8 @@ SHA = "979a49e" + "0" * 33
 CK = "f7ad0353165b5c36f8b213b1c8c83452652f767aa11ed4f2c0245c444a5a5246"
 
 
-def _folder(tmp_path, commit=SHA, pkg=SHA, status="passed", samples=4, ck=CK, method=True, other_ok=True):
+def _folder(tmp_path, commit=SHA, pkg=SHA, status="passed", samples=4, ck=CK, method=True, other_ok=True,
+            update="passed"):
     (tmp_path / "sim2gate-versions.txt").write_text(f"sim2gate_commit={commit}\nsim2gate 0.1.0.dev0 {pkg}\n")
     (tmp_path / "sim2gate_smoke_identity").mkdir()
     ident = {"name": "eta 0 with Sim2Gate attached is bit-identical to stock (final checkpoints)",
@@ -29,6 +30,10 @@ def _folder(tmp_path, commit=SHA, pkg=SHA, status="passed", samples=4, ck=CK, me
           "scene_updates_per_step_histogram": {str(samples): 1000}}
     if method:
         cs["method"] = "max of the sensor's current force over every scene update in the control step"
+    if update is not None:
+        (tmp_path / "sim2gate_update_identity.json").write_text(json.dumps(
+            {"status": update, "stock_vs_stock": {"differing": 0}, "stock_vs_sim2gate": {"differing": 0},
+             "monitor_records_written": 1}))
     (tmp_path / "sim2gate_check2_eta1_v2.json").write_text(json.dumps(
         {"control_steps": 1000, "checkpoint": {"sha256": ck}, "contact_force_substeps": cs, "metrics": {}}))
     return tmp_path
@@ -65,7 +70,8 @@ def test_all_good_passes(tmp_path):
     ({"samples": 3}, "contact force 4/4"),
     ({"method": False}, "contact force 4/4"),                    # report from the old (history) method
     ({"ck": "0" * 64}, "contact force 4/4"),                     # wrong policy measured
-    ({"status": "failed"}, "eta 0 identity"),
+    ({"status": "failed"}, "eta 0 identity, final checkpoints"),
+    ({"update": "failed"}, "eta 0 identity, one update"),
     ({"other_ok": False}, "smoke test"),
 ])
 def test_each_requirement_can_fail(tmp_path, kw, item):
@@ -75,7 +81,13 @@ def test_each_requirement_can_fail(tmp_path, kw, item):
 
 def test_irreproducible_stock_is_inconclusive_not_passed(tmp_path):
     rc, out = _verify(_folder(tmp_path, status="inconclusive"), _outside(tmp_path))
-    assert rc == 3 and out["items"]["eta 0 identity"]["status"] == "inconclusive"
+    assert rc == 3 and out["items"]["eta 0 identity, final checkpoints"]["status"] == "inconclusive"
+    assert out["items"]["eta 0 identity, one update"]["status"] == "passed"     # reported separately, not merged
+
+
+def test_missing_update_identity_is_inconclusive(tmp_path):
+    rc, out = _verify(_folder(tmp_path, update=None), _outside(tmp_path))
+    assert rc == 3 and out["items"]["eta 0 identity, one update"]["status"] == "inconclusive"
 
 
 @pytest.mark.parametrize("kw", [{"open_ports": (81,), "code": 1}, {"with_code": False}, {"code": 1},

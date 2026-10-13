@@ -7,8 +7,12 @@ Reads, from <folder>: sim2gate-versions.txt, sim2gate_smoke_identity/report.json
 and, when given, the outside probe's saved output. Writes VERIFY.json and prints one line per item:
 
 - pinned commit:   the host checkout and the installed package are both exactly --commit
-- eta 0 identity:  status from the smoke test; passed only if two stock runs match each other AND the eta 0 run
-                   matches stock, tensor by tensor (model and optimizer); inconclusive when stock is not reproducible
+- eta 0 identity, final checkpoints: status from the smoke test; passed only if two stock runs match each other
+                   AND the eta 0 run matches stock, tensor by tensor (model and optimizer); inconclusive when stock
+                   training is not reproducible on the device
+- eta 0 identity, one update: sim2gate_update_identity.json (python -m sim2gate.training.isaaclab_launch
+                   --update-identity); the same PPO update replayed from one saved state, stock twice and with
+                   Sim2Gate attached; inconclusive if missing or if the stock replays differ
 - smoke test:      the other smoke checks passed
 - contact force:   check 2 measured the intended policy, every physics substep (samples == decimation, covered
                    share 1.0) with the per-update sampling method, for the full 1000 steps
@@ -66,6 +70,19 @@ def check_smoke(folder):
     return idv, smoke
 
 
+def check_update_identity(folder):
+    doc, err = _load(os.path.join(folder, "sim2gate_update_identity.json"))
+    if err:
+        return "inconclusive", f"not run ({err})"
+    status = doc.get("status")
+    complete = all(k in doc for k in ("stock_vs_stock", "stock_vs_sim2gate", "monitor_records_written"))
+    if not complete or status not in ("passed", "failed", "inconclusive"):
+        return "failed", {"problem": "incomplete update identity report", "status": status}
+    return status, {k: doc.get(k) for k in ("stock_vs_stock", "stock_vs_sim2gate", "monitor_records_written",
+                                            "num_transitions", "device", "cublas_workspace_config", "not_covered",
+                                            "note")}
+
+
 def check_contact(folder, ck_sha, steps):
     rep, err = _load(os.path.join(folder, "sim2gate_check2_eta1_v2.json"))
     if err:
@@ -118,7 +135,8 @@ def main(argv=None):
     if not re.fullmatch(r"[0-9a-f]{40}", a.commit):
         p.error("--commit must be the full 40-character SHA")
     ident, smoke = check_smoke(a.folder)
-    items = {"pinned commit": check_commit(a.folder, a.commit), "eta 0 identity": ident, "smoke test": smoke,
+    items = {"pinned commit": check_commit(a.folder, a.commit), "eta 0 identity, final checkpoints": ident,
+             "eta 0 identity, one update": check_update_identity(a.folder), "smoke test": smoke,
              "contact force 4/4": check_contact(a.folder, a.checkpoint_sha256, a.steps),
              "ingress from outside": check_outside(a.outside)}
     statuses = [s for s, _ in items.values()]
