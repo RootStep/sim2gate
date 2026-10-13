@@ -30,6 +30,11 @@ found during the Experiment T step 1 run on Oct 9, 2026.
   viewer; leave them closed otherwise.
 - Check direct exposure from your own computer: `curl -m 5 -sI http://<instance public IP>/` should time out
   (port closed). If it answers, it must be a redirect to `./login`, never the editor itself.
+- Full ingress check, every port: on the instance, `bash deploy/brev/check_exposure.sh` lists each listening socket,
+  its owner and whether it is loopback-only (services use host networking, so anything else is reachable unless
+  the cloud firewall blocks it), and prints a probe command. Run that probe from your own computer
+  (`bash check_exposure.sh --probe <public IP> <ports>`): it exits 0 only if every listed TCP port is
+  closed or filtered.
 - The VS Code container runs privileged with host networking because Isaac Sim needs GPU and device access.
   Treat anyone with the password as having root on the instance.
 
