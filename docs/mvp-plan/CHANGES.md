@@ -147,3 +147,6 @@ unless an entry says otherwise.
   calibration.
 - **Approved by:** VJ, Oct 14, 2026.
 - **Recorded by Vihaan:** Oct 14, 2026, before P0 v2 was trained (confirmed by VJ).
+- **Result (Oct 14):** all three P0 v2 seeds met the C4 criteria (tracking error 0.057–0.064 m/s, no falls,
+  sustained-contact slip p95 0.090–0.093 m/s), and the check 2 thresholds were set from them. Details and files:
+  `calibration/p0v2/`.
