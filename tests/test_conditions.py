@@ -438,7 +438,6 @@ def test_cfg_digest_ignores_physics_only():
 
 
 def test_training_ranges_from_a_saved_env_yaml():
-    pytest.importorskip("yaml")
     text = """events:
   physics_material:
     params:
