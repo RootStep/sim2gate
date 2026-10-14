@@ -155,7 +155,12 @@ def test_task_module_imports_without_isaac_lab_and_versions_the_variant():
     import importlib
     t = importlib.import_module("sim2gate.mvp.tasks")
     v = t.VARIANTS[t.P0_TASK]
-    assert t.P0_TASK.endswith("-v1") and v["version"] == 1 and v["changes"][0]["weight"] == -0.25
+    assert t.P0_TASK == t.P0_TASK_V2 and t.P0_TASK.endswith("-v2") and v["version"] == 2
+    assert v["max_iterations"] == 1000 and v["changes"][0]["weight"] == -0.25
     assert "not validated" in v["changes"][0]["weight_status"]
-    with pytest.raises(ImportError):
-        t.Go2FlatP0EnvCfgV1                                       # built only where Isaac Lab is installed
+    v1 = t.VARIANTS[t.P0_TASK_V1]                                  # v1 stays registered, marked superseded
+    assert v1["max_iterations"] == 300 and "superseded" in v1["status"]
+    assert [c for c in v["changes"] if "feet_slide" in c["what"]] == [c for c in v1["changes"]]  # same penalty
+    for name in ("Go2FlatP0EnvCfgV1", "Go2FlatP0EnvCfgV2", "Go2FlatP0PPORunnerCfgV2"):
+        with pytest.raises(ImportError):
+            getattr(t, name)                                       # built only where Isaac Lab is installed

@@ -110,3 +110,29 @@ unless an entry says otherwise.
   - They are not used for calibration.
 - **Approved by:** VJ, Oct 14, 2026.
 - **Recorded by Vihaan:** pending. P0 v1 is not retrained until he records this amendment.
+
+## C5 — P0 v2: the same penalty, trained for 1,000 iterations (Oct 14, 2026)
+
+- **Was (C4):** P0 v1, `Sim2Gate-Velocity-Flat-Go2-P0-v1`, trained for the task's own 300 iterations.
+- **Now:** P0 v2, `Sim2Gate-Velocity-Flat-Go2-P0-v2`. This is P0 v1 trained for 1,000 iterations. Nothing else
+  changes: same `feet_slide` weight (−0.25), same physics, the same acceptance criteria (C4, unchanged) and the
+  same seeds 1–3.
+- **Why:** first P0 v1 run (Oct 14), measured by check 2 against the C4 criteria.
+
+  | Seed | Checkpoint | Tracking error | Falls (of 64) | Sustained-contact slip p95 | Result |
+  |---|---|---|---|---|---|
+  | 1 | `8c5926de…` | 0.086 m/s | 1 | 0.128 m/s | accepted |
+  | 2 | `28679f1e…` | 0.098 m/s | 15 | 0.324 m/s | not accepted (falls) |
+  | 3 | — | — | — | — | training exited with an error (log under review) |
+
+  The penalty did what it was added for: sustained-contact slip was well within its criterion for both trained
+  seeds. The failure was falls. A policy trained with an extra penalty on the stock task's short 300-iteration
+  budget (Isaac Lab's rough-terrain Go2 trains for 1,500) being undertrained is the leading explanation, not a
+  demonstrated cause. Changing only the training length tests it. A rejected seed is not retrained or replaced
+  under another seed number: choosing seeds until they pass would bias the calibration and the held-out
+  comparison (A4).
+- **If P0 v2 also misses the criteria:** stop and review the evidence before any further change. Do not keep
+  adjusting.
+- **Superseded runs preserved:** the P0 v1 runs (checkpoints, check 2 reports, logs, manifest) are kept
+  unmodified, in `mvp_runs/P0_v1_superseded` on the instance and as an archive, and are not used for calibration.
+- **Approved by:** VJ, Oct 14, 2026.
