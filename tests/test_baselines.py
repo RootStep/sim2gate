@@ -6,6 +6,7 @@ import os
 import shutil
 
 import pytest
+import torch
 
 from sim2gate.mvp import baselines
 from sim2gate.checks.commands import make_command_set
@@ -17,7 +18,8 @@ def world(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     cmd_path = tmp_path / "commands.json"
     cmd_path.write_text(json.dumps(make_command_set(te.N, 20261012)))
-    calls = {"train": 0, "check2": 0, "fail_train_seed": None, "wrong_checkpoint": False}
+    calls = {"train": 0, "check2": 0, "fail_train_seed": None, "wrong_checkpoint": False, "tracking_off": 0.0,
+             "cmds": []}
 
     def fake_run(cmd, log):
         open(log, "w").write("fake\n")
@@ -28,6 +30,10 @@ def world(tmp_path, monkeypatch):
             data = open(ck, "rb").read() + (b"x" if calls["wrong_checkpoint"] else b"")
             seed = int(ck.split("seed")[-1].split(os.sep)[0])
             env = te.FakeEnv(fall_step=3 + seed)
+            calls["cmds"].append(cmd)
+            cmds = torch.tensor(json.load(open(cmd_path))["commands"], dtype=torch.float32)
+            v = torch.zeros(te.N, 3); v[:, :2] = cmds[:, :2] + calls["tracking_off"]   # tracks its command
+            env.robot.data.root_lin_vel_b = te._Buf(v)
             (tmp_path / f"c2_{calls['check2']}").mkdir(exist_ok=True)
             rep, path = te._run(env, 60, tmp_path / f"c2_{calls['check2']}", checkpoint=data,
                                 command_set=json.load(open(cmd_path)),
@@ -35,6 +41,7 @@ def world(tmp_path, monkeypatch):
             shutil.copy(path, out)
             return 0, ""
         calls["train"] += 1
+        calls["cmds"].append(cmd)
         seed = int(cmd[cmd.index("--seed") + 1])
         assert "physics=isaacsim_physx" in cmd
         if seed == calls["fail_train_seed"]:
@@ -57,7 +64,7 @@ def test_baselines_train_measure_and_calibrate(world):
     tmp, args, calls = world
     assert baselines.main(args + ["--calibrate"]) == 0
     m = json.load(open(tmp / "mvp/P0/manifest.json"))
-    assert calls == {"train": 3, "check2": 3, "fail_train_seed": None, "wrong_checkpoint": False}
+    assert calls["train"] == 3 and calls["check2"] == 3
     for s in ("1", "2", "3"):
         e = m["seeds"][s]
         assert e["checkpoint"]["path"].endswith("model_299.pt") and len(e["checkpoint"]["sha256"]) == 64
@@ -119,3 +126,36 @@ def test_the_shipped_command_set_is_the_plans():
     doc = load_command_set(baselines.GO2_COMMANDS)
     assert doc["seed"] == 20261012 and len(doc["commands"]) == 64
     assert doc["sha256"] == make_command_set(64, 20261012)["sha256"]          # reproducible from the seed
+
+
+
+def test_p0_uses_the_registered_variant_with_its_callback(world):
+    from sim2gate.mvp.tasks import P0_TASK, VARIANTS
+    tmp, args, calls = world
+    assert baselines.main(args) == 0
+    for cmd in calls["cmds"]:
+        assert cmd[cmd.index("--task") + 1] == P0_TASK
+        assert cmd[cmd.index("--external_callback") + 1] == "sim2gate.mvp.tasks.register"
+    m = json.load(open(tmp / "mvp/P0/manifest.json"))
+    assert m["task_variant"] == VARIANTS[P0_TASK] and m["baseline_criteria"] == baselines.BASELINE_CRITERIA
+    assert all(m["seeds"][s]["acceptance"]["accepted"] for s in ("1", "2", "3"))
+
+
+def test_baselines_that_miss_the_criteria_are_not_calibrated(world):
+    tmp, args, calls = world
+    calls["tracking_off"] = 0.3                                   # 0.42 m/s tracking error > 0.15
+    assert baselines.main(args + ["--calibrate"]) == 1
+    m = json.load(open(tmp / "mvp/P0/manifest.json"))
+    acc = m["seeds"]["1"]["acceptance"]
+    assert acc["accepted"] is False and acc["details"]["passed"]["tracking"] is False
+    assert "baseline criteria" in m["calibration"]["error"] and not (tmp / "mvp/P0/thresholds.json").exists()
+
+
+def test_task_module_imports_without_isaac_lab_and_versions_the_variant():
+    import importlib
+    t = importlib.import_module("sim2gate.mvp.tasks")
+    v = t.VARIANTS[t.P0_TASK]
+    assert t.P0_TASK.endswith("-v1") and v["version"] == 1 and v["changes"][0]["weight"] == -0.25
+    assert "not validated" in v["changes"][0]["weight_status"]
+    with pytest.raises(ImportError):
+        t.Go2FlatP0EnvCfgV1                                       # built only where Isaac Lab is installed

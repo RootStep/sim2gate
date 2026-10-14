@@ -28,7 +28,38 @@ import json
 import os
 import sys
 
-from ..training.smoke_go2 import DEFAULT_TASK, _last_checkpoint, _run_dirs, isaac_python, run, train_script
+from ..training.smoke_go2 import _last_checkpoint, _run_dirs, isaac_python, run, train_script
+from .tasks import P0_TASK, VARIANTS
+
+# Acceptance criteria for a calibration baseline (plan change C4), fixed before the P0 v1 baselines were trained.
+# Measured by check 2 on the fixed command set (64 envs, 1000 steps = one 20 s episode each). A baseline that misses
+# any of them is not used for calibration.
+BASELINE_CRITERIA = {
+    # command tracking: mean |commanded - actual| base xy velocity. 0.15 m/s is about 1.5x the 0.09-0.10 m/s of the
+    # stock P0 policies (Oct 13), the plan's own tolerance for episode success
+    "max_mean_tracking_error_mps": 0.15,
+    # falls: episodes ended before the time limit, at most 1 of the 64 (the plan's episode success needs no fall)
+    "max_falls": 1,
+    # sustained-contact slip: p95 horizontal speed of feet in contact for >= 4 physics updates in a row. 0.5 m/s is
+    # about half the median commanded speed (0.9 m/s): a planted foot moving that fast is sliding, not rolling
+    # (the 22 mm foot sphere pivoting on the calf moves its centre by at most ~0.2-0.4 m/s)
+    "max_sustained_slip_p95_mps": 0.5,
+}
+
+
+def baseline_acceptance(rep):
+    """(accepted, details) for one check 2 report against BASELINE_CRITERIA."""
+    nm, mt = rep.get("nominal") or {}, rep.get("metrics") or {}
+    got = {"mean_tracking_error_mps": nm.get("mean_lin_vel_error_xy_mps"), "falls": nm.get("falls"),
+           "sustained_slip_p95_mps": mt.get("foot_slip_sustained_p95_mps")}
+    c = BASELINE_CRITERIA
+    checks = {
+        "tracking": got["mean_tracking_error_mps"] is not None and got["mean_tracking_error_mps"] <= c["max_mean_tracking_error_mps"],
+        "falls": got["falls"] is not None and got["falls"] <= c["max_falls"],
+        "sustained_slip": got["sustained_slip_p95_mps"] is not None and got["sustained_slip_p95_mps"] <= c["max_sustained_slip_p95_mps"],
+    }
+    return all(checks.values()), {"criteria": dict(c), "measured": got, "passed": checks}
+
 
 # The MVP's fixed command set for the Go2 flat task: 64 commands within the training ranges, sampled once with seed
 # 20261012 (python -m sim2gate.checks.commands --n 64 --seed 20261012).
@@ -56,6 +87,10 @@ def run_configs(run_dir):
     return out
 
 
+def _callback(a):
+    return ["--external_callback", "sim2gate.mvp.tasks.register"] if a.task in VARIANTS else []
+
+
 def train_cmd(a, seed):
     physics = [f"physics={a.physics}"] if a.physics else []
     iters = ["--max_iterations", str(a.iterations)] if a.iterations else []
@@ -63,7 +98,7 @@ def train_cmd(a, seed):
         return isaac_python() + [a.isaaclab_script, "--headless", "--task", a.task, "--seed", str(seed)] + iters \
             + physics + list(a.train_arg)
     return isaac_python() + [train_script(), "--rl_library", "rsl_rl", "--task", a.task, "--seed", str(seed)] \
-        + iters + physics + list(a.train_arg)
+        + _callback(a) + iters + physics + list(a.train_arg)
 
 
 def check2_cmd(a, ckpt, report):
@@ -71,7 +106,7 @@ def check2_cmd(a, ckpt, report):
     return isaac_python() + ["-m", "sim2gate.checks.isaaclab_exploits", "--steps", str(a.steps),
                              "--commands", a.commands, "--out", report, "--",
                              "--task", a.task, "--num_envs", str(a.num_envs), "--checkpoint", ckpt] \
-        + physics + list(a.play_arg)
+        + _callback(a) + physics + list(a.play_arg)
 
 
 def _save(manifest, path):
@@ -93,7 +128,8 @@ def main(argv=None):
     p.add_argument("--commands", default=GO2_COMMANDS,
                    help="the fixed command set (default: the MVP's Go2 set shipped with Sim2Gate)")
     p.add_argument("--out", required=True)
-    p.add_argument("--task", default=DEFAULT_TASK)
+    p.add_argument("--task", default=P0_TASK, help=f"default {P0_TASK} (plan change C4: the stock Go2 flat task plus "
+                                                   f"a foot-slip penalty)")
     p.add_argument("--physics", default="isaacsim_physx",
                    help="Isaac Lab physics preset for training and check 2 (default isaacsim_physx: Isaac Sim's PhysX, "
                         "the plan's training engine; '' for the task's own default). Not 'physx': in Isaac Lab 3.0 that "
@@ -115,7 +151,8 @@ def main(argv=None):
     os.makedirs(a.out, exist_ok=True)
     mpath = os.path.join(a.out, "manifest.json")
     manifest = json.load(open(mpath)) if os.path.exists(mpath) else {}
-    manifest.update({"policy": a.policy, "task": a.task, "physics": a.physics or None,
+    manifest.update({"policy": a.policy, "task": a.task, "task_variant": VARIANTS.get(a.task),
+                     "baseline_criteria": dict(BASELINE_CRITERIA), "physics": a.physics or None,
                      "train_args": list(a.train_arg), "play_args": list(a.play_arg),
                      "command_set": {"path": os.path.abspath(a.commands), "sha256": cmd_doc["sha256"],
                                      "seed": cmd_doc.get("seed"), "n": len(cmd_doc["commands"])},
@@ -163,6 +200,8 @@ def main(argv=None):
             rep = json.load(open(report))
             got = (rep.get("checkpoint") or {}).get("sha256")
             entry["check2_report"] = _file_record(report)
+            entry["acceptance"] = dict(zip(("accepted", "details"), baseline_acceptance(rep)))
+            entry.pop("error", None)
             if got != entry["checkpoint"]["sha256"]:
                 entry["error"] = f"check 2 measured checkpoint {got}, not {entry['checkpoint']['sha256']}"
                 ok = False
@@ -171,6 +210,13 @@ def main(argv=None):
             ok = False
         manifest["seeds"][key] = entry
         _save(manifest, mpath)
+    rejected = [s for s in a.seeds if not ((manifest["seeds"].get(str(s)) or {}).get("acceptance") or {}).get("accepted")]
+    if a.calibrate and ok and rejected:
+        print(f"[sim2gate] not calibrating: seeds {rejected} do not meet the baseline criteria "
+              f"(manifest: seeds.<seed>.acceptance)", file=sys.stderr)
+        manifest["calibration"] = {"error": f"seeds {rejected} do not meet the baseline criteria"}
+        _save(manifest, mpath)
+        ok = False
     if a.calibrate and ok:
         from ..checks.calibrate import CalibrationError, calibrate
         th = os.path.join(a.out, "thresholds.json")
@@ -196,7 +242,13 @@ def main(argv=None):
         e = manifest["seeds"].get(str(s), {})
         state = "ERROR " + e["error"] if e.get("error") else "ok"
         ck = (e.get("checkpoint") or {}).get("sha256", "")[:12]
-        print(f"{a.policy} seed {s}: {state}  checkpoint {ck}")
+        acc = e.get("acceptance") or {}
+        m = (acc.get("details") or {}).get("measured") or {}
+        fmt = lambda v: "n/a" if v is None else (f"{v:.3f}" if isinstance(v, float) else str(v))
+        verdict = {True: "ACCEPTED", False: "NOT ACCEPTED"}.get(acc.get("accepted"), "not assessed")
+        print(f"{a.policy} seed {s}: {state}  checkpoint {ck}  baseline {verdict}: tracking error "
+              f"{fmt(m.get('mean_tracking_error_mps'))} m/s, falls {fmt(m.get('falls'))}, sustained slip p95 "
+              f"{fmt(m.get('sustained_slip_p95_mps'))} m/s")
     if a.calibrate:
         cal = manifest.get("calibration") or {}
         for m, v in (cal.get("thresholds_values") or {}).items():

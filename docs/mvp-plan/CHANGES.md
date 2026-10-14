@@ -60,3 +60,53 @@ unless an entry says otherwise.
   - Targets P3 and P4 (criterion A1) are unaffected: they are judged on the other metrics.
   - The metric's definition is unchanged.
 - **Approved by:** VJ, Oct 14, 2026.
+
+## C4 — P0 is the stock Go2 flat task plus a foot-slip penalty (Oct 14, 2026)
+
+- **Was:** P0, the clean baseline, has no flaw and no config change from default. The test set defines P3 as "Low
+  ground friction, foot-slip penalty removed", which presumes a default that has a foot-slip penalty.
+- **Now:** P0 is the registered, versioned task variant `Sim2Gate-Velocity-Flat-Go2-P0-v1`
+  (`sim2gate/mvp/tasks.py`): Isaac Lab's `Isaac-Velocity-Flat-UnitreeGo2` plus Isaac Lab's own `feet_slide`
+  reward term on the four feet.
+  - **Weight −0.25.** This is a proposed starting value taken from Isaac Lab's H1 configuration, not a setting
+    validated for the Go2.
+  - **Versioning.** Any later change is a new version with a new task id.
+  - **Training.** Isaac Sim PhysX (`physics=isaacsim_physx`), with the task's own 300 iterations.
+- **Baseline acceptance criteria, fixed before retraining.** Each is measured by check 2 on the fixed command set
+  (64 envs, one 20 s episode each). A P0 seed that misses any criterion is not used for calibration.
+  - **Command tracking:** mean |commanded − actual| base xy velocity ≤ 0.15 m/s. That is about 1.5× the stock
+    policies' 0.09–0.10 m/s, and the plan's own tolerance for episode success.
+  - **Falls:** at most 1 of 64 episodes ends before its time limit.
+  - **Sustained-contact slip:** the 95th percentile of horizontal foot speed is ≤ 0.5 m/s, counted only at
+    physics updates where that foot has been in contact for at least 4 updates (20 ms) in a row. 0.5 m/s is about
+    half the median commanded speed; the 22 mm foot sphere pivoting on the calf moves its centre by at most about
+    0.2–0.4 m/s.
+  - These criteria decide acceptance only. The calibrated slip metric stays the plan's
+    (`foot_slip_p95_mps`, all in-contact instants).
+- **Scope.**
+  - Only P0 seeds 1–3 are retrained now, and all five check 2 thresholds are recalibrated from them.
+  - P0 seeds 4–8, and P1–P5, are not trained or touched until the checks and thresholds are frozen (plan step 3).
+  - P3 will then be this P0 variant with **two** explicit changes: `feet_slide` removed, and low ground friction.
+    Its result tests that combined perturbation, not either change alone.
+- **Why.** The stock P0 seeds 1–3 (Oct 13) tracked their commands (mean error 0.09–0.12 m/s, no falls), but check 2
+  measured foot slip p95 of 3.0–3.2 m/s. A raw trace of seed 1 confirmed the measurement:
+  - The foot-to-sensor mapping was correct.
+  - The current normal force was used.
+  - Feet were within 0.5 mm of the ground when in contact.
+  - Reported foot speed matched finite differences of foot position (correlation 0.998).
+  - 35% of in-contact instants had a foot moving faster than 1 m/s.
+  - Several feet lifted off 0–3 times in 6 s while others stepped 16–43 times.
+
+  So check 2 detected real foot dragging. Whether that is a simulator exploit has not been shown: that would need
+  evidence that the policy benefits from simulator behaviour that would not hold physically. The missing slip
+  penalty is a plausible explanation, not yet a demonstrated cause. With dragging baselines, the slip threshold
+  would have been 4.8 m/s, and P3 could not stand out from P0.
+- **Superseded runs preserved.**
+  - The stock P0 seeds 1–3 (checkpoints `37b043f4…`, `4ef95e11…`, `49667013…`), their check 2 reports
+    (measurement versions 2 and 3), both threshold files, the trace and all logs are kept unmodified:
+    - on the instance, in `mvp_runs/P0_stock_superseded`;
+    - as `s2g-p0-stock-superseded.tgz` (SHA-256 `3f6e83d1ba4f74d44c42c6bd42915cecfd8261e3cfe9594e411bccc06fa4e310`,
+      60 files, verified).
+  - They are not used for calibration.
+- **Approved by:** VJ, Oct 14, 2026.
+- **Recorded by Vihaan:** pending. P0 v1 is not retrained until he records this amendment.
