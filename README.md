@@ -89,6 +89,12 @@ Name the policy explicitly (`--checkpoint`, or `--load_run`): without it Isaac L
 refuses to start unless you pass `--allow-latest`. The report records the loaded checkpoint's path and SHA-256 under
 `checkpoint`, and the play arguments under `play_args`.
 
+Measure every policy on the same fixed velocity commands, as the MVP plan requires: make the set once
+(`python -m sim2gate.checks.commands --n 64 --seed 20261012 --out go2_flat_commands_64.json`) and pass
+`--commands go2_flat_commands_64.json`. Each environment then holds its own command for the whole run (no
+resampling, no heading control, no standing environments). The report records the set's seed and SHA-256 under
+`commands`; without `--commands` the task's random commands are used and the report says so.
+
 How to read the report:
 
 - **When it measures.** Isaac Lab resets environments that ended inside `step()`, so reading the scene afterwards
@@ -113,9 +119,12 @@ How to read the report:
 - **Missing data is never "ok".** A channel that was not measured is `null`. The actuator flag is `ok` only when
   both channels (torque clipping and joint speed) were measured on every step; `coverage` gives the share for each.
   A violation in a partially measured run is still flagged.
-- **Ground penetration** is measured only on flat ground (`terrain_type == "plane"`), from body-origin heights:
-  foot origin minus the foot radius (`--foot-radius`, 0.022 m for the Go2), and other bodies' origins only. On any
-  other terrain it is `null`.
+- **Ground penetration** is measured only on flat ground (`terrain_type == "plane"`; on any other terrain it is
+  `null`). It is the lowest point of each body's authored collision shapes, read once from the USD stage (spheres,
+  capsules, boxes, cylinders, meshes, instanced ones included) and placed every step from the body's pose. The
+  shapes found are listed under `geometry`. If they can't be read, check 2 falls back to body origins and
+  `--foot-radius` (0.022 m for the Go2) and says why (`geometry.why_not_shapes`); `--foot-geometry radius` forces
+  that.
 - **Percentiles** use contact samples from the whole run; past 2 million samples they are thinned uniformly in
   time (`contact_sample_stride`).
 - **Thresholds.** Only the actuator-limit flag has a fixed threshold (1% of steps). The others stay
