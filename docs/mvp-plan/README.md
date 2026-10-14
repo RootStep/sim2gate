@@ -11,3 +11,5 @@ Check it with `sha256sum -c SHA256SUMS` in this folder.
 
 The plan's criteria are fixed from here on. Any later change is logged in this folder with its
 date and reason, and never edits the frozen file.
+
+Logged changes: [`CHANGES.md`](CHANGES.md).
