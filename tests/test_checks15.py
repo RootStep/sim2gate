@@ -63,6 +63,7 @@ def test_runs_calibrates_and_scores(world):
     assert len(calls["cmds"]) == 9
     for c in calls["cmds"]:
         assert "env.sim.use_newton_actuators=false" in c and "--external_callback" in c
+        assert all(o in c for o in ("env.scene.robot.joint_ordering=physx", "env.scene.robot.body_ordering=physx"))
     succ = json.load(open(tmp / "P0_c15" / "success.json"))
     assert succ["threshold_mps"] == pytest.approx(0.075) and len(succ["sources"]) == 3
     for s in (1, 2, 3):

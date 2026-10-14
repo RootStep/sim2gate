@@ -51,6 +51,13 @@ calibrated in. For checks 1 and 5 a condition "meets nominal success" when at le
   `physics=newton_mjwarp`. Newton keeps Isaac Lab's own solver settings for the task (recorded with its versions).
 - Both runs use Isaac Lab's DC motor model (`env.sim.use_newton_actuators=false`, the same for every policy). The
   Go2 task otherwise runs its motors natively in Newton, which would change the motor code along with the engine.
+- **Same joint order on both engines.** PhysX lists the Go2's joints by type (all hips, then thighs, then calves);
+  MuJoCo-Warp lists them leg by leg. Without correction a PhysX-trained policy's actions reach the wrong joints on
+  Newton and the robot falls at once: on Oct 14 every P0 v2 seed had 0% success on Newton, and a Newton-trained
+  policy failed the same way on PhysX. Both runs therefore use the training engine's order
+  (`env.scene.robot.joint_ordering=physx`, `env.scene.robot.body_ordering=physx`), as Isaac Lab 3.0's guide
+  "Transfer Policies Between PhysX and Newton" prescribes, and parity requires identical joint and body names in
+  both raw files. `sim2gate.checks.robot_params` reads the robot back from each engine and lists any difference.
 - Parity is checked from the two raw files: identical task, checkpoint, command set, control and physics step,
   decimation, seed, environment count, profile and environment config (hashed without the physics settings); no
   physics override other than the engine and the fixed motor setting; no varied conditions.

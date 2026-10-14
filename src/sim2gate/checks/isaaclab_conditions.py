@@ -326,6 +326,8 @@ class ConditionRecorder:
             "command_set_sha256": self.command_set["sha256"], "commands": {**command_sets.summary(
                 self.command_set, self.command_source), **self.cmd_info},
             "num_envs": env.num_envs, "episodes_per_group": self.episodes, "episode_steps": self.max_steps,
+            "joint_names": list(getattr(env.scene["robot"], "joint_names", None) or []),
+            "body_names": list(getattr(env.scene["robot"], "body_names", None) or []),
             "steps_run": self.steps, "all_ended": bool(self.done.all()),
             "step_dt": float(env.step_dt), "sim_dt": float(cfg.sim.dt), "decimation": int(cfg.decimation),
             "seed": getattr(cfg, "seed", None), "overrides": _overrides(self.play_args), "play_args": self.play_args,

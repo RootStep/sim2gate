@@ -27,7 +27,7 @@ from ..training.smoke_go2 import isaac_python, run
 from .baselines import GO2_COMMANDS, _callback, sha256
 from .tasks import P0_TASK
 
-FIXED = ["env.sim.use_newton_actuators=false"]
+FIXED = list(transfer.FIXED_OVERRIDES) + list(transfer.ORDERING)
 RUNS = {"sweep": ("sweep", "physics=isaacsim_physx"), "physx": ("nominal", "physics=isaacsim_physx"),
         "newton": ("nominal", "physics=newton_mjwarp")}
 

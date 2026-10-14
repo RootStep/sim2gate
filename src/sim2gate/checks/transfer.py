@@ -6,7 +6,8 @@ velocity-tracking error, Newton / PhysX, exceeds 2. Parity conditions, all requi
 (exit code 3) and not scored:
 
 1. Same configuration: identical task, policy checkpoint, command set, control rate, seeds, environment count,
-   nominal profile and (physics-independent) environment config; only the physics preset differs.
+   nominal profile and (physics-independent) environment config, and the same robot: the same joint and body order
+   (the training engine's, ORDERING) on both engines; only the physics preset differs.
 2. Nominal sanity: the policy reaches 80% episode success on PhysX; otherwise "policy not ready".
 3. Engine settings recorded and not tuned: the Newton run records its solver settings and versions, and neither run
    carries any physics override beyond the engine choice and the fixed actuator-path setting below.
@@ -22,8 +23,12 @@ PHYSX = "physics=isaacsim_physx"
 NEWTON = "physics=newton_mjwarp"
 # the only physics-related overrides allowed, identical for every policy
 FIXED_OVERRIDES = ("env.sim.use_newton_actuators=false",)
+# joint and body order of the training engine (PhysX) on both runs: PhysX lists the Go2's joints by type (all hips,
+# then thighs, then calves), MuJoCo-Warp leg by leg. Without this the policy's actions reach the wrong joints on
+# Newton and the robot falls at once (Isaac Lab 3.0, "Transfer Policies Between PhysX and Newton").
+ORDERING = ("env.scene.robot.joint_ordering=physx", "env.scene.robot.body_ordering=physx")
 SAME = ("task", "checkpoint_sha256", "command_set_sha256", "step_dt", "decimation", "sim_dt", "seed", "num_envs",
-        "episode_steps", "profile", "env_cfg_sha256")
+        "episode_steps", "profile", "env_cfg_sha256", "joint_names", "body_names")
 
 
 def _physics_overrides(raw):
@@ -46,6 +51,11 @@ def parity(physx, newton):
     if _physics_overrides(newton) != allowed_n:
         bad.append(f"engine settings: the Newton run's physics overrides are {_physics_overrides(newton)}, "
                    f"expected {allowed_n}")
+    for label, r in (("PhysX", physx), ("Newton", newton)):
+        missing = [o for o in ORDERING if o not in r.get("overrides", [])]
+        if missing:
+            bad.append(f"same robot: the {label} run does not use the training engine's joint and body order "
+                       f"({', '.join(missing)} missing)")
     for label, r, want in (("PhysX", physx, "physx"), ("Newton", newton, "newton")):
         eng = (r.get("physics") or {}).get("manager") or ""
         if want not in eng.lower():

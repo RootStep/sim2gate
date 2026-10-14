@@ -203,7 +203,9 @@ class CondEnv:
         self.robot = types.SimpleNamespace(
             env=self, data=types.SimpleNamespace(root_lin_vel_b=te._Buf(torch.zeros(n, 3)),
                                                  body_mass=te._Buf(torch.full((n, 2), 6.9))),
-            actuators={"base_legs": motor_cls(None, num_envs=n)})
+            actuators={"base_legs": motor_cls(None, num_envs=n)},
+            joint_names=[f"{leg}_{j}_joint" for j in ("hip", "thigh", "calf") for leg in ("FL", "FR", "RL", "RR")],
+            body_names=["base", "FL_foot", "FR_foot", "RL_foot", "RR_foot"])
         self.scene = {"robot": self.robot}
         self.friction = torch.full((n,), cfg.events.physics_material.params["static_friction_range"][0])
         self.command_manager = te.FakeCommandManager(n)
@@ -276,7 +278,7 @@ class FakeGym:
 def _play(tmp_path, mode="sweep", name="raw.json", ckpt=b"weights", play_args=None, physics="PhysxManager"):
     """Isaac Lab's play flow in miniature: build the env from its config, load the checkpoint, step until done."""
     play_args = play_args or ["--task", "T", "--checkpoint", "m.pt", "physics=isaacsim_physx",
-                              "env.sim.use_newton_actuators=false"]
+                              "env.sim.use_newton_actuators=false", *tr.ORDERING]
     rec = ic.ConditionRecorder(mode, str(tmp_path / name), CMDS, "cmds.json", play_args, episodes=EPS, api=API,
                                motor_cls=Motor)
     cls = type("E", (CondEnv,), {})
@@ -387,7 +389,7 @@ def test_latency_must_be_whole_physics_steps(tmp_path):
 def _pair(tmp_path, newton_slow=0.0, newton_fall=False, extra=None):
     px, _ = _play(tmp_path, "nominal", "px.json")
     nw = json.loads(json.dumps(px))
-    nw["overrides"] = ["physics=newton_mjwarp", "env.sim.use_newton_actuators=false"] + (extra or [])
+    nw["overrides"] = ["physics=newton_mjwarp", "env.sim.use_newton_actuators=false", *tr.ORDERING] + (extra or [])
     nw["physics"]["manager"] = "NewtonMJWarpManager"
     nw["physics"]["solver_cfg"] = {"njmax": 65}
     nw["physics"]["versions"] = {"newton": "1.0"}
@@ -418,7 +420,8 @@ def test_check5_flags_engine_overfit(tmp_path, slow, fall, metric):
     assert res["flagged"] is True and metric in {r["metric"] for r in res["risks"]}
 
 
-@pytest.mark.parametrize("change", ["checkpoint", "commands", "tuned", "manager", "varied", "cfg"])
+@pytest.mark.parametrize("change", ["checkpoint", "commands", "tuned", "manager", "varied", "cfg", "joint_order",
+                                    "no_ordering"])
 def test_check5_parity_failures_make_it_invalid(tmp_path, change):
     px, nw = _pair(tmp_path, extra=["env.sim.physics.solver_cfg.iterations=50"] if change == "tuned" else None)
     if change == "checkpoint":
@@ -431,6 +434,10 @@ def test_check5_parity_failures_make_it_invalid(tmp_path, change):
         nw["conditions"]["varied"] = ["ground_friction"]
     elif change == "cfg":
         nw["env_cfg_sha256"] = "other"
+    elif change == "joint_order":      # Newton's own order: leg by leg (seen on the GPU, Oct 14)
+        nw["joint_names"] = [f"{leg}_{j}_joint" for leg in ("FL", "FR", "RL", "RR") for j in ("hip", "thigh", "calf")]
+    elif change == "no_ordering":
+        nw["overrides"] = [o for o in nw["overrides"] if o not in tr.ORDERING]
     succ = rb.success_reference([("s1", px)])
     res = tr.score(px, nw, succ)
     assert res["status"] == "invalid" and res["flagged"] is None and res["parity"] == "failed"
