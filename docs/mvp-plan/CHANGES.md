@@ -109,7 +109,7 @@ unless an entry says otherwise.
       60 files, verified).
   - They are not used for calibration.
 - **Approved by:** VJ, Oct 14, 2026.
-- **Recorded by Vihaan:** pending. P0 v1 is not retrained until he records this amendment.
+- **Recorded by Vihaan:** Oct 14, 2026, before P0 v2 was trained (confirmed by VJ).
 
 ## C5 — P0 v2: the same penalty, trained for 1,000 iterations (Oct 14, 2026)
 
@@ -144,3 +144,4 @@ unless an entry says otherwise.
 - **Superseded runs preserved:** the P0 v1 runs (checkpoints, check 2 reports, logs, manifest) are kept
   unmodified, in `mvp_runs/P0_v1_superseded` on the instance and as an archive, and are not used for calibration.
 - **Approved by:** VJ, Oct 14, 2026.
+- **Recorded by Vihaan:** Oct 14, 2026, before P0 v2 was trained (confirmed by VJ).
