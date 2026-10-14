@@ -4,6 +4,9 @@
             (mdp.feet_slide on the four feet, weight P0_FEET_SLIDE_WEIGHT), the task's 300 training iterations
             (change C4; superseded by v2: seed 2 fell in 15 of 64 episodes)
     P0 v2 = P0 v1 trained for 1000 iterations instead of 300; nothing else changes (change C5)
+    P0 v3 = P0 v2 + training randomization the plan assumed the clean baseline has (change C6): ground friction
+            static 0.4-1.2 (dynamic 0.3-0.9, never above static) and a command delay of 0-30 ms (0-6 physics steps,
+            drawn per episode) in the DC motor model
 
 The stock task has no foot-slip penalty, and the plan defines P3 as "foot-slip penalty removed" (plus low ground
 friction), so the clean baseline must have one. The weight -0.25 is a proposed starting value, taken from Isaac
@@ -20,9 +23,13 @@ variant means a new version (new task id); a registered version never changes.
 
 P0_TASK_V1 = "Sim2Gate-Velocity-Flat-Go2-P0-v1"
 P0_TASK_V2 = "Sim2Gate-Velocity-Flat-Go2-P0-v2"
-P0_TASK = P0_TASK_V2                     # the current P0
+P0_TASK_V3 = "Sim2Gate-Velocity-Flat-Go2-P0-v3"
+P0_TASK = P0_TASK_V3                     # the current P0
 P0_FEET_SLIDE_WEIGHT = -0.25
 P0_V2_ITERATIONS = 1000
+P0_V3_STATIC_FRICTION = (0.4, 1.2)       # the plan's plausible real range (check 1)
+P0_V3_DYNAMIC_FRICTION = (0.3, 0.9)      # the task's dynamic/static ratio (0.75) at both ends; make_consistent caps it
+P0_V3_DELAY_STEPS = (0, 6)               # 0-30 ms at the task's 5 ms physics step (the plan's plausible latency)
 
 VARIANTS = {
     P0_TASK_V1: {
@@ -38,27 +45,46 @@ VARIANTS = {
                      "weight": P0_FEET_SLIDE_WEIGHT, "feet": ".*_foot", "sensor": "contact_forces",
                      "weight_status": "proposed starting value (Isaac Lab H1), not validated for the Go2"},
                     {"what": "training iterations 300 -> 1000", "max_iterations": P0_V2_ITERATIONS}],
-        "max_iterations": P0_V2_ITERATIONS, "experiment_name": "sim2gate_go2_flat_p0_v2", "status": "current",
+        "max_iterations": P0_V2_ITERATIONS, "experiment_name": "sim2gate_go2_flat_p0_v2", "status": "superseded by v3 (C6)",
     },
+}
+VARIANTS[P0_TASK_V3] = {
+    "policy": "P0", "version": 3, "base_task": "Isaac-Velocity-Flat-UnitreeGo2",
+    "changes": VARIANTS[P0_TASK_V2]["changes"] + [
+        {"what": "events.physics_material ranges", "static_friction_range": list(P0_V3_STATIC_FRICTION),
+         "dynamic_friction_range": list(P0_V3_DYNAMIC_FRICTION), "make_consistent": True},
+        {"what": "actuators.base_legs: DC motor with a per-episode command delay",
+         "class": "sim2gate.mvp.actuators.DelayedDCMotor", "delay_physics_steps": list(P0_V3_DELAY_STEPS),
+         "delay_ms": [5 * P0_V3_DELAY_STEPS[0], 5 * P0_V3_DELAY_STEPS[1]]}],
+    "max_iterations": P0_V2_ITERATIONS, "experiment_name": "sim2gate_go2_flat_p0_v3", "status": "current",
 }
 
 
-def _p0_env_cfg():
+def _p0_env_cfg(version=1):
     from isaaclab.managers import RewardTermCfg, SceneEntityCfg
     from isaaclab.utils import configclass
     from isaaclab_tasks.core.velocity import mdp
     from isaaclab_tasks.core.velocity.config.go2.flat_env_cfg import UnitreeGo2FlatEnvCfg
 
     @configclass
-    class Go2FlatP0EnvCfgV1(UnitreeGo2FlatEnvCfg):
+    class Go2FlatP0EnvCfg(UnitreeGo2FlatEnvCfg):
         def __post_init__(self):
             super().__post_init__()
             self.rewards.feet_slide = RewardTermCfg(
                 func=mdp.feet_slide, weight=P0_FEET_SLIDE_WEIGHT,
                 params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_foot"),
                         "asset_cfg": SceneEntityCfg("robot", body_names=".*_foot")})
+            if version >= 3:
+                from .actuators import with_delay
+                pm = self.events.physics_material.params
+                pm["static_friction_range"] = P0_V3_STATIC_FRICTION
+                pm["dynamic_friction_range"] = P0_V3_DYNAMIC_FRICTION
+                pm["make_consistent"] = True
+                acts = self.scene.robot.actuators
+                acts["base_legs"] = with_delay(acts["base_legs"], *P0_V3_DELAY_STEPS)
 
-    return Go2FlatP0EnvCfgV1
+    Go2FlatP0EnvCfg.__name__ = f"Go2FlatP0EnvCfgV{version}"
+    return Go2FlatP0EnvCfg
 
 
 def _p0_agent_cfg(task):
@@ -77,10 +103,13 @@ def _p0_agent_cfg(task):
     return Go2FlatP0PPORunnerCfg
 
 
-# P0 v1 and v2 share the environment (the same penalty); they differ only in the training budget
-_LAZY = {"Go2FlatP0EnvCfgV1": _p0_env_cfg, "Go2FlatP0EnvCfgV2": _p0_env_cfg,
+# P0 v1 and v2 share the environment (the same penalty) and differ only in the training budget; v3 adds C6's
+# friction and delay randomization
+_LAZY = {"Go2FlatP0EnvCfgV1": lambda: _p0_env_cfg(1), "Go2FlatP0EnvCfgV2": lambda: _p0_env_cfg(2),
+         "Go2FlatP0EnvCfgV3": lambda: _p0_env_cfg(3),
          "Go2FlatP0PPORunnerCfgV1": lambda: _p0_agent_cfg(P0_TASK_V1),
-         "Go2FlatP0PPORunnerCfgV2": lambda: _p0_agent_cfg(P0_TASK_V2)}
+         "Go2FlatP0PPORunnerCfgV2": lambda: _p0_agent_cfg(P0_TASK_V2),
+         "Go2FlatP0PPORunnerCfgV3": lambda: _p0_agent_cfg(P0_TASK_V3)}
 _built = {}
 
 

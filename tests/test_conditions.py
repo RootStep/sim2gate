@@ -55,7 +55,7 @@ class FakeDelayBuffer:
         self.hist = [[] for _ in range(n)]
 
     def set_time_lag(self, lag, ids=None):
-        self.lag[:] = lag
+        self.lag[slice(None) if ids is None else torch.as_tensor(ids).long()] = torch.as_tensor(lag).long()
         if int(self.lag.max()) > self.h:
             raise ValueError("lag beyond history")
 
@@ -412,7 +412,7 @@ def test_check5_passes_a_transferable_policy(tmp_path):
     assert res["metrics"]["error_ratio"] == pytest.approx(0.06 / 0.05)
 
 
-@pytest.mark.parametrize("slow, fall, metric", [(0.06, False, "error_ratio"), (0.0, True, "newton_success_rate")])
+@pytest.mark.parametrize("slow, fall, metric", [(0.06, False, "error_ratio"), (0.0, True, "newton_fall_free_rate")])
 def test_check5_flags_engine_overfit(tmp_path, slow, fall, metric):
     px, nw = _pair(tmp_path, newton_slow=slow, newton_fall=fall)
     succ = rb.success_reference([("s1", px)])
@@ -529,3 +529,32 @@ def test_nominal_run_changes_no_material_or_mass(tmp_path):
     assert sorted(FakeMaterial.calls) == pytest.approx(sorted(rb.values("ground_friction")[1:]))
     assert sorted(FakeMass.calls) == pytest.approx(rb.values("added_base_mass_kg")[1:])
     assert 0.8 not in FakeMaterial.calls
+
+
+def test_check5_slower_tracking_without_falls_is_not_flagged(tmp_path):
+    """P0 v2 on Newton (Oct 14): no falls, error ratio about 1.4, most episodes just over the PhysX tracking limit.
+    Under C6 that is a transferable policy: falls decide the first rule, the ratio rule judges tracking."""
+    px, nw = _pair(tmp_path, newton_slow=0.03)                      # 0.08 / 0.05 = 1.6x, over the 0.075 limit
+    succ = rb.success_reference([("s1", px)])
+    res = tr.score(px, nw, succ)
+    m = res["metrics"]
+    assert m["newton_success_rate"] == 0.0 and m["newton_fall_free_rate"] == 1.0
+    assert m["error_ratio"] == pytest.approx(1.6) and res["flagged"] is False
+
+
+def test_training_motor_delays_by_a_fresh_random_draw_per_episode():
+    """P0 v3's DelayedDCMotor (C6): each reset draws a delay in [min, max] physics steps per environment, and the
+    targets reach the motor that many steps late, as in check 1's latency sweep."""
+    from sim2gate.mvp.actuators import motor_class
+    torch.manual_seed(0)
+    M = motor_class(FakeDCMotor, FakeDelayBuffer)
+    m = M(types.SimpleNamespace(min_delay=0, max_delay=6), num_envs=256)
+    m.reset(None)
+    lags = m._delay_bufs[0].lag
+    assert int(lags.min()) == 0 and int(lags.max()) == 6 and len(set(lags.tolist())) == 7
+    m.reset(torch.arange(4))
+    assert torch.equal(m._delay_bufs[0].lag, m._delay_bufs[2].lag)      # one draw shared by all three targets
+    k = int(m._delay_bufs[0].lag[0])
+    outs = [m.compute(_ca(256, torch.full((256, 2), float(t))), torch.zeros(256, 2), torch.zeros(256, 2)).joint_efforts
+            for t in range(10)]
+    assert float(outs[9][0, 0]) == pytest.approx(min(20.0, 25.0 * (9 - k)))

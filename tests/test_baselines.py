@@ -201,12 +201,23 @@ def test_task_module_imports_without_isaac_lab_and_versions_the_variant():
     import importlib
     t = importlib.import_module("sim2gate.mvp.tasks")
     v = t.VARIANTS[t.P0_TASK]
-    assert t.P0_TASK == t.P0_TASK_V2 and t.P0_TASK.endswith("-v2") and v["version"] == 2
+    assert t.P0_TASK == t.P0_TASK_V3 and t.P0_TASK.endswith("-v3") and v["version"] == 3
     assert v["max_iterations"] == 1000 and v["changes"][0]["weight"] == -0.25
     assert "not validated" in v["changes"][0]["weight_status"]
-    v1 = t.VARIANTS[t.P0_TASK_V1]                                  # v1 stays registered, marked superseded
-    assert v1["max_iterations"] == 300 and "superseded" in v1["status"]
-    assert [c for c in v["changes"] if "feet_slide" in c["what"]] == [c for c in v1["changes"]]  # same penalty
-    for name in ("Go2FlatP0EnvCfgV1", "Go2FlatP0EnvCfgV2", "Go2FlatP0PPORunnerCfgV2"):
+    fr = next(c for c in v["changes"] if "physics_material" in c["what"])
+    assert fr["static_friction_range"] == [0.4, 1.2] and fr["make_consistent"] is True
+    dl = next(c for c in v["changes"] if "delay" in c["what"])
+    assert dl["delay_physics_steps"] == [0, 6] and dl["delay_ms"] == [0, 30]
+    v1, v2 = t.VARIANTS[t.P0_TASK_V1], t.VARIANTS[t.P0_TASK_V2]       # earlier versions stay, marked superseded
+    assert v1["max_iterations"] == 300 and "superseded" in v1["status"] and "superseded" in v2["status"]
+    assert v["changes"][:2] == v2["changes"]                          # v3 = v2 + C6's randomization
+    for name in ("Go2FlatP0EnvCfgV1", "Go2FlatP0EnvCfgV2", "Go2FlatP0EnvCfgV3", "Go2FlatP0PPORunnerCfgV3"):
         with pytest.raises(ImportError):
             getattr(t, name)                                       # built only where Isaac Lab is installed
+
+
+def test_actuators_module_imports_without_isaac_lab():
+    import importlib
+    a = importlib.import_module("sim2gate.mvp.actuators")
+    with pytest.raises(ImportError):
+        a.delayed_dc_motor()

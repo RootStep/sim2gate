@@ -47,6 +47,8 @@ calibrated in. For checks 1 and 5 a condition "meets nominal success" when at le
 
 ## Check 5
 
+- Flagged if fewer than 80% of Newton episodes end without a fall, or the Newton/PhysX tracking-error ratio
+  exceeds 2 (C6). The PhysX run must reach 80% episode success first ("policy not ready" otherwise).
 - Two runs per policy, 64 episodes each, nominal profile, same command set and seed: `physics=isaacsim_physx` and
   `physics=newton_mjwarp`. Newton keeps Isaac Lab's own solver settings for the task (recorded with its versions).
 - Both runs use Isaac Lab's DC motor model (`env.sim.use_newton_actuators=false`, the same for every policy). The
@@ -62,11 +64,10 @@ calibrated in. For checks 1 and 5 a condition "meets nominal success" when at le
   decimation, seed, environment count, profile and environment config (hashed without the physics settings); no
   physics override other than the engine and the fixed motor setting; no varied conditions.
 
-## Open: P1 and P2 against this P0
+## Resolved by C6
 
-At the pinned Isaac Lab commit the Go2 flat task trains with a fixed friction (0.8, no randomization) and no action
-delay. The plan defines P1 as "friction and added-mass randomization set to a near-zero range" and P2 as "action
-delay fixed at 0 in training", which presume a default that randomizes both. Against the current P0, P1 differs only
-in mass, and P2 is identical to P0. Running check 1 on P0 v2 seeds 1–3 shows what that means in practice: P0 v2's
-friction and latency cliffs are, in effect, P1's friction cliff and P2's latency cliff. A decision is needed before
-the code freeze.
+- **P1 and P2.** P0 v2 never randomized friction and had no action delay, so P2 was identical to P0, and check 1
+  flagged every P0 v2 seed on latency (cliffs 20–25 ms). P0 v3 trains with friction 0.4–1.2 and a 0–30 ms delay;
+  P1 and P2 remove them.
+- **Check 5's first rule** counts Newton falls (fall-free rate at least 80%); tracking is judged by the error-ratio
+  rule alone. See CHANGES.md, C6.

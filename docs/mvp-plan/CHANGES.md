@@ -150,3 +150,47 @@ unless an entry says otherwise.
 - **Result (Oct 14):** all three P0 v2 seeds met the C4 criteria (tracking error 0.057–0.064 m/s, no falls,
   sustained-contact slip p95 0.090–0.093 m/s), and the check 2 thresholds were set from them. Details and files:
   `calibration/p0v2/`.
+
+## C6 — P0 v3 (friction and delay randomization); check 5 on the same robot, flagged on falls (Oct 14, 2026)
+
+- **Was:**
+  - P0 v2 trains on Isaac Lab's Go2 flat task, which never randomizes ground friction (fixed 0.8) and has no
+    action delay. The plan defines P1 as "friction and added-mass randomization set to a near-zero range" and P2 as
+    "action delay fixed at 0 in training", which presume a clean baseline that randomizes both.
+  - Check 5: flagged if Newton's episode-success rate is below 80% or the Newton/PhysX tracking-error ratio
+    exceeds 2.
+- **Now:**
+  1. **P0 v3**, `Sim2Gate-Velocity-Flat-Go2-P0-v3` = P0 v2 plus:
+     - ground friction randomized over the plausible real range, static 0.4–1.2 (dynamic 0.3–0.9, never above
+       static);
+     - a command delay of 0–30 ms (0–6 physics steps, drawn per episode) in the DC motor model
+       (`sim2gate.mvp.actuators.DelayedDCMotor`, the same delay mechanism check 1 sweeps).
+     Everything else is unchanged: the foot-slip penalty, the stock ±25% base-mass randomization, 1,000 iterations,
+     Isaac Sim PhysX, the C4 acceptance criteria and seeds 1–3. P0 seeds 1–3 are retrained, check 2's thresholds and
+     the episode-success reference are recalibrated from them, and checks 1 and 5 are rerun. P1 is then P0 v3 with
+     friction and mass randomization near zero, and P2 is P0 v3 with the delay fixed at 0.
+  2. **Check 5 runs the same robot on both engines.** PhysX lists the Go2's joints by type (all hips, then thighs,
+     then calves) and MuJoCo-Warp leg by leg. Both check 5 runs now use the training engine's joint and body order
+     (Isaac Lab 3.0's `joint_ordering` / `body_ordering`), and parity requires identical joint and body names.
+  3. **Check 5's first rule counts falls:** flagged if fewer than 80% of Newton's episodes end without a fall, or
+     (unchanged) if the tracking-error ratio exceeds 2. Newton's episode-success rate is still reported. The PhysX
+     nominal-sanity condition keeps the episode-success definition.
+- **Why** (P0 v2 seeds 1–3, Oct 14; files in the `s2g-c15` bundle):
+  - Check 1 flagged all three clean baselines on latency, with cliffs at 20–25 ms inside the plausible 0–30 ms. A
+    policy trained without delay cannot be told from P2, and A4 would fail on the threshold's premise, not the
+    check. Friction cliffs were at 0.33, just outside the plausible range.
+  - Check 5 first measured 0% Newton success. Reading the robot back from each engine (`sim2gate.checks.robot_params`)
+    showed the joint-order mismatch; Isaac Lab's own transfer guide warns that it makes a walking policy fall within
+    a few dozen steps. A policy trained on Newton failed on PhysX in the same way, and neither the motor model nor
+    the joint armature explained it.
+  - With matching joint order, no P0 v2 episode fell on Newton (0 of 192), and the error ratio was 1.34–1.48. Yet
+    only 55–72% of episodes met the episode-success tracking limit (1.5 x the PhysX baseline's error), because that
+    limit is stricter than the ratio rule's 2x: the ratio rule could never decide. Falls are what the plan's P5
+    ("contact settings Newton will not reproduce") is meant to produce; tracking stays judged by the ratio.
+- **Affects:** the test-set rows for P0, P1 and P2; check 5's parity conditions and flag rule. Thresholds are
+  recalibrated from P0 v3; acceptance criteria A1–A6 are unchanged.
+- **Superseded runs preserved:** the P0 v2 baselines, their check 2 calibration (`calibration/p0v2/`), and their
+  checks 1 and 5 runs and diagnostics are kept unmodified on the instance and as archives, and are not used for
+  calibration.
+- **Approved by:** VJ, Oct 14, 2026.
+- **Recorded by Vihaan:** pending.

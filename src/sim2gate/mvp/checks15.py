@@ -143,7 +143,7 @@ def main(argv=None):
             rec["check5"] = {"status": c5["status"], "flagged": c5["flagged"], "reasons": c5["reasons"]}
             mt = c5["metrics"]
             line += (f"\n  check 5: {c5['status']} (parity {c5['parity']}), success PhysX {mt['physx_success_rate']} "
-                     f"Newton {mt['newton_success_rate']}, error ratio "
+                     f"Newton {mt['newton_success_rate']}, Newton fall-free {mt['newton_fall_free_rate']}, error ratio "
                      f"{'n/a' if mt['error_ratio'] is None else round(mt['error_ratio'], 3)}"
                      f"{', FLAGGED' if c5['flagged'] else ''}")
         for name in a.runs:
