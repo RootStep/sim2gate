@@ -76,8 +76,11 @@ def term_ranges(term):
         return None
 
 
-def pin(env, doc, term_name="base_velocity"):
-    """Hold each environment's velocity command at the command set's value. Returns (undo, info) or raises."""
+def pin(env, doc, term_name="base_velocity", tile=False):
+    """Hold each environment's velocity command at the command set's value. Returns (undo, info) or raises.
+
+    tile: the environment count may be a whole multiple of the command count; environment i then gets command
+    i mod n (used by check 1, where each sweep group of n episodes runs the same n commands)."""
     cm = getattr(env, "command_manager", None)
     if cm is None:
         raise RuntimeError("the environment has no command manager")
@@ -86,9 +89,13 @@ def pin(env, doc, term_name="base_velocity"):
         if not hasattr(term, attr):
             raise RuntimeError(f"command term {term_name!r} has no {attr}; not a velocity command term")
     n = term.vel_command_b.shape[0]
-    if len(doc["commands"]) != n:
-        raise ValueError(f"the command set has {len(doc['commands'])} commands, the environment has {n} envs")
+    m = len(doc["commands"])
+    if (m != n) and not (tile and m and n % m == 0):
+        raise ValueError(f"the command set has {m} commands, the environment has {n} envs"
+                         + (" (not a whole multiple)" if tile else ""))
     fixed = torch.tensor(doc["commands"], dtype=term.vel_command_b.dtype, device=term.vel_command_b.device)
+    if n != m:
+        fixed = fixed.repeat(n // m, 1)
     rng = term_ranges(term)
     outside = []
     if rng is not None:
@@ -106,8 +113,8 @@ def pin(env, doc, term_name="base_velocity"):
 
     term._resample_command = _resample_command
     _resample_command(torch.arange(n, device=term.vel_command_b.device))
-    info = {"term": term_name, "task_ranges": {k: list(v) for k, v in rng.items()} if rng else None,
-            "outside_task_ranges": outside}
+    info = {"term": term_name, "task_ranges": {a: list(v) for a, v in rng.items()} if rng else None,
+            "outside_task_ranges": outside, "tiled": n // m}
 
     def undo():
         if term.__dict__.get("_resample_command") is _resample_command:
