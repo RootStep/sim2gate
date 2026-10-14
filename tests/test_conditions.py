@@ -149,21 +149,30 @@ def test_string_class_types_are_resolved():
 
 
 class FakeMaterial:
+    """Strict like Isaac Lab's PhysX material term: env ids go to warp as int32, so int64 ids fail there."""
+    calls = []
+
     def __init__(self, env, params):
         self.env = env
 
     def __call__(self, env, ids, static_friction_range, dynamic_friction_range, restitution_range, num_buckets,
                  asset_cfg, make_consistent=False):
-        env.friction[ids] = static_friction_range[0]
+        if ids.dtype != torch.int32:
+            raise RuntimeError(f"Cannot convert Torch type {ids.dtype} to Warp type int32")
+        FakeMaterial.calls.append(static_friction_range[0])
+        env.friction[ids.long()] = static_friction_range[0]
 
 
 class FakeMass:
     def __init__(self, env, params):
         pass
 
+    calls = []
+
     def __call__(self, env, ids, asset_cfg, dist, op, distribution):
-        assert op == "add"
-        env.robot.data.body_mass.torch[ids, 0] += dist[0]
+        assert op == "add" and ids.dtype == torch.int32
+        FakeMass.calls.append(dist[0])
+        env.robot.data.body_mass.torch[ids.long(), 0] += dist[0]
 
 
 class FakeEntity:
@@ -501,3 +510,15 @@ def test_errors_are_reported_in_full_before_isaac_sim_can_close(tmp_path, capsys
     err = (tmp_path / "r.json.error.txt").read_text()
     assert "whole physics steps" in err and "Traceback" in err
     assert "ERROR while recording step 0" in capsys.readouterr().err
+
+
+def test_nominal_run_changes_no_material_or_mass(tmp_path):
+    """0.8 is not exactly representable in float32; the nominal friction must still be recognized as nominal and
+    left alone (on the GPU this once re-applied it, through a path that then failed on int64 env ids)."""
+    FakeMaterial.calls.clear(); FakeMass.calls.clear()
+    raw, env = _play(tmp_path, "nominal", "px.json")
+    assert FakeMaterial.calls == [] and FakeMass.calls == []
+    raw, env = _play(tmp_path, "sweep", "sw.json")
+    assert sorted(FakeMaterial.calls) == pytest.approx(sorted(rb.values("ground_friction")[1:]))
+    assert sorted(FakeMass.calls) == pytest.approx(rb.values("added_base_mass_kg")[1:])
+    assert 0.8 not in FakeMaterial.calls

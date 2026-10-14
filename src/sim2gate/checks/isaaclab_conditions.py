@@ -242,8 +242,9 @@ class ConditionRecorder:
         self._undo_cmd, self.cmd_info = command_sets.pin(env, self.command_set, tile=True)
         dev = env.device
         group = torch.tensor(self.env_group, device=dev)
+        # float64: the grid's values compare exactly (0.8 in float32 is 0.800000012, not the nominal 0.8)
         cond = {k: torch.tensor([self.groups[g]["condition"][k] for g in self.env_group], device=dev,
-                                dtype=torch.float32) for k in robustness.PARAMS}
+                                dtype=torch.float64) for k in robustness.PARAMS}
         self.applied = apply_conditions(env, cond, group, self.groups, api=self.api)
         mgr = getattr(env, "reward_manager", None)
         if mgr is not None and callable(getattr(mgr, "compute", None)):
@@ -383,12 +384,13 @@ def apply_conditions(env, cond, group, groups, api=None):
     nominal = robustness.nominal_condition()
 
     def ids_where(mask):
-        return mask.nonzero().flatten()
+        # int32, as Isaac Lab's event manager passes them: the PhysX material setter converts them to warp int32
+        return mask.nonzero().flatten().to(torch.int32)
 
     # friction: one material term per value (PhysX samples its material buckets when the term is built)
     fr = cond["ground_friction"]
     for v in sorted(set(fr.tolist())):
-        if abs(v - nominal["ground_friction"]) < 1e-9:
+        if abs(v - nominal["ground_friction"]) < 1e-6:
             continue
         ids = ids_where((fr - v).abs() < 1e-6)
         sd = (v, v)
@@ -433,7 +435,7 @@ def apply_conditions(env, cond, group, groups, api=None):
     rec["readback"]["action_latency_ms"] = _per_group(motors[0].sim2gate_lag.double() * sim_dt * 1000.0, group, groups)
     rec["readback"]["motor_strength_scale"] = _per_group(motors[0].sim2gate_strength.flatten(), group, groups)
     # observation noise: each noise term's range scaled per environment
-    scale = cond["observation_noise_scale"].reshape(-1, 1)
+    scale = cond["observation_noise_scale"].reshape(-1, 1).float()      # observations are float32
     noisy = []
     om = env.observation_manager
     for gname, cfgs in om._group_obs_term_cfgs.items():
