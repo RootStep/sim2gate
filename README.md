@@ -108,7 +108,7 @@ How to read the report:
   step, the covered share and which path ran, and a note appears when coverage is below 1. The sensor's history
   buffer is not used: what it spans depends on that update cadence. On Isaac Lab 3.0's Go2 flat task the default
   (Newton with Newton actuators) is the single-call path, so 1 of 4 substeps; `env.sim.use_newton_actuators=false`
-  (same Newton physics, Isaac Lab's actuator path) or `physics=physx` gives 4 of 4. Full coverage was shown for those
+  (same Newton physics, Isaac Lab's actuator path) or `physics=isaacsim_physx` (Isaac Sim's PhysX) gives 4 of 4. Full coverage was shown for those
   settings only, not for the default path. The report records the physics path and these overrides
   (`physics_context`).
 - **Thresholds carry their measurement settings.** A thresholds file records the settings it was calibrated under

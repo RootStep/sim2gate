@@ -5,7 +5,8 @@ container, from the Isaac Lab-Arena folder:
 
     python -m sim2gate.mvp.baselines --policy P0 --seeds 1 2 3 --out mvp_runs/P0 --calibrate
 
-For each seed it trains Isaac Lab's Go2 flat task with stock RSL-RL PPO on PhysX (the plan's training engine), finds
+For each seed it trains Isaac Lab's Go2 flat task with stock RSL-RL PPO on Isaac Sim's PhysX (physics=isaacsim_physx, the plan's
+training engine), finds
 the final checkpoint, and runs check 2 on it under the same physics with the fixed command set (64 envs, 1000
 steps; the plan's set ships with Sim2Gate: 64 commands, seed 20261012, see GO2_COMMANDS). Every checkpoint is recorded with its SHA-256, and the run's saved env and agent configs with theirs.
 With --calibrate it then sets the thresholds from the check 2 reports: max over the baselines x1.5, as the plan
@@ -93,8 +94,10 @@ def main(argv=None):
                    help="the fixed command set (default: the MVP's Go2 set shipped with Sim2Gate)")
     p.add_argument("--out", required=True)
     p.add_argument("--task", default=DEFAULT_TASK)
-    p.add_argument("--physics", default="physx", help="Isaac Lab physics preset for training and check 2 "
-                                                      "(default physx, the plan's training engine; '' for the task's)")
+    p.add_argument("--physics", default="isaacsim_physx",
+                   help="Isaac Lab physics preset for training and check 2 (default isaacsim_physx: Isaac Sim's PhysX, "
+                        "the plan's training engine; '' for the task's own default). Not 'physx': in Isaac Lab 3.0 that "
+                        "is an automatic choice that picks the kitless OvPhysX engine when Isaac Sim is not launched")
     p.add_argument("--iterations", type=int, default=None, help="training iterations (default: the task's own)")
     p.add_argument("--num-envs", type=int, default=64, help="check 2 environments (must match the command set)")
     p.add_argument("--steps", type=int, default=1000, help="check 2 control steps (1000 = one 20 s episode)")

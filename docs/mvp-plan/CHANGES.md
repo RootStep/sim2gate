@@ -20,7 +20,7 @@ unless an entry says otherwise.
 - **Now:** for the MVP, all three checks run on Isaac Lab 3.0 directly, on Isaac Lab's own Go2 flat
   velocity-tracking task and its RSL-RL train and play entry points.
   - Check 1 applies its physics variations through Isaac Lab's event terms and configuration overrides.
-  - Check 5 uses Isaac Lab's physics selector (`physics=physx` vs `physics=newton_mjwarp`).
+  - Check 5 uses Isaac Lab's physics selector (`physics=isaacsim_physx` vs `physics=newton_mjwarp`).
   - The Arena port (Go2 embodiment, task, metric and variation plug-ins), and contributing the physics variations
     and exploit metrics back to Arena, come after the MVP validation.
 - **Why:**

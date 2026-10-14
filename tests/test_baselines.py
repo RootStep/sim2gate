@@ -24,7 +24,7 @@ def world(tmp_path, monkeypatch):
         if "sim2gate.checks.isaaclab_exploits" in cmd:
             calls["check2"] += 1
             out, ck = cmd[cmd.index("--out") + 1], cmd[cmd.index("--checkpoint") + 1]
-            assert cmd[cmd.index("--commands") + 1] == str(cmd_path) and "physics=physx" in cmd
+            assert cmd[cmd.index("--commands") + 1] == str(cmd_path) and "physics=isaacsim_physx" in cmd
             data = open(ck, "rb").read() + (b"x" if calls["wrong_checkpoint"] else b"")
             seed = int(ck.split("seed")[-1].split(os.sep)[0])
             env = te.FakeEnv(fall_step=3 + seed)
@@ -36,7 +36,7 @@ def world(tmp_path, monkeypatch):
             return 0, ""
         calls["train"] += 1
         seed = int(cmd[cmd.index("--seed") + 1])
-        assert "physics=physx" in cmd
+        assert "physics=isaacsim_physx" in cmd
         if seed == calls["fail_train_seed"]:
             return 1, ""
         d = tmp_path / "logs" / "rsl_rl" / "unitree_go2_flat" / f"run{calls['train']}_seed{seed}"
@@ -63,10 +63,10 @@ def test_baselines_train_measure_and_calibrate(world):
         assert e["checkpoint"]["path"].endswith("model_299.pt") and len(e["checkpoint"]["sha256"]) == 64
         assert "env.yaml" in e["configs"] and e["check2_report"]["sha256"]
         assert "error" not in e
-    assert m["physics"] == "physx" and m["command_set"]["seed"] == 20261012
+    assert m["physics"] == "isaacsim_physx" and m["command_set"]["seed"] == 20261012
     th = json.load(open(tmp / "mvp/P0/thresholds.json"))
     assert th["command_set"]["sha256"] == m["command_set"]["sha256"]
-    assert th["physics_context"]["overrides"] == ["physics=physx"]
+    assert th["physics_context"]["overrides"] == ["physics=isaacsim_physx"]
     assert len({s["checkpoint_sha256"] for s in th["sources"]}) == 3
 
 
