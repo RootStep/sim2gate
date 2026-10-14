@@ -201,8 +201,36 @@ class ConditionRecorder:
 
     # -- config hook (before the env is built) --
     def on_env_cfg(self, cfg):
-        self.profile_record = apply_profile(cfg, motor_cls=self.motor_cls)
-        cfg.scene.num_envs = self.num_envs
+        with self._loud("applying the nominal profile"):
+            self.profile_record = apply_profile(cfg, motor_cls=self.motor_cls)
+            cfg.scene.num_envs = self.num_envs
+
+    def _loud(self, what):
+        """Report any error here in full before re-raising. Inside Isaac Lab's launch_simulation block, Isaac Sim
+        closes the process on an exception before Python prints the traceback, so the run would die silently."""
+        rec = self
+
+        class _Ctx:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, et, ev, tb):
+                if et is None or et is KeyboardInterrupt:
+                    return False
+                import traceback
+                text = f"[sim2gate] ERROR while {what}:\n" + "".join(traceback.format_exception(et, ev, tb))
+                sys.stderr.write(text)
+                sys.stderr.flush()
+                sys.stdout.flush()
+                try:
+                    with open(rec.out_path + ".error.txt", "w") as f:
+                        f.write(text)
+                        f.flush()
+                        os.fsync(f.fileno())
+                except OSError:
+                    pass
+                return False
+        return _Ctx()
 
     # -- first step: apply the conditions and reset --
     def _setup(self, wrapper):
@@ -236,6 +264,10 @@ class ConditionRecorder:
         self.max_steps = int(env.max_episode_length)
 
     def step(self, wrapper, orig_step, actions):
+        with self._loud(f"recording step {getattr(self, 'steps', 0)}"):
+            return self._step(wrapper, orig_step, actions)
+
+    def _step(self, wrapper, orig_step, actions):
         if not self.started:
             self._setup(wrapper)
             self.started = True

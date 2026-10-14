@@ -489,3 +489,15 @@ def test_install_does_not_import_isaaclab_envs_before_isaac_sim_starts(tmp_path,
     assert fake_gym.make is not None and fake_gym.make.__name__ == "make"
     undo()
     assert "isaaclab.envs" not in sys.modules
+
+
+def test_errors_are_reported_in_full_before_isaac_sim_can_close(tmp_path, capsys):
+    rec = ic.ConditionRecorder("sweep", str(tmp_path / "r.json"), CMDS, "c", [], episodes=EPS, api=API,
+                               motor_cls=Motor)
+    cfg = _cfg(); cfg.scene.num_envs = rec.num_envs; cfg.sim.dt = 0.004
+    rec.on_env_cfg(cfg)
+    with pytest.raises(RuntimeError):
+        rec.step(Wrapper(CondEnv(cfg)), lambda w, a: None, None)
+    err = (tmp_path / "r.json.error.txt").read_text()
+    assert "whole physics steps" in err and "Traceback" in err
+    assert "ERROR while recording step 0" in capsys.readouterr().err

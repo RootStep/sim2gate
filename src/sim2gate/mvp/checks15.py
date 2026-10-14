@@ -81,12 +81,17 @@ def main(argv=None):
         for name in a.runs:
             mode, physics = RUNS[name]
             out = os.path.join(a.out, f"raw_{name}_s{s}.json")
-            if os.path.exists(out):
-                os.remove(out)
+            for f in (out, out + ".error.txt"):
+                if os.path.exists(f):
+                    os.remove(f)
             rc, _ = run(run_cmd(a, mode, physics, ck["path"], out), os.path.join(a.out, f"{name}_s{s}.log"))
             r = {"returncode": rc}
             if not os.path.exists(out):
                 r["error"] = f"no output (exit {rc})"
+                if os.path.exists(out + ".error.txt"):
+                    lines = [x for x in open(out + ".error.txt").read().splitlines() if x.strip()]
+                    r["error"] += ": " + (lines[-1] if lines else "")
+                    r["error_file"] = os.path.abspath(out + ".error.txt")
                 ok = False
             else:
                 raw = json.load(open(out))
