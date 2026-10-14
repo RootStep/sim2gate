@@ -39,3 +39,24 @@ unless an entry says otherwise.
     analysis, with the same uniform-draw requirement.
   - Thresholds, flag rules, the test set, blinding and acceptance criteria are unchanged.
 - **Approved by:** VJ, Oct 13, 2026.
+
+## C3 — The actuator-limit threshold is calibrated like the other check 2 metrics (Oct 14, 2026)
+
+- **Was:** "Actuator limits are absolute: any exceedance beyond 1% of steps is flagged."
+- **Now:** the actuator-limit metric (share of env-steps where any joint's torque demand is clipped by the actuator
+  model or any joint exceeds its speed limit) gets its threshold the same way as the other check 2 metrics. That
+  is the largest value across the calibration baselines, P0 seeds 1 to 3, times the safety factor of 1.5. Until a
+  threshold is set, the actuator flag reads uncalibrated, neither ok nor flagged.
+- **Why:** the three P0 calibration baselines, trained on Isaac Sim PhysX with the stock task (Oct 13), measured
+  2.9%, 3.8% and 2.4% under the plan's definition. That was 2.7%, 3.6% and 2.3% of steps with a torque demand
+  capped by the Go2 motor model, and 1.0%, 1.2% and 0.8% with a joint past its speed limit. These policies walk
+  well, with no falls in 64 episodes each and a mean velocity-tracking error of 0.09 to 0.10 m/s. Brief motor
+  saturation in fast steps is normal for the Go2. Under the 1% rule every clean policy would be a no-go, so
+  acceptance criterion A4 (at most 1 of 5 held-out clean baselines flagged) would fail because of the threshold,
+  not the check.
+- **Affects:**
+  - The check 2 threshold paragraph and the "Decisions" item on check 2 thresholds, which named the absolute 1%
+    rule.
+  - Targets P3 and P4 (criterion A1) are unaffected: they are judged on the other metrics.
+  - The metric's definition is unchanged.
+- **Approved by:** VJ, Oct 14, 2026.

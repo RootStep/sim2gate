@@ -77,7 +77,7 @@ the Go2 smoke test with automatic pass/fail.
 Measures, on a trained policy, the behaviors that only work because of simulator artifacts: foot slip (95th
 percentile horizontal foot speed in contact), ground penetration, contact-force spikes (99th percentile foot force
 in body weights), actuator limits (share of steps where the actuator model clips the torque demand or a joint
-exceeds its speed limit; flagged above 1%), and action jitter (share of action power above a quarter of the
+exceeds its speed limit), and action jitter (share of action power above a quarter of the
 control frequency). In Isaac Lab 3.x, it runs Isaac Lab's own play entry point unchanged:
 
 ```bash
@@ -127,7 +127,7 @@ How to read the report:
   that.
 - **Percentiles** use contact samples from the whole run; past 2 million samples they are thinned uniformly in
   time (`contact_sample_stride`).
-- **Thresholds.** Only the actuator-limit flag has a fixed threshold (1% of steps). The others stay
+- **Thresholds.** Every flag, actuator limits included, stays
   `uncalibrated` until you pass a versioned thresholds file. `sim2gate.checks.calibrate` makes one from the check 2
   reports of the calibration baselines (clean policies, P0 seeds 1 to 3), by the plan's rule: the largest value
   across the baselines times 1.5. It refuses fewer than three baselines, a repeated or unrecorded checkpoint, reports
