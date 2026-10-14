@@ -36,12 +36,13 @@ def world(tmp_path, monkeypatch):
         rec = ic.ConditionRecorder(mode, out, tc.CMDS, str(cmd_path), rest, episodes=tc.EPS, api=tc.API,
                                    motor_cls=tc.Motor)
         cls = type("E", (tc.CondEnv,), {})
-        undo = ic.install(rec, wrapper_cls=tc.Wrapper, runner_cls=tc.te.FakeRunner, env_cls=cls)
+        gym = tc.FakeGym(cls)
+        undo = ic.install(rec, wrapper_cls=tc.Wrapper, runner_cls=tc.te.FakeRunner, gym_module=gym)
         try:
             tc.te.FakeRunner().load(ck)
             cfg = tc._cfg()
             cfg.scene.num_envs = rec.num_envs
-            env = cls(cfg)
+            env = gym.make("T", cfg=cfg)
             env.sim.physics_manager.__name__ = "NewtonMJWarpManager" if newton else "PhysxManager"
             w = tc.Wrapper(env)
             with pytest.raises(KeyboardInterrupt):

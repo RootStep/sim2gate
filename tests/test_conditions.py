@@ -255,8 +255,13 @@ class Wrapper:
         return self.unwrapped.step(actions)
 
 
-class EnvCls(CondEnv):
-    pass
+class FakeGym:
+    """gymnasium in miniature: Isaac Lab's play script builds the env with gymnasium.make(task, cfg=env_cfg)."""
+    def __init__(self, cls):
+        self.cls = cls
+
+    def make(self, task, cfg=None, **kw):
+        return self.cls(cfg)
 
 
 def _play(tmp_path, mode="sweep", name="raw.json", ckpt=b"weights", play_args=None, physics="PhysxManager"):
@@ -266,14 +271,15 @@ def _play(tmp_path, mode="sweep", name="raw.json", ckpt=b"weights", play_args=No
     rec = ic.ConditionRecorder(mode, str(tmp_path / name), CMDS, "cmds.json", play_args, episodes=EPS, api=API,
                                motor_cls=Motor)
     cls = type("E", (CondEnv,), {})
-    undo = ic.install(rec, wrapper_cls=Wrapper, runner_cls=te.FakeRunner, env_cls=cls)
+    gym = FakeGym(cls)
+    undo = ic.install(rec, wrapper_cls=Wrapper, runner_cls=te.FakeRunner, gym_module=gym)
     try:
         ck = tmp_path / "model_999.pt"
         ck.write_bytes(ckpt)
         te.FakeRunner().load(str(ck))
         cfg = _cfg(motor_cls=FakeDCMotor)
         cfg.scene.num_envs = rec.num_envs
-        env = cls(cfg)
+        env = gym.make("T", cfg=cfg)
         env.sim.physics_manager.__name__ = physics
         w = Wrapper(env)
         with pytest.raises(KeyboardInterrupt):
@@ -453,3 +459,33 @@ observations:
     assert r["ground_friction"] == {"static_friction_range": [0.8, 0.8]}
     assert r["added_base_mass_kg"]["operation"] == "scale"
     assert r["action_latency_ms"] == "no delay in the actuator model"
+
+
+def test_install_does_not_import_isaaclab_envs_before_isaac_sim_starts(tmp_path, monkeypatch):
+    """Importing isaaclab.envs before Isaac Sim starts loads Omniverse modules too early, and Isaac Sim then fails to
+    start (seen on the GPU: omni.usd has no attribute get_context). install() must not import it."""
+    import sys
+
+    class Block:
+        def find_spec(self, name, path=None, target=None):
+            if name == "isaaclab.envs" or name.startswith("isaaclab.envs."):
+                raise AssertionError(f"install() imported {name}")
+            return None
+    fake_rl = types.ModuleType("isaaclab_rl.rsl_rl")
+    fake_rl.RslRlVecEnvWrapper = type("W", (), {"step": lambda self, a: None})
+    monkeypatch.setitem(sys.modules, "isaaclab_rl", types.ModuleType("isaaclab_rl"))
+    monkeypatch.setitem(sys.modules, "isaaclab_rl.rsl_rl", fake_rl)
+    fake_runners = types.ModuleType("rsl_rl.runners")
+    fake_runners.OnPolicyRunner = te.FakeRunner
+    monkeypatch.setitem(sys.modules, "rsl_rl", types.ModuleType("rsl_rl"))
+    monkeypatch.setitem(sys.modules, "rsl_rl.runners", fake_runners)
+    fake_gym = types.ModuleType("gymnasium")
+    fake_gym.make = lambda *a, **k: None
+    monkeypatch.setitem(sys.modules, "gymnasium", fake_gym)
+    monkeypatch.delitem(sys.modules, "isaaclab.envs", raising=False)
+    monkeypatch.setattr(sys, "meta_path", [Block()] + sys.meta_path)
+    rec = ic.ConditionRecorder("nominal", str(tmp_path / "r.json"), CMDS, "c", [], episodes=EPS)
+    undo = ic.install(rec)
+    assert fake_gym.make is not None and fake_gym.make.__name__ == "make"
+    undo()
+    assert "isaaclab.envs" not in sys.modules

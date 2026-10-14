@@ -494,26 +494,33 @@ def training_ranges_near(checkpoint_path):
 
 # ---- installation --------------------------------------------------------------------------------------------------
 
-def install(rec, wrapper_cls=None, runner_cls=None, env_cls=None):
-    """Patch the env class's __init__ (to apply the profile before the env is built), the RSL-RL wrapper's step and
-    the runner's load. Returns undo()."""
+def install(rec, wrapper_cls=None, runner_cls=None, gym_module=None):
+    """Patch gymnasium.make (to apply the profile to the env config before the env is built), the RSL-RL wrapper's
+    step and the runner's load. Returns undo().
+
+    The env config is reached through gymnasium.make(task, cfg=...), which is how Isaac Lab's play script builds the
+    environment. Nothing from isaaclab.envs is imported here: on the Isaac Sim (Kit) path that would load Omniverse
+    modules before Isaac Sim has started, and Isaac Sim then fails to start."""
     if wrapper_cls is None:
         from isaaclab_rl.rsl_rl import RslRlVecEnvWrapper as wrapper_cls
-    if env_cls is None:
-        from isaaclab.envs import ManagerBasedRLEnv as env_cls
+    if gym_module is None:
+        import gymnasium as gym_module
     if runner_cls is None:
         try:
             from rsl_rl.runners import OnPolicyRunner as runner_cls
         except ImportError:
             runner_cls = None
     undo = []
-    orig_init = env_cls.__init__
+    orig_make = gym_module.make
 
-    def __init__(self, cfg, *a, **k):
+    def make(*a, **k):
+        cfg = k.get("cfg")
+        if cfg is None:
+            raise RuntimeError("gymnasium.make was called without cfg=; cannot apply the nominal profile")
         rec.on_env_cfg(cfg)
-        return orig_init(self, cfg, *a, **k)
-    env_cls.__init__ = __init__
-    undo.append(lambda: setattr(env_cls, "__init__", orig_init))
+        return orig_make(*a, **k)
+    gym_module.make = make
+    undo.append(lambda: setattr(gym_module, "make", orig_make))
     orig_step = wrapper_cls.step
 
     def step(self, actions):
