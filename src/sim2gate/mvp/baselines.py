@@ -26,6 +26,7 @@ import glob
 import hashlib
 import json
 import os
+import re
 import sys
 
 from ..training.smoke_go2 import _last_checkpoint, _run_dirs, isaac_python, run, train_script
@@ -116,6 +117,29 @@ def _save(manifest, path):
     os.replace(tmp, path)
 
 
+_SHUTDOWN_FRAME = re.compile(r'simulation_app\.py", line \d+ in close')
+
+
+def shutdown_crash(rc, text, ck, iterations):
+    """Evidence that a training run finished and only Isaac Sim's shutdown crashed, or None.
+
+    Seen on P0 v1 seed 3 (Oct 14): all 300 iterations ran and model_299.pt was saved, then the process died inside
+    SimulationApp.close() and exited 1. All of these must hold: a non-zero exit, a known iteration count, the log's
+    last training line is the final iteration, the newest checkpoint is the final one, and the crash dump shows
+    SimulationApp.close() in progress. Anything else stays a training failure."""
+    if rc == 0 or not iterations or not ck or not text:
+        return None
+    last = re.findall(r"Learning iteration +(\d+)/(\d+)", text)
+    m = re.search(r"model_(\d+)\.pt$", ck)
+    final = iterations - 1
+    if not last or tuple(map(int, last[-1])) != (final, iterations) or not m or int(m.group(1)) != final:
+        return None
+    if not _SHUTDOWN_FRAME.search(text[text.rfind("Learning iteration"):]):
+        return None
+    return {"returncode": rc, "last_iteration": f"{final}/{iterations}", "final_checkpoint": os.path.basename(ck),
+            "crash": "process died in Isaac Sim's SimulationApp.close() after training finished"}
+
+
 def _still_valid(entry):
     ck = (entry or {}).get("checkpoint") or {}
     return bool(ck.get("path")) and os.path.exists(ck["path"]) and sha256(ck["path"]) == ck.get("sha256")
@@ -174,12 +198,17 @@ def main(argv=None):
             entry = {"started": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")}
             before = _run_dirs()
             cmd = train_cmd(a, seed)
-            rc, _ = run(cmd, os.path.join(a.out, f"train_{tag}.log"))
+            rc, text = run(cmd, os.path.join(a.out, f"train_{tag}.log"))
             new = sorted(_run_dirs() - before)
             entry.update({"train_cmd": cmd[1:], "train_returncode": rc,
                           "run_dir": os.path.abspath(new[0]) if len(new) == 1 else None})
             ck = _last_checkpoint(new[0]) if len(new) == 1 else None
-            if rc != 0 or ck is None:
+            crash = shutdown_crash(rc, text, ck, a.iterations or (VARIANTS.get(a.task) or {}).get("max_iterations"))
+            if crash:
+                entry["train_shutdown_crash"] = crash
+                print(f"[sim2gate] {tag}: training finished ({crash['last_iteration']}, {crash['final_checkpoint']}); "
+                      f"Isaac Sim crashed while shutting down (exit {rc}). Using the final checkpoint.")
+            elif rc != 0 or ck is None:
                 entry["error"] = (f"training exited {rc}" if rc else "") or \
                     f"expected one new run folder with a checkpoint, found {len(new)} folder(s)"
                 manifest["seeds"][key] = entry
@@ -240,7 +269,8 @@ def main(argv=None):
     print("\n" + "=" * 80)
     for s in a.seeds:
         e = manifest["seeds"].get(str(s), {})
-        state = "ERROR " + e["error"] if e.get("error") else "ok"
+        state = "ERROR " + e["error"] if e.get("error") else \
+            ("ok (Isaac Sim crashed at shutdown after training finished)" if e.get("train_shutdown_crash") else "ok")
         ck = (e.get("checkpoint") or {}).get("sha256", "")[:12]
         acc = e.get("acceptance") or {}
         m = (acc.get("details") or {}).get("measured") or {}

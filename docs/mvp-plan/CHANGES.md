@@ -123,7 +123,15 @@ unless an entry says otherwise.
   |---|---|---|---|---|---|
   | 1 | `8c5926de…` | 0.086 m/s | 1 | 0.128 m/s | accepted |
   | 2 | `28679f1e…` | 0.098 m/s | 15 | 0.324 m/s | not accepted (falls) |
-  | 3 | — | — | — | — | training exited with an error (log under review) |
+  | 3 | — | — | — | — | not measured: Isaac Sim crashed at shutdown (below) |
+
+  Seed 3 trained all 300 iterations and saved `model_299.pt`. The process then died inside Isaac Sim's
+  `SimulationApp.close()` and exited 1, so the driver recorded a training failure and skipped check 2. This crash is
+  in Isaac Sim's shutdown, not in Sim2Gate or the policy. For v2 the driver accepts a run that exits non-zero only
+  when all of these hold: the log's last training line is the final iteration, the newest checkpoint is the final
+  one, and the crash dump shows `SimulationApp.close()` in progress. It records this in the manifest
+  (`train_shutdown_crash`). Any other non-zero exit is still a training failure. v1 seed 3 is not measured after the
+  fact, since v1 is superseded either way by seed 2's falls.
 
   The penalty did what it was added for: sustained-contact slip was well within its criterion for both trained
   seeds. The failure was falls. A policy trained with an extra penalty on the stock task's short 300-iteration

@@ -13,13 +13,25 @@ from sim2gate.checks.commands import make_command_set
 import test_exploits as te
 
 
+# The tail of P0 v1 seed 3's training log (Oct 14): training finished, then Isaac Sim died while closing
+CRASH_LOG = """                       Learning iteration 298/300
+...
+                       Learning iteration 299/300
+...
+Thread 0x0000122bc207c780 (most recent call first):
+  File "/isaac-sim/exts/isaacsim.simulation_app/isaacsim/simulation_app/simulation_app.py", line 1007 in close
+  File "/workspaces/isaaclab_arena/submodules/IsaacLab/source/isaaclab/isaaclab/app/sim_launcher.py", line 594 in launch_simulation
+There was an error running python
+"""
+
+
 @pytest.fixture
 def world(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     cmd_path = tmp_path / "commands.json"
     cmd_path.write_text(json.dumps(make_command_set(te.N, 20261012)))
     calls = {"train": 0, "check2": 0, "fail_train_seed": None, "wrong_checkpoint": False, "tracking_off": 0.0,
-             "cmds": []}
+             "cmds": [], "shutdown_crash_seed": None, "crash_text": None}
 
     def fake_run(cmd, log):
         open(log, "w").write("fake\n")
@@ -51,6 +63,8 @@ def world(tmp_path, monkeypatch):
         (d / "params" / "env.yaml").write_text(f"seed: {seed}\n")
         (d / "model_149.pt").write_bytes(b"early")
         (d / "model_299.pt").write_bytes(f"P0 seed {seed} weights".encode())
+        if seed == calls["shutdown_crash_seed"]:
+            return 1, calls["crash_text"] or CRASH_LOG
         return 0, ""
 
     monkeypatch.setattr(baselines, "run", fake_run)
@@ -90,6 +104,38 @@ def test_failed_training_is_recorded_and_blocks_calibration(world):
     assert baselines.main(args + ["--calibrate"]) == 1
     m = json.load(open(tmp / "mvp/P0/manifest.json"))
     assert "exited 1" in m["seeds"]["2"]["error"] and not (tmp / "mvp/P0/thresholds.json").exists()
+
+
+def test_a_crash_while_isaac_sim_shuts_down_keeps_the_finished_training(world):
+    tmp, args, calls = world
+    calls["shutdown_crash_seed"] = 3
+    assert baselines.main(args + ["--iterations", "300", "--calibrate"]) == 0
+    e = json.load(open(tmp / "mvp/P0/manifest.json"))["seeds"]["3"]
+    assert "error" not in e and e["train_returncode"] == 1 and e["checkpoint"]["path"].endswith("model_299.pt")
+    assert e["train_shutdown_crash"]["last_iteration"] == "299/300" and calls["check2"] == 3
+    assert (tmp / "mvp/P0/thresholds.json").exists()
+
+
+@pytest.mark.parametrize("why, text, iterations", [
+    ("training stopped early", CRASH_LOG.replace("299/300", "250/300"), "300"),
+    ("the final checkpoint is not the expected one", CRASH_LOG, "1000"),
+    ("the crash was not in SimulationApp.close", CRASH_LOG.replace("in close", "in step"), "300"),
+    ("the crash came before the last iteration line", CRASH_LOG.split("Thread")[1] + CRASH_LOG.split("Thread")[0], "300"),
+])
+def test_other_crashes_stay_training_failures(world, why, text, iterations):
+    tmp, args, calls = world
+    calls["shutdown_crash_seed"], calls["crash_text"] = 2, text
+    assert baselines.main(args + ["--iterations", iterations]) == 1, why
+    e = json.load(open(tmp / "mvp/P0/manifest.json"))["seeds"]["2"]
+    assert e["error"] == "training exited 1" and "train_shutdown_crash" not in e and "checkpoint" not in e
+
+
+def test_shutdown_crash_needs_a_known_iteration_count():
+    ck = "/x/model_299.pt"
+    assert baselines.shutdown_crash(1, CRASH_LOG, ck, 300)["final_checkpoint"] == "model_299.pt"
+    assert baselines.shutdown_crash(0, CRASH_LOG, ck, 300) is None          # a clean exit needs no excuse
+    assert baselines.shutdown_crash(1, CRASH_LOG, ck, None) is None
+    assert baselines.shutdown_crash(1, CRASH_LOG, None, 300) is None
 
 
 def test_check2_on_the_wrong_checkpoint_is_an_error(world):
