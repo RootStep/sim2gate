@@ -142,6 +142,8 @@ unless an entry says otherwise.
 - **If P0 v2 also misses the criteria:** stop and review the evidence before any further change. Do not keep
   adjusting.
 - **Superseded runs preserved:** the P0 v1 runs (checkpoints, check 2 reports, logs, manifest) are kept
-  unmodified, in `mvp_runs/P0_v1_superseded` on the instance and as an archive, and are not used for calibration.
+  unmodified, in `mvp_runs/P0_v1_superseded` on the instance and as `s2g-p0-v1-superseded.tgz` (with the v1 training
+  run folders; SHA-256 `673d6d4c7302ab65045281a4221476314719a67e251d3502484046873090ec9e`), and are not used for
+  calibration.
 - **Approved by:** VJ, Oct 14, 2026.
 - **Recorded by Vihaan:** Oct 14, 2026, before P0 v2 was trained (confirmed by VJ).
