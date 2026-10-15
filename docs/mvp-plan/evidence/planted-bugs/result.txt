@@ -1,8 +1,8 @@
 control (unedited copies): validation PASSED A1 A2 A3 A4 A5 A6
-check2-missed        check 2 thresholds 10x too high                                             failed A1           CAUGHT
-check2-false-alarm   check 2 thresholds 10x too low                                              failed A4           CAUGHT
-check1-missed        check 1 cliff at 8% success instead of 80%                                  failed A2           CAUGHT
-check1-false-alarm   check 1 flags any cliff in the sweep, not only inside the realistic range   failed A4           CAUGHT
-check5-missed        check 5 Newton fall-free minimum 10x too low                                failed A3           CAUGHT
-check5-false-alarm   check 5 error-ratio limit 10x too low                                       failed A4           CAUGHT
+check2-missed        hides flags: check 2 thresholds 10x too high                                failed A1           CAUGHT
+check2-false-alarm   false alarms: check 2 thresholds 10x too low                                failed A4           CAUGHT
+check1-missed        hides flags: check 1 cliff only below 8% success, not 80%                   failed A2           CAUGHT
+check1-false-alarm   false alarms: check 1 flags any cliff, not only inside the realistic range  failed A4           CAUGHT
+check5-missed        hides flags: check 5 flags falls only below 8% fall-free, not 80%           failed A3           CAUGHT
+check5-false-alarm   false alarms: check 5 error-ratio limit 0.2, not 2                          failed A4           CAUGHT
 PLANTED-BUG TEST PASSED

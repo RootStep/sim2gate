@@ -17,14 +17,17 @@ Each bug is a one-line edit to a copy of the check's source file, imported under
 themselves are never changed (the test asserts this afterwards). Two bugs per check: one that hides real flags,
 one that raises false alarms.
 
-| Bug | Edit (in the scratch copy) | Must break | Result |
-|---|---|---|---|
-| check 2 thresholds 10x too high | `v > t` → `v > t * 10` | A1 | caught (A1 failed) |
-| check 2 thresholds 10x too low | `v > t` → `v > t / 10` | A4 | caught (A4 failed) |
-| check 1 cliff at 8% success, not 80% | `CLIFF_SUCCESS = 0.8` → `0.08` | A2 | caught (A2 failed) |
-| check 1 flags any cliff in the sweep | drops the realistic-range condition | A4 | caught (A4 failed) |
-| check 5 fall-free minimum 10x too low | `NEWTON_FALL_FREE_MIN = 0.8` → `0.08` | A3 | caught (A3 failed) |
-| check 5 error-ratio limit 10x too low | `ERROR_RATIO_MAX = 2.0` → `0.2` | A4 | caught (A4 failed) |
+| Direction | Bug | Edit (in the scratch copy) | Must break | Result |
+|---|---|---|---|---|
+| hides flags | check 2 thresholds 10x too high | `v > t` → `v > t * 10` | A1 | caught (A1 failed) |
+| false alarms | check 2 thresholds 10x too low | `v > t` → `v > t / 10` | A4 | caught (A4 failed) |
+| hides flags | check 1 cliff only below 8% success, not 80% | `CLIFF_SUCCESS = 0.8` → `0.08` | A2 | caught (A2 failed) |
+| false alarms | check 1 flags any cliff in the sweep | drops the realistic-range condition | A4 | caught (A4 failed) |
+| hides flags | check 5 flags falls only when fewer than 8% of Newton episodes are fall-free, not 80% | `NEWTON_FALL_FREE_MIN = 0.8` → `0.08` | A3 | caught (A3 failed) |
+| false alarms | check 5 error-ratio limit 0.2, not 2 | `ERROR_RATIO_MAX = 2.0` → `0.2` | A4 | caught (A4 failed) |
+
+Check 5 flags a policy when its Newton fall-free rate is *below* the minimum, so lowering the minimum hides falls:
+that bug missed every stand-in P5 (A3 failed) and raised no false alarm (A4 held).
 
 Control: unedited scratch copies of all three checks pass A1–A6 on the same set. The test can also say "not
 caught": a harmless edit (error-ratio limit 2.0 → 2.5) leaves the validation passing (tested).
@@ -48,7 +51,13 @@ not a result about any planted policy (those are trained after the freeze):
 - **P1 may be harder to detect than planned.** The P0 v2 policies were trained on a single friction value (0.8)
   and still walked down to friction 0.33: check 1 did not flag friction on any of the three seeds. P1 narrows
   friction and mass randomization to near zero; on flat ground, narrow friction alone may not put the cliff inside
-  the realistic range. A2 can still pass on mass. If A2 fails on P1, this is the first place to look.
+  the realistic range. A2 can still pass on mass. A weakened training recipe is not the same as a demonstrably
+  weak policy: if check 1 does not flag P1, A2 fails and is reported as failed. No threshold, range or rule is
+  changed to make P1's label come true; the diagnosis then asks whether those P1 policies are in fact weak (for
+  example, where their friction and mass cliffs lie) or robust despite the narrower training.
+- **The v2 policies are development evidence only.** They stand in for P2 in this test because their flaw is P2's,
+  but the final P2 policies are trained with the same recipe and budget as every other test policy (P0 v4), with
+  only the delay held at 0 (C7).
 - **Check 2 also flags the real v2 policies** on actuator limits (all three) and jitter (seed 3), because the v4
   thresholds come from smoother, randomized policies (`calibration/p0v4/observations.md`, item 3). For P2 these are
   non-target flags, which the plan reports but does not count against the checks.

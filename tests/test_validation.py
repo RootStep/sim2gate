@@ -212,6 +212,11 @@ def test_planted_bug_test_catches_every_bug_and_leaves_the_checks_alone():
     assert {b["check"] for b in out["bugs"]} == {"1", "2", "5"}
     for b in out["bugs"]:
         assert b["caught"] and not b["validation_passed"], b
+        assert b["failed_criteria"] == b["must_fail"], b          # each bug breaks only what its direction predicts
+    hides = [b for b in out["bugs"] if b["bug"].startswith("hides flags")]
+    alarms = [b for b in out["bugs"] if b["bug"].startswith("false alarms")]
+    assert sorted(b["check"] for b in hides) == sorted(b["check"] for b in alarms) == ["1", "2", "5"]
+    assert all(b["must_fail"] == ["A4"] for b in alarms) and all("A4" not in b["must_fail"] for b in hides)
     assert robustness.CLIFF_SUCCESS == 0.8 and transfer.NEWTON_FALL_FREE_MIN == 0.8
     assert transfer.ERROR_RATIO_MAX == 2.0 and "v > t\n" in open(es.__file__).read()
 

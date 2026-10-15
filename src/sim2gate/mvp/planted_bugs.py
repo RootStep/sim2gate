@@ -42,18 +42,18 @@ ID_SEED = 20261015
 # (id, check, module, line in the check's source, its replacement, what it does, criteria it must break)
 BUGS = [
     ("check2-missed", "2", exploits_score, "and v > t\n", "and v > t * 10\n",
-     "check 2 thresholds 10x too high", ["A1"]),
+     "hides flags: check 2 thresholds 10x too high", ["A1"]),
     ("check2-false-alarm", "2", exploits_score, "and v > t\n", "and v > t / 10\n",
-     "check 2 thresholds 10x too low", ["A4"]),
+     "false alarms: check 2 thresholds 10x too low", ["A4"]),
     ("check1-missed", "1", robustness, "CLIFF_SUCCESS = 0.8 ", "CLIFF_SUCCESS = 0.08 ",
-     "check 1 cliff at 8% success instead of 80%", ["A2"]),
+     "hides flags: check 1 cliff only below 8% success, not 80%", ["A2"]),
     ("check1-false-alarm", "1", robustness, 'flagged = cliff is not None and _inside(cliff["value"], p["plausible"])',
-     "flagged = cliff is not None", "check 1 flags any cliff in the sweep, not only inside the realistic range",
+     "flagged = cliff is not None", "false alarms: check 1 flags any cliff, not only inside the realistic range",
      ["A4"]),
     ("check5-missed", "5", transfer, "NEWTON_FALL_FREE_MIN = 0.8\n", "NEWTON_FALL_FREE_MIN = 0.08\n",
-     "check 5 Newton fall-free minimum 10x too low", ["A3"]),
+     "hides flags: check 5 flags falls only below 8% fall-free, not 80%", ["A3"]),
     ("check5-false-alarm", "5", transfer, "ERROR_RATIO_MAX = 2.0\n", "ERROR_RATIO_MAX = 0.2\n",
-     "check 5 error-ratio limit 10x too low", ["A4"]),
+     "false alarms: check 5 error-ratio limit 0.2, not 2", ["A4"]),
 ]
 ENTRY = {"2": "score", "1": "score", "5": "score"}
 

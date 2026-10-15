@@ -133,7 +133,7 @@
   {
    "id": "check2-missed",
    "check": "2",
-   "bug": "check 2 thresholds 10x too high",
+   "bug": "hides flags: check 2 thresholds 10x too high",
    "edit": {
     "from": "and v > t",
     "to": "and v > t * 10"
@@ -150,7 +150,7 @@
   {
    "id": "check2-false-alarm",
    "check": "2",
-   "bug": "check 2 thresholds 10x too low",
+   "bug": "false alarms: check 2 thresholds 10x too low",
    "edit": {
     "from": "and v > t",
     "to": "and v > t / 10"
@@ -167,7 +167,7 @@
   {
    "id": "check1-missed",
    "check": "1",
-   "bug": "check 1 cliff at 8% success instead of 80%",
+   "bug": "hides flags: check 1 cliff only below 8% success, not 80%",
    "edit": {
     "from": "CLIFF_SUCCESS = 0.8",
     "to": "CLIFF_SUCCESS = 0.08"
@@ -184,7 +184,7 @@
   {
    "id": "check1-false-alarm",
    "check": "1",
-   "bug": "check 1 flags any cliff in the sweep, not only inside the realistic range",
+   "bug": "false alarms: check 1 flags any cliff, not only inside the realistic range",
    "edit": {
     "from": "flagged = cliff is not None and _inside(cliff[\"value\"], p[\"plausible\"])",
     "to": "flagged = cliff is not None"
@@ -201,7 +201,7 @@
   {
    "id": "check5-missed",
    "check": "5",
-   "bug": "check 5 Newton fall-free minimum 10x too low",
+   "bug": "hides flags: check 5 flags falls only below 8% fall-free, not 80%",
    "edit": {
     "from": "NEWTON_FALL_FREE_MIN = 0.8",
     "to": "NEWTON_FALL_FREE_MIN = 0.08"
@@ -218,7 +218,7 @@
   {
    "id": "check5-false-alarm",
    "check": "5",
-   "bug": "check 5 error-ratio limit 10x too low",
+   "bug": "false alarms: check 5 error-ratio limit 0.2, not 2",
    "edit": {
     "from": "ERROR_RATIO_MAX = 2.0",
     "to": "ERROR_RATIO_MAX = 0.2"
