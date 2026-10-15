@@ -1,5 +1,7 @@
 # Check 2 calibration: P0 v2, seeds 1–3 (Oct 14, 2026)
 
+**Superseded** by plan change C6; the current calibration is [`../p0v4`](../p0v4/README.md). Kept as a record.
+
 The check 2 thresholds for the MVP, set from the calibration baselines under plan changes C3–C5. These files are
 copied unmodified from the run bundle `s2g-p0v2-2026-10-14.tgz` (SHA-256
 `87c5551888da632f3380d1895b55bb900442b02a283007cd9faff798ffe37676`, 100 files, all matching its SHA256SUMS), which
