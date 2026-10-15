@@ -1,0 +1,43 @@
+{
+ "version": 2,
+ "rule": "episode success: no fall and mean tracking error <= 1.5 x reference",
+ "reference_rule": "mean over nominal episodes without a fall; at most 1 fall per baseline (C8)",
+ "reference_error_mps": 0.07550810944433498,
+ "factor": 1.5,
+ "threshold_mps": 0.11326216416650246,
+ "profile": "sim2gate-nominal-v1",
+ "command_set_sha256": "56222a90befd10592b31ac2a15155d1ffa8d5bb908cb9ee075df8bc8a0df2cea",
+ "episode_steps": 1000,
+ "sources": [
+  {
+   "label": "P0 seed 1",
+   "checkpoint_sha256": "db9a475503abea4102c4d05181ff22d5b7e731707469004378e256a0535c49c5",
+   "nominal_episodes": 64,
+   "used_episodes": 64,
+   "excluded_fallen": [],
+   "mean_error_mps": 0.07234378306805138
+  },
+  {
+   "label": "P0 seed 2",
+   "checkpoint_sha256": "8a3f361525d81d520bb3453069716b5d0e5d28f79fe414cf20d8db401a8ef5d3",
+   "nominal_episodes": 64,
+   "used_episodes": 63,
+   "excluded_fallen": [
+    {
+     "env": 26,
+     "steps": 130,
+     "mean_error_mps": 0.31093413915771706
+    }
+   ],
+   "mean_error_mps": 0.07073078650257242
+  },
+  {
+   "label": "P0 seed 3",
+   "checkpoint_sha256": "1e72124312d1d497b0ac912a8b9de49f5da7a5abedd20d4a580bce375fa75ffe",
+   "nominal_episodes": 64,
+   "used_episodes": 64,
+   "excluded_fallen": [],
+   "mean_error_mps": 0.0833751130914161
+  }
+ ]
+}

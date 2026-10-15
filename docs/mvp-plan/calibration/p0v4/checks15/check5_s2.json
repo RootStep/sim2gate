@@ -1,0 +1,24 @@
+{
+ "check": 5,
+ "success_threshold_mps": 0.11326216416650246,
+ "metrics": {
+  "physx_success_rate": 1.0,
+  "newton_success_rate": 0.625,
+  "newton_fall_free_rate": 0.984375,
+  "physx_mean_error_mps": 0.07160856844838201,
+  "newton_mean_error_mps": 0.10501320841624857,
+  "error_ratio": 1.4664894256606429,
+  "physx_falls": 0,
+  "newton_falls": 1
+ },
+ "rule": {
+  "newton_fall_free_min": 0.8,
+  "error_ratio_max": 2.0,
+  "plan_change": "C6"
+ },
+ "parity": "passed",
+ "reasons": [],
+ "risks": [],
+ "status": "scored",
+ "flagged": false
+}

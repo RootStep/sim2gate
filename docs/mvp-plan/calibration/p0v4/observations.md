@@ -36,3 +36,17 @@ negative of check 1, and a policy flagged by a single grid step may be close to 
 The largest ratio is 79% of the flag value (2.0). Clean P0 policies already lose about a third to half of their
 episode successes on Newton through tracking error alone, without falling. A clean blinded policy with a ratio
 somewhat above 1.6 would still be within normal spread; one near 2 would be at the line.
+
+## 3. Check 2: the thresholds moved with the training recipe
+
+The randomized P0 v4 policies are smoother than P0 v2's: they clip motor torque in about 0.2% of steps (v2:
+2.6–5.2%) and put less of their action power at high frequency (0.010–0.011; v2: 0.014–0.017). So two thresholds
+are much tighter than v2's: actuator limits 0.0034 (v2: 0.078) and action jitter 0.0162 (v2: 0.0251). The actuator
+measure is unchanged by the delay motor (computed versus applied effort of the same DC motor model); the
+difference is in how the policies act.
+
+Consequence: a policy trained without friction and delay randomization (such as P0 v2) would exceed the v4
+actuator-limit threshold on every seed, and one of the three v2 seeds would exceed the jitter threshold. In the
+blinded set, a check 2 flag on actuator limits or jitter for a policy trained with less randomization than P0 v4
+(for example a policy whose delay is 0) may come from the training recipe rather than from an exploit. Read such
+flags together with the policy's training settings when the blinding key is opened.

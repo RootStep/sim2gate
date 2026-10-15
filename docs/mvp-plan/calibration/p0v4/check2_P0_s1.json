@@ -1,0 +1,430 @@
+{
+ "control_steps": 1000,
+ "env_steps": 64000,
+ "episodes_ended": 64,
+ "contact_samples": 563796,
+ "contact_sample_stride": 1,
+ "slip_pairing": "per physics update: speed of a foot at the instants its own force is above threshold",
+ "contact_consistency": {
+  "foot_instants": 1024000,
+  "in_contact_instants": 563796,
+  "in_contact_share": 0.55058203125,
+  "in_contact_but_lifted_instants": 0,
+  "in_contact_but_lifted_share": 0.0,
+  "lifted_means": "the foot's lowest collision point more than 1 cm above the ground"
+ },
+ "jitter_windows": 1280,
+ "coverage": {
+  "torque": 1.0,
+  "joint_velocity": 1.0
+ },
+ "metrics": {
+  "actuator_limit_step_share": 0.002015625,
+  "foot_slip_p95_mps": 0.10295291990041733,
+  "foot_slip_sustained_p95_mps": 0.08680537343025208,
+  "ground_penetration_m": 0.003952963277697563,
+  "min_foot_origin_z_m": 0.019450709223747253,
+  "min_body_z_m": -0.003952963277697563,
+  "penetration_step_share": 0.0,
+  "contact_force_p99_bw": 1.0169286727905273,
+  "actuator_torque_clipped_step_share": 0.00178125,
+  "actuator_torque_clipped_joint_share": 0.0003515625,
+  "joint_velocity_over_limit_step_share": 0.001390625,
+  "action_jitter_high_freq_power_share": 0.010626208291208685
+ },
+ "flags": {
+  "actuator_limits": {
+   "flagged": null,
+   "value": 0.002015625,
+   "threshold": null,
+   "calibrated": false,
+   "measured": true,
+   "complete": true,
+   "coverage": {
+    "torque": 1.0,
+    "joint_velocity": 1.0
+   }
+  },
+  "foot_slip_p95_mps": {
+   "flagged": null,
+   "value": 0.10295291990041733,
+   "threshold": null,
+   "calibrated": false,
+   "measured": true
+  },
+  "ground_penetration_m": {
+   "flagged": null,
+   "value": 0.003952963277697563,
+   "threshold": null,
+   "calibrated": false,
+   "measured": true
+  },
+  "contact_force_p99_bw": {
+   "flagged": null,
+   "value": 1.0169286727905273,
+   "threshold": null,
+   "calibrated": false,
+   "measured": true
+  },
+  "action_jitter_high_freq_power_share": {
+   "flagged": null,
+   "value": 0.010626208291208685,
+   "threshold": null,
+   "calibrated": false,
+   "measured": true
+  }
+ },
+ "notes": [
+  "These are indicators of simulator-dependent behavior, not proof of an exploit or of real-world transfer.",
+  "Ground penetration uses the lowest point of each body's authored collision shapes against a flat plane (bodies without shapes: their origins)."
+ ],
+ "config": {
+  "dt": 0.02,
+  "contact_force_n": 1.0,
+  "foot_radius_m": 0.0,
+  "penetration_tol_m": 0.005,
+  "jitter_window": 50,
+  "max_samples": 2000000,
+  "flat_ground": true,
+  "measurement_version": 3,
+  "foot_geometry": "collision_shapes"
+ },
+ "feet": [
+  "FL_foot",
+  "FR_foot",
+  "RL_foot",
+  "RR_foot"
+ ],
+ "flat_ground": true,
+ "terrain_type": "plane",
+ "foot_mapping": [
+  {
+   "foot": "FL_foot",
+   "robot_body_index": 15,
+   "robot_body_name": "FL_foot",
+   "sensor_index": 4,
+   "sensor_body_name": "FL_foot"
+  },
+  {
+   "foot": "FR_foot",
+   "robot_body_index": 16,
+   "robot_body_name": "FR_foot",
+   "sensor_index": 8,
+   "sensor_body_name": "FR_foot"
+  },
+  {
+   "foot": "RL_foot",
+   "robot_body_index": 17,
+   "robot_body_name": "RL_foot",
+   "sensor_index": 14,
+   "sensor_body_name": "RL_foot"
+  },
+  {
+   "foot": "RR_foot",
+   "robot_body_index": 18,
+   "robot_body_name": "RR_foot",
+   "sensor_index": 18,
+   "sensor_body_name": "RR_foot"
+  }
+ ],
+ "slip_sustained_definition": "horizontal foot speed at physics updates where that foot has been in contact for at least 4 updates in a row; report-only (the plan's slip metric is foot_slip_p95_mps)",
+ "sources": {
+  "contact_force": "net_normal_forces_w",
+  "mass": "body_mass",
+  "effort": "actuators.computed_effort/applied_effort",
+  "state_read": {
+   "pre_reset_snapshot_steps": 1000,
+   "reset_hook_snapshot_steps": 0,
+   "live_read_steps": 0,
+   "terminal_env_steps": 64
+  }
+ },
+ "geometry": {
+  "foot_geometry": "collision_shapes",
+  "shapes": {
+   "base": [
+    {
+     "kind": "box",
+     "radius_m": 0.0,
+     "points": 8,
+     "path": "/World/envs/env_0/Robot/base/collisions/mesh_0"
+    }
+   ],
+   "FL_hip": [
+    {
+     "kind": "cylinder",
+     "radius_m": 0.0,
+     "points": 48,
+     "path": "/World/envs/env_0/Robot/FL_hip/collisions/mesh_0"
+    }
+   ],
+   "FR_hip": [
+    {
+     "kind": "cylinder",
+     "radius_m": 0.0,
+     "points": 48,
+     "path": "/World/envs/env_0/Robot/FR_hip/collisions/mesh_0"
+    }
+   ],
+   "Head_upper": [
+    {
+     "kind": "cylinder",
+     "radius_m": 0.0,
+     "points": 48,
+     "path": "/World/envs/env_0/Robot/Head_upper/collisions/mesh_0"
+    }
+   ],
+   "RL_hip": [
+    {
+     "kind": "cylinder",
+     "radius_m": 0.0,
+     "points": 48,
+     "path": "/World/envs/env_0/Robot/RL_hip/collisions/mesh_0"
+    }
+   ],
+   "RR_hip": [
+    {
+     "kind": "cylinder",
+     "radius_m": 0.0,
+     "points": 48,
+     "path": "/World/envs/env_0/Robot/RR_hip/collisions/mesh_0"
+    }
+   ],
+   "FL_thigh": [
+    {
+     "kind": "box",
+     "radius_m": 0.0,
+     "points": 8,
+     "path": "/World/envs/env_0/Robot/FL_thigh/collisions/mesh_0"
+    }
+   ],
+   "FR_thigh": [
+    {
+     "kind": "box",
+     "radius_m": 0.0,
+     "points": 8,
+     "path": "/World/envs/env_0/Robot/FR_thigh/collisions/mesh_0"
+    }
+   ],
+   "Head_lower": [
+    {
+     "kind": "sphere",
+     "radius_m": 0.047,
+     "points": 1,
+     "path": "/World/envs/env_0/Robot/Head_lower/collisions/mesh_0"
+    }
+   ],
+   "RL_thigh": [
+    {
+     "kind": "box",
+     "radius_m": 0.0,
+     "points": 8,
+     "path": "/World/envs/env_0/Robot/RL_thigh/collisions/mesh_0"
+    }
+   ],
+   "RR_thigh": [
+    {
+     "kind": "box",
+     "radius_m": 0.0,
+     "points": 8,
+     "path": "/World/envs/env_0/Robot/RR_thigh/collisions/mesh_0"
+    }
+   ],
+   "FL_calf": [
+    {
+     "kind": "cylinder",
+     "radius_m": 0.0,
+     "points": 48,
+     "path": "/World/envs/env_0/Robot/FL_calf/collisions/mesh_0"
+    },
+    {
+     "kind": "cylinder",
+     "radius_m": 0.0,
+     "points": 48,
+     "path": "/World/envs/env_0/Robot/FL_calf/collisions/mesh_1"
+    },
+    {
+     "kind": "cylinder",
+     "radius_m": 0.0,
+     "points": 48,
+     "path": "/World/envs/env_0/Robot/FL_calf/collisions/mesh_2"
+    }
+   ],
+   "FR_calf": [
+    {
+     "kind": "cylinder",
+     "radius_m": 0.0,
+     "points": 48,
+     "path": "/World/envs/env_0/Robot/FR_calf/collisions/mesh_0"
+    },
+    {
+     "kind": "cylinder",
+     "radius_m": 0.0,
+     "points": 48,
+     "path": "/World/envs/env_0/Robot/FR_calf/collisions/mesh_1"
+    },
+    {
+     "kind": "cylinder",
+     "radius_m": 0.0,
+     "points": 48,
+     "path": "/World/envs/env_0/Robot/FR_calf/collisions/mesh_2"
+    }
+   ],
+   "RL_calf": [
+    {
+     "kind": "cylinder",
+     "radius_m": 0.0,
+     "points": 48,
+     "path": "/World/envs/env_0/Robot/RL_calf/collisions/mesh_0"
+    },
+    {
+     "kind": "cylinder",
+     "radius_m": 0.0,
+     "points": 48,
+     "path": "/World/envs/env_0/Robot/RL_calf/collisions/mesh_1"
+    },
+    {
+     "kind": "cylinder",
+     "radius_m": 0.0,
+     "points": 48,
+     "path": "/World/envs/env_0/Robot/RL_calf/collisions/mesh_2"
+    }
+   ],
+   "RR_calf": [
+    {
+     "kind": "cylinder",
+     "radius_m": 0.0,
+     "points": 48,
+     "path": "/World/envs/env_0/Robot/RR_calf/collisions/mesh_0"
+    },
+    {
+     "kind": "cylinder",
+     "radius_m": 0.0,
+     "points": 48,
+     "path": "/World/envs/env_0/Robot/RR_calf/collisions/mesh_1"
+    },
+    {
+     "kind": "cylinder",
+     "radius_m": 0.0,
+     "points": 48,
+     "path": "/World/envs/env_0/Robot/RR_calf/collisions/mesh_2"
+    }
+   ],
+   "FL_foot": [
+    {
+     "kind": "sphere",
+     "radius_m": 0.022,
+     "points": 1,
+     "path": "/World/envs/env_0/Robot/FL_foot/collisions/mesh_0"
+    }
+   ],
+   "FR_foot": [
+    {
+     "kind": "sphere",
+     "radius_m": 0.022,
+     "points": 1,
+     "path": "/World/envs/env_0/Robot/FR_foot/collisions/mesh_0"
+    }
+   ],
+   "RL_foot": [
+    {
+     "kind": "sphere",
+     "radius_m": 0.022,
+     "points": 1,
+     "path": "/World/envs/env_0/Robot/RL_foot/collisions/mesh_0"
+    }
+   ],
+   "RR_foot": [
+    {
+     "kind": "sphere",
+     "radius_m": 0.022,
+     "points": 1,
+     "path": "/World/envs/env_0/Robot/RR_foot/collisions/mesh_0"
+    }
+   ]
+  },
+  "robot_prim": "/World/envs/env_0/Robot",
+  "quaternion_order": "xyzw",
+  "why_not_shapes": null
+ },
+ "thresholds_source": null,
+ "checkpoint": {
+  "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_16-14-26/model_1999.pt",
+  "sha256": "db9a475503abea4102c4d05181ff22d5b7e731707469004378e256a0535c49c5",
+  "bytes": 983989
+ },
+ "play_args": [
+  "--task",
+  "Sim2Gate-Velocity-Flat-Go2-P0-v4",
+  "--num_envs",
+  "64",
+  "--checkpoint",
+  "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_16-14-26/model_1999.pt",
+  "--external_callback",
+  "sim2gate.mvp.tasks.register",
+  "physics=isaacsim_physx"
+ ],
+ "commands": {
+  "fixed": true,
+  "source": "/isaac-sim/kit/python/lib/python3.12/site-packages/sim2gate/mvp/go2_flat_commands_64.json",
+  "seed": 20261012,
+  "n": 64,
+  "ranges": {
+   "lin_vel_x": [
+    -1.0,
+    1.0
+   ],
+   "lin_vel_y": [
+    -1.0,
+    1.0
+   ],
+   "ang_vel_z": [
+    -1.0,
+    1.0
+   ]
+  },
+  "sha256": "56222a90befd10592b31ac2a15155d1ffa8d5bb908cb9ee075df8bc8a0df2cea",
+  "term": "base_velocity",
+  "task_ranges": {
+   "lin_vel_x": [
+    -1.0,
+    1.0
+   ],
+   "lin_vel_y": [
+    -1.0,
+    1.0
+   ],
+   "ang_vel_z": [
+    -1.0,
+    1.0
+   ]
+  },
+  "outside_task_ranges": [],
+  "tiled": 1
+ },
+ "nominal": {
+  "mean_lin_vel_error_xy_mps": 0.07101135570853694,
+  "falls": 0,
+  "timeouts": 64,
+  "envs_with_a_fall": 0,
+  "fall_free_env_share": 1.0,
+  "time_outs_reported": true,
+  "definition": "fall = episode ended before its time limit; error = |commanded - actual| base-frame xy velocity, mean over envs and measured steps"
+ },
+ "contact_force_substeps": {
+  "samples_per_control_step": 4,
+  "physics_substeps_per_control_step": 4,
+  "covered_share": 1.0,
+  "scene_updates_per_step_histogram": {
+   "4": 1000
+  },
+  "physics_handles_decimation": false,
+  "method": "max of the sensor's current force over every scene update in the control step"
+ },
+ "physics_context": {
+  "physics_handles_decimation": false,
+  "overrides": [
+   "physics=isaacsim_physx"
+  ]
+ }
+}
