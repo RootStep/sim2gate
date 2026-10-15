@@ -11,6 +11,15 @@
             500 training rounds, the largest delay rising to 30 ms by round 800, the full 0-30 ms from then on;
             2000 rounds. Evaluation (play mode) always draws from the full 0-30 ms
 
+The planted-flaw policies P1-P5 (test set v1, docs/mvp-plan/test-set.md) are each P0 v4 with exactly one change:
+    P1 narrow randomization: friction static 0.78-0.82 (dynamic 0.585-0.615) and base mass scale 1/1.01-1.01
+    P2 no latency: command delay 0 throughout (the same delay motor, range 0-0)
+    P3 sliding exploit: low ground friction, static 0.2-0.4 (dynamic 0.15-0.3), and no foot-slip penalty
+    P4 jittery: no action-rate penalty
+    P5 engine overfit: a soft, PhysX-only ground contact (compliant spring in acceleration units, which Newton does
+       not reproduce)
+Each is evaluated in its own task (play mode), like any user's policy in the simulator it was trained in.
+
 The stock task has no foot-slip penalty, and the plan defines P3 as "foot-slip penalty removed" (plus low ground
 friction), so the clean baseline must have one. The weight -0.25 is a proposed starting value, taken from Isaac
 Lab's H1 configuration; it is not a validated Go2 setting. Whether P0 v1 is an acceptable clean baseline is decided
@@ -78,6 +87,48 @@ VARIANTS[P0_TASK_V4] = {
     "max_iterations": P0_V4_ITERATIONS, "experiment_name": "sim2gate_go2_flat_p0_v4", "status": "current",
 }
 
+# ---- test set v1: the planted-flaw policies P1-P5 (each = P0 v4 + one change) ------------------------------------
+TEST_SET_VERSION = 1
+P1_STATIC_FRICTION = (0.78, 0.82)        # "near-zero range" around the task's nominal 0.8
+P1_DYNAMIC_FRICTION = (0.585, 0.615)     # the same 0.75 dynamic/static ratio
+P1_MASS_SCALE = (1 / 1.01, 1.01)         # the stock task's base-mass scale (1/1.25-1.25, log-uniform) narrowed to 1%
+P2_DELAY_STEPS = (0, 0)
+P3_STATIC_FRICTION = (0.2, 0.4)          # below the plausible real range (0.4-1.2)
+P3_DYNAMIC_FRICTION = (0.15, 0.3)
+P5_CONTACT_STIFFNESS = 1000.0            # PhysX compliant contact, acceleration units (1/s^2): ~1 cm static sink
+P5_CONTACT_DAMPING = 60.0                # about critical (2 x sqrt(1000) = 63)
+PLANTED = {
+    "P1": {"flaw": "narrow randomization", "target_check": 1,
+           "changes": [{"what": "events.physics_material ranges", "static_friction_range": list(P1_STATIC_FRICTION),
+                        "dynamic_friction_range": list(P1_DYNAMIC_FRICTION), "make_consistent": True},
+                       {"what": "events.add_base_mass scale range", "mass_distribution_params": list(P1_MASS_SCALE),
+                        "operation": "scale", "distribution": "log_uniform"}]},
+    "P2": {"flaw": "no latency", "target_check": 1,
+           "changes": [{"what": "actuators.base_legs command delay", "delay_physics_steps": list(P2_DELAY_STEPS)}]},
+    "P3": {"flaw": "sliding exploit", "target_check": 2,
+           "changes": [{"what": "events.physics_material ranges", "static_friction_range": list(P3_STATIC_FRICTION),
+                        "dynamic_friction_range": list(P3_DYNAMIC_FRICTION), "make_consistent": True},
+                       {"what": "remove reward term rewards.feet_slide"}]},
+    "P4": {"flaw": "jittery", "target_check": 2,
+           "changes": [{"what": "remove reward term rewards.action_rate_l2"}]},
+    "P5": {"flaw": "engine overfit", "target_check": 5,
+           "changes": [{"what": "ground material: PhysX compliant contact, acceleration spring",
+                        "compliant_contact_stiffness": P5_CONTACT_STIFFNESS,
+                        "compliant_contact_damping": P5_CONTACT_DAMPING,
+                        "compliant_contact_acceleration_spring": True,
+                        "why": "Isaac Lab: the acceleration-spring flag is PhysX-only, not consumed by Newton, which "
+                               "reads the same stiffness and damping as a force spring"}]},
+}
+PLANTED_TASKS = {}
+for _pol, _d in PLANTED.items():
+    _task = f"Sim2Gate-Velocity-Flat-Go2-{_pol}-v{TEST_SET_VERSION}"
+    PLANTED_TASKS[_pol] = _task
+    VARIANTS[_task] = {
+        "policy": _pol, "version": TEST_SET_VERSION, "base_task": P0_TASK_V4, "flaw": _d["flaw"],
+        "target_check": _d["target_check"], "changes": _d["changes"],
+        "max_iterations": P0_V4_ITERATIONS, "experiment_name": f"sim2gate_go2_flat_{_pol.lower()}_v{TEST_SET_VERSION}",
+        "status": "test set v1", "env_class": f"Go2Flat{_pol}EnvCfg", "agent_class": f"Go2Flat{_pol}PPORunnerCfg"}
+
 
 def _p0_env_cfg(version=1):
     from isaaclab.managers import RewardTermCfg, SceneEntityCfg
@@ -134,6 +185,48 @@ def _p0_agent_cfg(task):
     return Go2FlatP0PPORunnerCfg
 
 
+def _planted_env_cfg(pol):
+    """P0 v4's environment with policy `pol`'s one planted change."""
+    from isaaclab.utils import configclass
+    base = _p0_env_cfg(4)
+
+    @configclass
+    class Go2FlatPlantedEnvCfg(base):
+        def __post_init__(self):
+            super().__post_init__()
+            if pol == "P1":
+                pm = self.events.physics_material.params
+                pm["static_friction_range"], pm["dynamic_friction_range"] = P1_STATIC_FRICTION, P1_DYNAMIC_FRICTION
+                self.events.add_base_mass.params["mass_distribution_params"] = P1_MASS_SCALE
+            elif pol == "P2":
+                act = self.scene.robot.actuators["base_legs"]
+                act.min_delay, act.max_delay = P2_DELAY_STEPS
+            elif pol == "P3":
+                pm = self.events.physics_material.params
+                pm["static_friction_range"], pm["dynamic_friction_range"] = P3_STATIC_FRICTION, P3_DYNAMIC_FRICTION
+                self.rewards.feet_slide = None
+            elif pol == "P4":
+                self.rewards.action_rate_l2 = None
+            elif pol == "P5":
+                try:
+                    from isaaclab_physx.sim.spawners.materials import PhysxRigidBodyMaterialCfg
+                except ImportError:                                      # older layout
+                    from isaaclab.sim.spawners.materials import PhysxRigidBodyMaterialCfg
+                ground = self.scene.terrain.physics_material
+                mat = PhysxRigidBodyMaterialCfg(
+                    static_friction=ground.static_friction, dynamic_friction=ground.dynamic_friction,
+                    friction_combine_mode="multiply", restitution_combine_mode="multiply",
+                    compliant_contact_stiffness=P5_CONTACT_STIFFNESS, compliant_contact_damping=P5_CONTACT_DAMPING,
+                    compliant_contact_acceleration_spring=True)
+                self.scene.terrain.physics_material = mat
+                self.sim.physics_material = mat
+            else:
+                raise ValueError(f"no planted change for {pol}")
+
+    Go2FlatPlantedEnvCfg.__name__ = f"Go2Flat{pol}EnvCfg"
+    return Go2FlatPlantedEnvCfg
+
+
 # P0 v1 and v2 share the environment (the same penalty) and differ only in the training budget; v3 adds C6's
 # friction and delay randomization
 _LAZY = {"Go2FlatP0EnvCfgV1": lambda: _p0_env_cfg(1), "Go2FlatP0EnvCfgV2": lambda: _p0_env_cfg(2),
@@ -142,6 +235,9 @@ _LAZY = {"Go2FlatP0EnvCfgV1": lambda: _p0_env_cfg(1), "Go2FlatP0EnvCfgV2": lambd
          "Go2FlatP0PPORunnerCfgV2": lambda: _p0_agent_cfg(P0_TASK_V2),
          "Go2FlatP0PPORunnerCfgV3": lambda: _p0_agent_cfg(P0_TASK_V3),
          "Go2FlatP0PPORunnerCfgV4": lambda: _p0_agent_cfg(P0_TASK_V4)}
+for _pol, _task in PLANTED_TASKS.items():
+    _LAZY[f"Go2Flat{_pol}EnvCfg"] = (lambda p: (lambda: _planted_env_cfg(p)))(_pol)
+    _LAZY[f"Go2Flat{_pol}PPORunnerCfg"] = (lambda t: (lambda: _p0_agent_cfg(t)))(_task)
 _built = {}
 
 
@@ -154,16 +250,49 @@ def __getattr__(name):
     raise AttributeError(name)
 
 
+BLIND_ALIASES_ENV = "SIM2GATE_BLIND_ALIASES"
+
+
+def _entry(v):
+    n = v["version"]
+    env = v.get("env_class", f"Go2FlatP0EnvCfgV{n}")
+    agent = v.get("agent_class", f"Go2FlatP0PPORunnerCfgV{n}")
+    return {"env_cfg_entry_point": f"{__name__}:{env}", "rsl_rl_cfg_entry_point": f"{__name__}:{agent}"}
+
+
+def task_token(task):
+    """An opaque token for a task id (the blinded run's aliases file holds these, not task names)."""
+    import hashlib
+    return hashlib.sha256(task.encode()).hexdigest()[:16]
+
+
+def blind_aliases(path=None):
+    """{alias task id: real task id} from the blinded run's aliases file (sim2gate.mvp.blinded), or {}. The file
+    maps each alias to an opaque token, so reading it does not show which policy an ID is."""
+    import json
+    import os
+    path = path or os.environ.get(BLIND_ALIASES_ENV)
+    if not path:
+        return {}
+    tokens = {task_token(t): t for t in VARIANTS}
+    doc = json.load(open(path))
+    bad = [t for t in doc.values() if t not in tokens]
+    if bad:
+        raise ValueError(f"{path}: aliases point at unknown tasks {bad}")
+    return {alias: tokens[t] for alias, t in doc.items()}
+
+
 def register():
-    """Isaac Lab --external_callback: register the MVP task variants with Gymnasium. Returns None, so Isaac Lab
-    keeps every remaining command-line argument."""
+    """Isaac Lab --external_callback: register the MVP task variants with Gymnasium, and, during a blinded run, each
+    policy's opaque alias (Sim2Gate-Blind-<ID>) for its task, so logs and records name only the blinded ID. Returns
+    None, so Isaac Lab keeps every remaining command-line argument."""
     import gymnasium as gym
     for task, v in VARIANTS.items():
         if task not in gym.registry:
-            n = v["version"]
-            gym.register(
-                id=task, entry_point="isaaclab.envs:ManagerBasedRLEnv", disable_env_checker=True,
-                kwargs={"env_cfg_entry_point": f"{__name__}:Go2FlatP0EnvCfgV{n}",
-                        "rsl_rl_cfg_entry_point": f"{__name__}:Go2FlatP0PPORunnerCfgV{n}",
-                        "default_agent": "rsl_rl", "sim2gate_variant": v})
+            gym.register(id=task, entry_point="isaaclab.envs:ManagerBasedRLEnv", disable_env_checker=True,
+                         kwargs={**_entry(v), "default_agent": "rsl_rl", "sim2gate_variant": v})
+    for alias, task in blind_aliases().items():
+        if alias not in gym.registry:
+            gym.register(id=alias, entry_point="isaaclab.envs:ManagerBasedRLEnv", disable_env_checker=True,
+                         kwargs={**_entry(VARIANTS[task]), "default_agent": "rsl_rl"})
     return None

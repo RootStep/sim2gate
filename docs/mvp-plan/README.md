@@ -17,3 +17,4 @@ Logged changes: [`CHANGES.md`](CHANGES.md).
 Step 2 records: the current calibration in [`calibration/p0v4`](calibration/p0v4/README.md) (check 2 thresholds,
 episode-success reference, checks 1 and 5 on P0 v4) and the planted-bug test of the validation in
 [`evidence/planted-bugs`](evidence/planted-bugs/README.md).
+The planted-flaw policies P1–P5 and the blinded-run procedure: [`test-set.md`](test-set.md).
