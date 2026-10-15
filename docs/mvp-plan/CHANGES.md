@@ -197,3 +197,33 @@ unless an entry says otherwise.
   calibration.
 - **Approved by:** VJ, Oct 14, 2026.
 - **Recorded:** by VJ in place of Vihaan, Oct 15, 2026, before P0 v3 was trained.
+
+## C7 — P0 v4: the delay is introduced after the robot has learned to walk (Oct 15, 2026)
+
+- **Was (C6):** P0 v3, `Sim2Gate-Velocity-Flat-Go2-P0-v3`, trained with friction 0.4–1.2 and a 0–30 ms delay from
+  the first round, for 1,000 rounds.
+- **Now:** P0 v4, `Sim2Gate-Velocity-Flat-Go2-P0-v4` = P0 v3 with a delay ramp and a longer run:
+  - friction randomization 0.4–1.2 from the first round, as in v3;
+  - no delay for the first 500 rounds; the largest delay drawn at a reset rises linearly to 30 ms between rounds
+    500 and 800 (48,000–76,800 physics steps; one round is 24 control steps of 4 physics steps); the full 0–30 ms
+    from round 800 on;
+  - 2,000 rounds in all, so 1,200 at the full delay range;
+  - evaluation always draws from the full 0–30 ms range: the task's play mode switches the ramp off.
+  Everything else is unchanged: the C4 acceptance criteria, seeds 1–3, Isaac Sim PhysX. Every other test-set policy
+  uses the same schedule with its own settings (P2's delay stays 0, so the ramp does not affect it).
+- **Why** (Oct 15; files in the `s2g-p0v3` bundle and the diagnostic logs):
+  - P0 v3 missed the C4 criteria on all three seeds (tracking error 0.21, 0.28 and 0.76 m/s; 4, 2 and 1 falls).
+    Its training curves show the robots standing still (tracking error about 0.73 m/s) for about 700 rounds; seeds
+    1 and 2 then learned to walk and were still improving at round 1,000 (0.34 and 0.44 m/s), and seed 3 never
+    did. P0 v2, without randomization, walked by round 200. The saved training settings confirm the delay motor and
+    the friction range were applied as intended.
+  - Two one-seed diagnostic runs isolated the cause. With friction randomization and no delay, the robot walked by
+    round 500 (tracking error 0.30, 0.12, 0.11, 0.12 at rounds 200, 500, 800, 1,000). With the delay and no
+    friction randomization, it stood still until about round 700 (0.70, 0.70, 0.39, 0.13). The delay from the first
+    round is what stalls learning.
+  - This matches published practice: Isaac Lab's maintainers advise adding randomization gradually once nominal
+    walking is stable, and Unitree RL Lab's Go2 recipe randomizes friction (0.3–1.2) from the start with no delay.
+- **If P0 v4 also misses the criteria:** stop and review, as under C5.
+- **Superseded runs preserved:** the P0 v3 runs and the two diagnostic runs are kept on the instance and as an
+  archive, and are not used for calibration.
+- **Approved by:** VJ, Oct 15, 2026.

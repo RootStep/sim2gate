@@ -558,3 +558,26 @@ def test_training_motor_delays_by_a_fresh_random_draw_per_episode():
     outs = [m.compute(_ca(256, torch.full((256, 2), float(t))), torch.zeros(256, 2), torch.zeros(256, 2)).joint_efforts
             for t in range(10)]
     assert float(outs[9][0, 0]) == pytest.approx(min(20.0, 25.0 * (9 - k)))
+
+
+def test_training_delay_ramp_c7():
+    """P0 v4 (C7): no delay before the ramp starts, the full range after it ends, linear in between; the count is
+    physics steps (compute calls). Without a ramp every reset draws from the full range."""
+    from sim2gate.mvp.actuators import motor_class
+    M = motor_class(FakeDCMotor, FakeDelayBuffer)
+    m = M(types.SimpleNamespace(min_delay=0, max_delay=6, delay_ramp_start_steps=100, delay_ramp_end_steps=400),
+          num_envs=512)
+    step = lambda k: [m.compute(_ca(512, torch.zeros(512, 2)), torch.zeros(512, 2), torch.zeros(512, 2))
+                      for _ in range(k)]
+    m.reset(None)
+    assert m.current_max_delay() == 0 and int(m._delay_bufs[0].lag.max()) == 0
+    step(250)                                                   # halfway through the ramp
+    assert m.current_max_delay() == 3
+    m.reset(None)
+    assert int(m._delay_bufs[0].lag.max()) == 3
+    step(200)
+    m.reset(None)
+    assert m.current_max_delay() == 6 and int(m._delay_bufs[0].lag.max()) == 6
+    full = M(types.SimpleNamespace(min_delay=0, max_delay=6, delay_ramp_start_steps=0, delay_ramp_end_steps=0),
+             num_envs=512)
+    assert full.current_max_delay() == 6                        # no ramp: full range from the first reset
