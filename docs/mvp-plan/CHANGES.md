@@ -193,4 +193,4 @@ unless an entry says otherwise.
   checks 1 and 5 runs and diagnostics are kept unmodified on the instance and as archives, and are not used for
   calibration.
 - **Approved by:** VJ, Oct 14, 2026.
-- **Recorded by Vihaan:** pending.
+- **Recorded:** by VJ in place of Vihaan, Oct 15, 2026, before P0 v3 was trained.
