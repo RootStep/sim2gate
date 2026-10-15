@@ -224,6 +224,7 @@ unless an entry says otherwise.
   - This matches published practice: Isaac Lab's maintainers advise adding randomization gradually once nominal
     walking is stable, and Unitree RL Lab's Go2 recipe randomizes friction (0.3–1.2) from the start with no delay.
 - **If P0 v4 also misses the criteria:** stop and review, as under C5.
-- **Superseded runs preserved:** the P0 v3 runs and the two diagnostic runs are kept on the instance and as an
-  archive, and are not used for calibration.
+- **Superseded runs preserved:** the P0 v3 runs and the two diagnostic runs are kept on the instance
+  (`mvp_runs/P0_v3_superseded`) and as `s2g-p0-v3-superseded.tgz` (with their training run folders; SHA-256
+  `7528d6748d7942f61854e970c86b1933f8d21a3c6af01c839104a0314242a961`), and are not used for calibration.
 - **Approved by:** VJ, Oct 15, 2026.
