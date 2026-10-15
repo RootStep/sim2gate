@@ -1,6 +1,8 @@
 # Test set v1: the planted-flaw policies and the blinded run (Oct 15, 2026)
 
-Fixed before any planted or held-out policy is trained (plan, step 3). Code: `sim2gate.mvp.tasks` (the
+Fixed before any planted or held-out policy is trained (plan, step 3). **Approved by VJ, Oct 15, 2026**: the P1–P5
+definitions below and the rule that each policy is checked in its own task. P5 stays conditional on the GPU check
+below. Code: `sim2gate.mvp.tasks` (the
 definitions), `sim2gate.mvp.blinded` (the run), `sim2gate.mvp.verdict` and `sim2gate.mvp.acceptance` (the scoring).
 
 ## The policies
