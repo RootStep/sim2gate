@@ -55,7 +55,9 @@ VARIANTS[P0_TASK_V3] = {
          "dynamic_friction_range": list(P0_V3_DYNAMIC_FRICTION), "make_consistent": True},
         {"what": "actuators.base_legs: DC motor with a per-episode command delay",
          "class": "sim2gate.mvp.actuators.DelayedDCMotor", "delay_physics_steps": list(P0_V3_DELAY_STEPS),
-         "delay_ms": [5 * P0_V3_DELAY_STEPS[0], 5 * P0_V3_DELAY_STEPS[1]]}],
+         "delay_ms": [5 * P0_V3_DELAY_STEPS[0], 5 * P0_V3_DELAY_STEPS[1]]},
+        {"what": "sim.use_newton_actuators = False", "why": "Isaac Lab rejects a custom motor under Newton-native "
+         "motors, also on PhysX, where the setting has no effect (Oct 15)"}],
     "max_iterations": P0_V2_ITERATIONS, "experiment_name": "sim2gate_go2_flat_p0_v3", "status": "current",
 }
 
@@ -82,6 +84,10 @@ def _p0_env_cfg(version=1):
                 pm["make_consistent"] = True
                 acts = self.scene.robot.actuators
                 acts["base_legs"] = with_delay(acts["base_legs"], *P0_V3_DELAY_STEPS)
+                # The Go2 task asks for Newton-native motors; Isaac Lab validates that against every actuator config,
+                # on PhysX too, and rejects a custom motor. On PhysX the setting has no effect (Isaac Lab's own motor
+                # model always runs there), and checks 1 and 5 already run with it off.
+                self.sim.use_newton_actuators = False
 
     Go2FlatP0EnvCfg.__name__ = f"Go2FlatP0EnvCfgV{version}"
     return Go2FlatP0EnvCfg

@@ -208,6 +208,7 @@ def test_task_module_imports_without_isaac_lab_and_versions_the_variant():
     assert fr["static_friction_range"] == [0.4, 1.2] and fr["make_consistent"] is True
     dl = next(c for c in v["changes"] if "delay" in c["what"])
     assert dl["delay_physics_steps"] == [0, 6] and dl["delay_ms"] == [0, 30]
+    assert any("use_newton_actuators" in c["what"] for c in v["changes"])
     v1, v2 = t.VARIANTS[t.P0_TASK_V1], t.VARIANTS[t.P0_TASK_V2]       # earlier versions stay, marked superseded
     assert v1["max_iterations"] == 300 and "superseded" in v1["status"] and "superseded" in v2["status"]
     assert v["changes"][:2] == v2["changes"]                          # v3 = v2 + C6's randomization

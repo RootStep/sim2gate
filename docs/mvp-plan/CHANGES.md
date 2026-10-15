@@ -164,7 +164,10 @@ unless an entry says otherwise.
      - ground friction randomized over the plausible real range, static 0.4–1.2 (dynamic 0.3–0.9, never above
        static);
      - a command delay of 0–30 ms (0–6 physics steps, drawn per episode) in the DC motor model
-       (`sim2gate.mvp.actuators.DelayedDCMotor`, the same delay mechanism check 1 sweeps).
+       (`sim2gate.mvp.actuators.DelayedDCMotor`, the same delay mechanism check 1 sweeps). The task's request for
+       Newton-native motors is turned off (`sim.use_newton_actuators = False`): Isaac Lab rejects a custom motor
+       under it even when training on PhysX, where the setting has no effect (found Oct 15, at the first training
+       start).
      Everything else is unchanged: the foot-slip penalty, the stock ±25% base-mass randomization, 1,000 iterations,
      Isaac Sim PhysX, the C4 acceptance criteria and seeds 1–3. P0 seeds 1–3 are retrained, check 2's thresholds and
      the episode-success reference are recalibrated from them, and checks 1 and 5 are rerun. P1 is then P0 v3 with
