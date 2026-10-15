@@ -228,3 +228,20 @@ unless an entry says otherwise.
   (`mvp_runs/P0_v3_superseded`) and as `s2g-p0-v3-superseded.tgz` (with their training run folders; SHA-256
   `7528d6748d7942f61854e970c86b1933f8d21a3c6af01c839104a0314242a961`), and are not used for calibration.
 - **Approved by:** VJ, Oct 15, 2026.
+
+## C8 — The success reference tolerates one nominal fall, as C4 does (Oct 15, 2026)
+
+- **Was:** the episode-success reference (`success.json`) refused any calibration baseline with a fall among its
+  64 nominal sweep episodes. Its code described this as the C4 rule, but C4 accepts a baseline with at most 1 fall
+  in 64.
+- **Now:** a baseline with at most 1 nominal fall is accepted, as under C4; more than 1 is refused. Fallen episodes
+  are left out of the reference (it is the mean tracking error over the nominal episodes without a fall) and are
+  listed in `success.json` with their error. The success rule itself (no fall, mean error at most 1.5 x the
+  reference) is unchanged. `python -m sim2gate.mvp.checks15 --score-only` scores the raw files already measured,
+  each re-checked against its checkpoint, without launching Isaac Sim.
+- **Why** (Oct 15): all three P0 v4 seeds met the C4 criteria (tracking error 0.071, 0.066 and 0.081 m/s; no falls
+  in check 2), and all nine check 1 and check 5 runs completed. Setting the reference was refused because seed 2
+  fell in 1 of the 64 nominal episodes of its check 1 sweep. Holding the reference to a stricter fall rule than
+  baseline acceptance was a mismatch in the code, not a plan decision. Including the fallen episode would let a
+  fall's tracking error move the success threshold, so it is left out.
+- **Approved by:** VJ, Oct 15, 2026.

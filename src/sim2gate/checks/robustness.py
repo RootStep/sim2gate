@@ -29,6 +29,10 @@ EXTEND = 1.5               # last value = nominal + EXTEND x (edge - nominal)
 EPISODES_PER_VALUE = 64
 CLIFF_SUCCESS = 0.8        # cliff: first value whose success rate is below this
 SUCCESS_ERROR_FACTOR = 1.5
+# A calibration baseline may fall in at most this many of its nominal episodes: the same tolerance as the C4
+# acceptance criteria (sim2gate.mvp.baselines BASELINE_CRITERIA["max_falls"]). Fallen episodes are left out of the
+# reference (plan change C8).
+MAX_NOMINAL_FALLS = 1
 
 # name -> nominal (training condition), edge (plausible real edge in the swept direction), plausible range
 PARAMS = {
@@ -102,12 +106,13 @@ class SuccessError(ValueError):
     pass
 
 
-def success_reference(raws, factor=SUCCESS_ERROR_FACTOR):
+def success_reference(raws, factor=SUCCESS_ERROR_FACTOR, max_falls=MAX_NOMINAL_FALLS):
     """The episode-success error threshold from the calibration baselines' nominal episodes.
 
     raws: list of (label, raw report) from P0 seeds 1-3, run with the same nominal profile and command set.
-    reference = mean, over all their nominal episodes, of each episode's mean tracking error; threshold = factor x
-    reference. Falls are not excluded: a calibration baseline must not fall at nominal (C4), so any fall is refused."""
+    reference = mean, over all their nominal episodes that did not fall, of each episode's mean tracking error;
+    threshold = factor x reference. A baseline with more than max_falls nominal falls is refused (the C4 tolerance);
+    fallen episodes are left out of the reference and listed (plan change C8)."""
     if len(raws) < 1:
         raise SuccessError("no calibration reports")
     keys = ("profile", "command_set_sha256", "episode_steps")
@@ -120,15 +125,20 @@ def success_reference(raws, factor=SUCCESS_ERROR_FACTOR):
         nom = [e for e in r["episodes"] if e["group"] == 0]
         if not nom:
             raise SuccessError(f"{label}: no nominal episodes")
-        fell = sum(bool(e["fell"]) for e in nom)
-        if fell:
-            raise SuccessError(f"{label}: {fell} nominal episode(s) fell; a calibration baseline must not fall")
-        errs += [e["mean_error_mps"] for e in nom]
+        fell = [e for e in nom if e["fell"]]
+        if len(fell) > max_falls:
+            raise SuccessError(f"{label}: {len(fell)} nominal episode(s) fell; a calibration baseline may fall in at "
+                               f"most {max_falls}")
+        kept = [e for e in nom if not e["fell"]]
+        errs += [e["mean_error_mps"] for e in kept]
         sources.append({"label": label, "checkpoint_sha256": (r.get("checkpoint") or {}).get("sha256"),
-                        "nominal_episodes": len(nom),
-                        "mean_error_mps": sum(e["mean_error_mps"] for e in nom) / len(nom)})
+                        "nominal_episodes": len(nom), "used_episodes": len(kept),
+                        "excluded_fallen": [{"env": e.get("env"), "steps": e.get("steps"),
+                                             "mean_error_mps": e["mean_error_mps"]} for e in fell],
+                        "mean_error_mps": sum(e["mean_error_mps"] for e in kept) / len(kept)})
     ref = sum(errs) / len(errs)
-    return {"version": 1, "rule": f"episode success: no fall and mean tracking error <= {factor} x reference",
+    return {"version": 2, "rule": f"episode success: no fall and mean tracking error <= {factor} x reference",
+            "reference_rule": f"mean over nominal episodes without a fall; at most {max_falls} fall per baseline (C8)",
             "reference_error_mps": ref, "factor": factor, "threshold_mps": factor * ref,
             "profile": first.get("profile"), "command_set_sha256": first.get("command_set_sha256"),
             "episode_steps": first.get("episode_steps"), "sources": sources}

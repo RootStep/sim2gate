@@ -96,3 +96,27 @@ def test_changed_checkpoint_is_refused(world):
     (tmp / "runs" / "s2" / "model_999.pt").write_bytes(b"swapped")
     assert checks15.main(args + ["--calibrate"]) == 1
     assert not (tmp / "P0_c15" / "success.json").exists()
+
+
+def test_score_only_rescores_without_launching(world):
+    tmp, args, calls = world
+    assert checks15.main(args + ["--calibrate"]) == 0
+    first = json.load(open(tmp / "P0_c15" / "success.json"))
+    (tmp / "P0_c15" / "success.json").unlink()
+    n = len(calls["cmds"])
+    assert checks15.main(args + ["--calibrate", "--score-only"]) == 0
+    assert len(calls["cmds"]) == n
+    assert json.load(open(tmp / "P0_c15" / "success.json"))["threshold_mps"] == pytest.approx(first["threshold_mps"])
+    m = json.load(open(tmp / "P0_c15" / "manifest.json"))
+    assert m["scored_only"] and m["seeds"]["2"]["check5"]["status"] == "scored"
+
+
+def test_score_only_refuses_a_missing_or_swapped_raw_file(world):
+    tmp, args, calls = world
+    assert checks15.main(args) == 0
+    (tmp / "P0_c15" / "raw_newton_s2.json").unlink()
+    assert checks15.main(args + ["--calibrate", "--score-only"]) == 1
+    assert not (tmp / "P0_c15" / "success.json").exists()
+    assert "no output" in json.load(open(tmp / "P0_c15" / "manifest.json"))["seeds"]["2"]["newton"]["error"]
+    (tmp / "runs" / "s1" / "model_999.pt").write_bytes(b"swapped")
+    assert checks15.main(args + ["--score-only"]) == 1

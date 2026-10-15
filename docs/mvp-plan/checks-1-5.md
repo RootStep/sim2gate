@@ -25,7 +25,8 @@ This differs from check 2, which runs Isaac Lab's play defaults (startup mass ra
 **Episode success** (plan: no fall in the 20 s episode, and mean tracking error at most 1.5 x the clean baseline's
 mean error under nominal conditions). The clean baseline's error is measured by check 1's own nominal group on
 P0 seeds 1–3 (`success.json`, set once, never overwritten), so success is judged under the conditions it was
-calibrated in. For checks 1 and 5 a condition "meets nominal success" when at least 80% of its episodes succeed.
+calibrated in. The reference is the mean over the nominal episodes that did not fall; a seed with more than one
+nominal fall is refused (the C4 tolerance, change C8). For checks 1 and 5 a condition "meets nominal success" when at least 80% of its episodes succeed.
 
 ## Check 1
 

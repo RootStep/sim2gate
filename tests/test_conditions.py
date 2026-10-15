@@ -364,11 +364,25 @@ def test_check1_is_invalid_when_the_policy_is_not_ready_or_the_setup_differs(tmp
     assert any("grid" in r for r in rb.score(other, succ)["reasons"])
 
 
-def test_success_reference_refuses_falls_and_mixed_setups(tmp_path):
+def test_success_reference_leaves_out_one_fall_and_refuses_two(tmp_path):
     raw, _ = _play(tmp_path)
-    fell = json.loads(json.dumps(raw)); fell["episodes"][0]["fell"] = True
-    with pytest.raises(rb.SuccessError, match="fell"):
-        rb.success_reference([("a", raw), ("b", fell)])
+    clean = rb.success_reference([("a", raw), ("b", raw)])
+    nom = [i for i, e in enumerate(raw["episodes"]) if e["group"] == 0]
+    one = json.loads(json.dumps(raw))
+    one["episodes"][nom[0]]["fell"] = True
+    one["episodes"][nom[0]]["mean_error_mps"] = 5.0          # a fallen episode must not move the reference
+    ref = rb.success_reference([("a", raw), ("b", one)])
+    assert ref["reference_error_mps"] == pytest.approx(clean["reference_error_mps"], rel=0.2)
+    assert ref["sources"][1]["used_episodes"] == len(nom) - 1
+    assert ref["sources"][1]["excluded_fallen"][0]["mean_error_mps"] == 5.0
+    assert ref["sources"][0]["excluded_fallen"] == []
+    two = json.loads(json.dumps(one)); two["episodes"][nom[1]]["fell"] = True
+    with pytest.raises(rb.SuccessError, match="2 nominal episode"):
+        rb.success_reference([("a", raw), ("b", two)])
+
+
+def test_success_reference_refuses_mixed_setups(tmp_path):
+    raw, _ = _play(tmp_path)
     other = json.loads(json.dumps(raw)); other["profile"] = "other"
     with pytest.raises(rb.SuccessError, match="profile"):
         rb.success_reference([("a", raw), ("b", other)])

@@ -16,6 +16,9 @@ check 5 for every seed with it. Every raw file is checked against the checkpoint
 
 A run counts by its output, not its exit code: Isaac Sim sometimes crashes while shutting down after the output is
 written (seen in training, C5); the exit code is recorded either way.
+
+--score-only launches nothing: it re-checks the raw files already in --out against the manifest's checkpoints and
+scores them (plan change C8, after the success reference was refused on Oct 15).
 """
 import argparse
 import json
@@ -56,6 +59,8 @@ def main(argv=None):
     p.add_argument("--calibrate", action="store_true",
                    help="set the episode-success reference from these policies (P0 seeds 1-3 only)")
     p.add_argument("--success", default=None, help="an existing success reference (success.json) to score with")
+    p.add_argument("--score-only", action="store_true",
+                   help="launch nothing; score the raw files already in --out (each re-checked against its checkpoint)")
     a = p.parse_args(argv)
     if a.calibrate and sorted(a.seeds) != [1, 2, 3]:
         p.error("the episode-success reference is set from P0 seeds 1 to 3 only")
@@ -81,13 +86,18 @@ def main(argv=None):
         for name in a.runs:
             mode, physics = RUNS[name]
             out = os.path.join(a.out, f"raw_{name}_s{s}.json")
-            for f in (out, out + ".error.txt"):
-                if os.path.exists(f):
-                    os.remove(f)
-            rc, _ = run(run_cmd(a, mode, physics, ck["path"], out), os.path.join(a.out, f"{name}_s{s}.log"))
-            r = {"returncode": rc}
+            if a.score_only:
+                r = dict(rec.get(name) or {})
+                r.pop("error", None)
+                r.pop("error_file", None)
+            else:
+                for f in (out, out + ".error.txt"):
+                    if os.path.exists(f):
+                        os.remove(f)
+                rc, _ = run(run_cmd(a, mode, physics, ck["path"], out), os.path.join(a.out, f"{name}_s{s}.log"))
+                r = {"returncode": rc}
             if not os.path.exists(out):
-                r["error"] = f"no output (exit {rc})"
+                r["error"] = f"no output (exit {r.get('returncode')})"
                 if os.path.exists(out + ".error.txt"):
                     lines = [x for x in open(out + ".error.txt").read().splitlines() if x.strip()]
                     r["error"] += ": " + (lines[-1] if lines else "")
@@ -153,6 +163,8 @@ def main(argv=None):
         for k in ("check1", "check5"):
             for r in (rec.get(k) or {}).get("reasons") or []:
                 print(f"    {k} invalid: {r}")
+    if a.score_only:
+        m["scored_only"] = True
     _save(m, mpath)
     print(f"\n{'CHECKS 1 AND 5 DONE' if ok else 'CHECKS 1 AND 5 INCOMPLETE'}  (manifest: {mpath})")
     return 0 if ok else 1
