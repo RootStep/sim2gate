@@ -58,11 +58,17 @@ observation noise on, no pushes). The calibration (P0 v4 in its own task) was me
 
 ## The blinded run
 
-1. **Vihaan** lists the 23 checkpoints with their policy, seed and task in a private file and runs
-   `python -m sim2gate.mvp.blinded prepare`. Each policy gets a random ID; its checkpoint is copied to
-   `blind/<ID>/model.pt`; `blind/manifest.json` holds only IDs and checkpoint hashes; `blind/aliases.json` maps
-   each ID's task alias (`Sim2Gate-Blind-<ID>`) to an opaque token of its task. The key (ID → policy, seed, task)
-   is written outside the blind folder, and Vihaan keeps it.
+1. **Training and blinding, unattended** (VJ's proposal, Oct 16; `python -m sim2gate.mvp.testset`). Vihaan makes an
+   RSA key pair on his own computer once and gives only the public key. `testset train` then trains the 20 new
+   policies (P0 seeds 4–8, P1–P5 seeds 1–3) in a secret random order, with all output written to files; checks each
+   one walks (at least 80% of 64 nominal PhysX episodes succeed, as A5; a failure is retrained with seed + 10, then
+   + 20, and three failures stop the run; a P5 failure first moves all P5 seeds to the 3000 fallback); blinds all 23
+   with `blinded prepare` (the 20 plus the three calibration baselines). Each policy gets a random ID; its checkpoint
+   is copied to `blind/<ID>/model.pt`; `blind/manifest.json` holds only IDs and checkpoint hashes;
+   `blind/aliases.json` maps each ID's task alias (`Sim2Gate-Blind-<ID>`) to an opaque token of its task. The key, the
+   training logs and settings, the final checkpoints and the walking-check results are then encrypted with Vihaan's
+   public key (RSA-OAEP over a random AES-256 key) and deleted, along with the labelled training folders. Only
+   Vihaan can open them (`testset unseal`). The console never names a policy.
 2. **The runner** runs `blinded run`: for each ID, check 2, check 1's sweep, and check 5's PhysX and Newton runs,
    plus the report-only joint sweep, all under the alias, then the verdict (and its HTML report) with the frozen
    thresholds and success reference shipped in the package
@@ -71,7 +77,7 @@ observation noise on, no pushes). The calibration (P0 v4 in its own task) was me
 3. **Seal.** When every ID has a complete verdict, `blinded seal` writes `verdicts.sha256` and prints one digest.
    The runner sends the digest to Vihaan; after sealing, `run` refuses to change any verdict.
 4. **Replays (A6).** `blinded replay` reruns 3 IDs, chosen by a seeded draw (seed 20261015) from scratch.
-5. **Key.** Vihaan releases the key only after he has the digest. `python -m sim2gate.mvp.acceptance` scores the
+5. **Key.** Vihaan unseals and releases the key only after he has the digest. `python -m sim2gate.mvp.acceptance` scores the
    sealed verdicts and the replays against it (A1–A6). Anyone can check the verdicts against the digest.
 
 What blinding protects against is a person adjusting anything while knowing which policy is which. The scoring

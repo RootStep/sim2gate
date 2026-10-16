@@ -23,7 +23,6 @@ Whoever runs the checks (inside the Isaac Lab container):
 """
 import argparse
 import datetime
-import hashlib
 import json
 import os
 import secrets
