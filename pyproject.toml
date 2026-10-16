@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sim2gate"
-version = "0.0.1"
+version = "0.1.0.dev0"
 description = "Training-aware diagnostics for sim-trained robot policies (pre-alpha placeholder)"
 readme = "README.md"
 license = "Apache-2.0"
@@ -17,6 +17,11 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
+
+[project.optional-dependencies]
+training = ["torch>=2.2"]
+rslrl = ["torch>=2.2", "rsl-rl-lib>=5.0.1,<6"]
+dev = ["pytest>=8"]
 
 [project.urls]
 Homepage = "https://github.com/RootStep/sim2gate"
