@@ -33,7 +33,7 @@ def _split(argv):
     return argv, []
 
 
-def install(eta=0.0, signals=None, what_if_eta=1.0, monitor=True):
+def install(eta=0.0, signals=None, what_if_eta=1.0, monitor=True, negative_control=False):
     """Patch rsl_rl.runners.OnPolicyRunner. Returns a function that undoes the patch."""
     version = metadata.version("rsl-rl-lib")
     if int(version.split(".")[0]) < 5:
@@ -48,7 +48,8 @@ def install(eta=0.0, signals=None, what_if_eta=1.0, monitor=True):
 
     def __init__(self, env, train_cfg, log_dir=None, device="cpu"):
         if eta != 0.0:
-            train_cfg["algorithm"]["class_name"] = "sim2gate.training.bsrs_ppo:BSRSPPO"
+            train_cfg["algorithm"]["class_name"] = ("sim2gate.training.controls:IgnoresEtaBSRSPPO" if negative_control
+                                                    else "sim2gate.training.bsrs_ppo:BSRSPPO")
             train_cfg["algorithm"]["eta"] = float(eta)
         orig(self, env, train_cfg, log_dir=log_dir, device=device)
         if monitor:
@@ -73,6 +74,8 @@ def main(argv=None):
     p.add_argument("--isaaclab-script", default=None,
                    help="path to Isaac Lab's rsl_rl/train.py (3.0 beta); omit to use isaaclab_rl's entry point")
     p.add_argument("--no-monitor", action="store_true", help="only swap in BSRSPPO, log nothing extra")
+    p.add_argument("--negative-control", action="store_true",
+                   help="acceptance testing only: a trainer that claims --eta but ignores it")
     args = p.parse_args(ours)
     if not args.isaaclab_script:
         # as Isaac Lab 3.0's train.py does: set before anything defines Warp kernels (halves cold kernel builds)
@@ -81,7 +84,10 @@ def main(argv=None):
             wp.config.enable_backward = False
         except ImportError:
             pass
-    install(args.eta, args.signals, args.what_if_eta, monitor=not args.no_monitor)
+    if args.negative_control and args.eta == 0.0:
+        p.error("--negative-control needs a nonzero --eta")
+    install(args.eta, args.signals, args.what_if_eta, monitor=not args.no_monitor,
+            negative_control=args.negative_control)
     if args.isaaclab_script:
         script = os.path.abspath(args.isaaclab_script)
         sys.path.insert(0, os.path.dirname(script))       # train.py imports its sibling cli_args.py

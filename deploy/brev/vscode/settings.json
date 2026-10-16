@@ -1,0 +1,12 @@
+{
+    "workbench.startupEditor": "readme",
+    "simpleBrowser.focusLockIndicator.enabled": false,
+    "python.defaultInterpreterPath": "/isaac-sim/python.sh",
+    "python.analysis.extraPaths": [
+        "isaaclab_arena/submodules/IsaacLab/source/isaaclab",
+        "isaaclab_arena/submodules/IsaacLab/source/isaaclab_assets",
+        "isaaclab_arena/submodules/IsaacLab/source/isaaclab_rl",
+        "isaaclab_arena/submodules/IsaacLab/source/isaaclab_mimic",
+        "isaaclab_arena/submodules/IsaacLab/source/isaaclab_tasks"
+    ]
+}
