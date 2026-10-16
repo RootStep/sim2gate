@@ -95,8 +95,23 @@ P1_MASS_SCALE = (1 / 1.01, 1.01)         # the stock task's base-mass scale (1/1
 P2_DELAY_STEPS = (0, 0)
 P3_STATIC_FRICTION = (0.2, 0.4)          # below the plausible real range (0.4-1.2)
 P3_DYNAMIC_FRICTION = (0.15, 0.3)
-P5_CONTACT_STIFFNESS = 1000.0            # PhysX compliant contact, acceleration units (1/s^2): ~1 cm static sink
+P5_CONTACT_STIFFNESS = 1000.0            # PhysX compliant contact, acceleration units (1/s^2); NOT FINAL: the Oct 16
+                                         # stand test sank the robot 8.7 cm on PhysX (intended ~1 cm); a pilot picks the value
 P5_CONTACT_DAMPING = 60.0                # about critical (2 x sqrt(1000) = 63)
+# Pilot only (Oct 16, before the freeze and before any training): a stiffness to stand-test instead of the value above,
+# with damping 2 x sqrt(stiffness). Removed once the value is chosen; the blinded run never sets it.
+P5_PILOT_STIFFNESS_ENV = "SIM2GATE_P5_PILOT_STIFFNESS"
+
+
+def p5_contact():
+    """(stiffness, damping) for P5's ground: the defined values, or the pilot's if SIM2GATE_P5_PILOT_STIFFNESS is set."""
+    import math
+    import os
+    k = os.environ.get(P5_PILOT_STIFFNESS_ENV)
+    if not k:
+        return P5_CONTACT_STIFFNESS, P5_CONTACT_DAMPING
+    k = float(k)
+    return k, 2.0 * math.sqrt(k)
 PLANTED = {
     "P1": {"flaw": "narrow randomization", "target_check": 1,
            "changes": [{"what": "events.physics_material ranges", "static_friction_range": list(P1_STATIC_FRICTION),
@@ -216,7 +231,7 @@ def _planted_env_cfg(pol):
                 mat = PhysxRigidBodyMaterialCfg(
                     static_friction=ground.static_friction, dynamic_friction=ground.dynamic_friction,
                     friction_combine_mode="multiply", restitution_combine_mode="multiply",
-                    compliant_contact_stiffness=P5_CONTACT_STIFFNESS, compliant_contact_damping=P5_CONTACT_DAMPING,
+                    compliant_contact_stiffness=p5_contact()[0], compliant_contact_damping=p5_contact()[1],
                     compliant_contact_acceleration_spring=True)
                 self.scene.terrain.physics_material = mat
                 self.sim.physics_material = mat
