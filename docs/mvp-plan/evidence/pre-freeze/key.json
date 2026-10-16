@@ -1,0 +1,34 @@
+{
+ "version": 1,
+ "policies": {
+  "B9KTU": {
+   "policy": "P0",
+   "seed": 1,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P0-v4",
+   "source_checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_16-14-26/model_1999.pt",
+   "sha256": "db9a475503abea4102c4d05181ff22d5b7e731707469004378e256a0535c49c5"
+  },
+  "BSUBF": {
+   "policy": "P2-standin",
+   "seed": 1,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P0-v2",
+   "source_checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v2/2026-10-14_17-37-50/model_999.pt",
+   "sha256": "2c827cd663dc98d4ad5a0d38579744b11e6a5dca2a9860474e2ef5cfc9e8753d"
+  },
+  "BT7YY": {
+   "policy": "P0",
+   "seed": 3,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P0-v4",
+   "source_checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_17-20-26/model_1999.pt",
+   "sha256": "1e72124312d1d497b0ac912a8b9de49f5da7a5abedd20d4a580bce375fa75ffe"
+  },
+  "BV71C": {
+   "policy": "P0",
+   "seed": 2,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P0-v4",
+   "source_checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_16-46-53/model_1999.pt",
+   "sha256": "8a3f361525d81d520bb3453069716b5d0e5d28f79fe414cf20d8db401a8ef5d3"
+  }
+ },
+ "manifest_sha256": "176becfef493085bec7408808e9e04a6381f8612c27eb7efd2f2b6e2bb93e891"
+}

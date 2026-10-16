@@ -1,0 +1,32 @@
+{
+ "check": 5,
+ "success_threshold_mps": 0.1077962647090118,
+ "metrics": {
+  "physx_success_rate": 0.9375,
+  "newton_success_rate": 0.71875,
+  "physx_mean_error_mps": 0.0749940834804113,
+  "newton_mean_error_mps": 0.10053355402516763,
+  "error_ratio": 1.340553139120999,
+  "physx_falls": 0,
+  "newton_falls": 0
+ },
+ "rule": {
+  "newton_success_min": 0.8,
+  "error_ratio_max": 2.0
+ },
+ "parity": "passed",
+ "reasons": [],
+ "risks": [
+  {
+   "check": 5,
+   "metric": "newton_success_rate",
+   "value": 0.71875,
+   "threshold": 0.8,
+   "margin": -0.08125000000000004,
+   "likely_cause": "the policy depends on PhysX contact behaviour that Newton does not reproduce",
+   "fix": "review contact parameters and randomize them in training, then retrain"
+  }
+ ],
+ "status": "scored",
+ "flagged": true
+}

@@ -1,0 +1,161 @@
+{
+ "version": 1,
+ "policy_id": "BSUBF",
+ "verdict": "no-go",
+ "exit_code": 1,
+ "checkpoint_sha256": "2c827cd663dc98d4ad5a0d38579744b11e6a5dca2a9860474e2ef5cfc9e8753d",
+ "checks": {
+  "2": {
+   "status": "scored",
+   "flagged": true,
+   "reasons": [],
+   "risks": [
+    "actuator_limit_step_share"
+   ]
+  },
+  "1": {
+   "status": "scored",
+   "flagged": true,
+   "reasons": [],
+   "risks": [
+    "action_latency_ms cliff"
+   ],
+   "nominal_success_rate": 0.984375,
+   "flagged_params": [
+    "action_latency_ms"
+   ],
+   "cliffs": {
+    "ground_friction": 0.3333333333,
+    "added_base_mass_kg": 4.5,
+    "motor_strength_scale": 0.775,
+    "action_latency_ms": 20.0,
+    "observation_noise_scale": null
+   }
+  },
+  "5": {
+   "status": "scored",
+   "flagged": false,
+   "reasons": [],
+   "risks": [],
+   "parity": "passed",
+   "physx_success_rate": 0.984375,
+   "newton_success_rate": 0.59375,
+   "newton_fall_free_rate": 1.0,
+   "error_ratio": 1.4760800997776056
+  }
+ },
+ "risks": [
+  {
+   "check": 2,
+   "metric": "actuator_limit_step_share",
+   "value": 0.0519375,
+   "threshold": 0.0034453124999999996,
+   "margin": -0.0484921875,
+   "likely_cause": "torque or joint speed at the model's limits more often than the baselines",
+   "fix": "penalize torque; clip actions to the feasible range"
+  },
+  {
+   "check": 1,
+   "metric": "action_latency_ms cliff",
+   "value": 20.0,
+   "threshold": 30.0,
+   "margin": 10.0,
+   "evidence": [
+    {
+     "index": 0,
+     "value": 0.0,
+     "success_rate": 0.984375,
+     "episodes": 64
+    },
+    {
+     "index": 1,
+     "value": 5.0,
+     "success_rate": 0.96875,
+     "episodes": 64
+    },
+    {
+     "index": 2,
+     "value": 10.0,
+     "success_rate": 0.9375,
+     "episodes": 64
+    },
+    {
+     "index": 3,
+     "value": 15.0,
+     "success_rate": 0.890625,
+     "episodes": 64
+    },
+    {
+     "index": 4,
+     "value": 20.0,
+     "success_rate": 0.734375,
+     "episodes": 64
+    },
+    {
+     "index": 5,
+     "value": 25.0,
+     "success_rate": 0.59375,
+     "episodes": 64
+    },
+    {
+     "index": 6,
+     "value": 30.0,
+     "success_rate": 0.375,
+     "episodes": 64
+    },
+    {
+     "index": 7,
+     "value": 35.0,
+     "success_rate": 0.140625,
+     "episodes": 64
+    },
+    {
+     "index": 8,
+     "value": 40.0,
+     "success_rate": 0.046875,
+     "episodes": 64
+    },
+    {
+     "index": 9,
+     "value": 45.0,
+     "success_rate": 0.0,
+     "episodes": 64
+    }
+   ],
+   "likely_cause": "the policy was not trained across this parameter's real range",
+   "fix": "randomize action latency over 0-30 ms in training, then retrain",
+   "training_range": null
+  }
+ ],
+ "problems": [],
+ "inputs_sha256": {
+  "check2_report": "43266686398d04143cc8a38abb99e0e059c2baed12b6f7d5d98830221c79ce40",
+  "sweep_raw": "f2eacd80a531cc865a84aa076e95b87ab05a17a945ce5bb136bcac3b2d74be96",
+  "physx_raw": "6176408b6fb8e207ae9bce10ca58f61193b87037f37ce82688b953b7760dabc1",
+  "newton_raw": "17cf5d51a60d7fe9148792a3006630d6f8f99bba6bbff077fb5a64fd88540601",
+  "thresholds": "c960fd8e7bfdbd8e42d60534c874bca93c6b1a99f12c961baa10709a1bf86a90",
+  "success": "08fba447ba9e001b355f087f4b12a5063ca4547e7c29c1eb98facc8745981148"
+ },
+ "frozen": {
+  "thresholds_sha256": "1abb4fcc1b585769c3993b20a22644657efdf391a3eb3f2b054311759e9db739",
+  "success_sha256": "7708a731ded35468a352deb8511da40aa2f987b42dc6d947adfa6c140eef1dee"
+ },
+ "measurements": {
+  "check2": {
+   "path": "policies/BSUBF/check2.json",
+   "sha256": "c78e2d044a4796897a6fe771c8d68fc1fe41b1d9f2c0e34789d652ff8827b2f9"
+  },
+  "sweep": {
+   "path": "policies/BSUBF/sweep.json",
+   "sha256": "46a422aa5d2f81427a06ea137d3c0ba4f7c6e737a5a4efaefaa8314c24d10722"
+  },
+  "physx": {
+   "path": "policies/BSUBF/physx.json",
+   "sha256": "168d5ecb5d7b867c4caa9e176c38118edc7942898bd15b270f55135573382347"
+  },
+  "newton": {
+   "path": "policies/BSUBF/newton.json",
+   "sha256": "dc4743c39829c071296068cca3efd5a32d49d6934a729609f1aedb6df321e2b5"
+  }
+ }
+}

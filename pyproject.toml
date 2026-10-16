@@ -21,7 +21,8 @@ classifiers = [
 [project.optional-dependencies]
 training = ["torch>=2.2"]
 rslrl = ["torch>=2.2", "rsl-rl-lib>=5.0.1,<6"]
-dev = ["pytest>=8"]
+dev = ["pytest>=8", "usd-core>=24.0", "pyyaml>=6"]   # usd-core: test stages (Isaac Sim ships its own pxr);
+                                                    # pyyaml: reading saved env.yaml files (Isaac Sim ships it)
 
 [project.urls]
 Homepage = "https://github.com/RootStep/sim2gate"

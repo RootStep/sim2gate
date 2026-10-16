@@ -77,7 +77,7 @@ the Go2 smoke test with automatic pass/fail.
 Measures, on a trained policy, the behaviors that only work because of simulator artifacts: foot slip (95th
 percentile horizontal foot speed in contact), ground penetration, contact-force spikes (99th percentile foot force
 in body weights), actuator limits (share of steps where the actuator model clips the torque demand or a joint
-exceeds its speed limit; flagged above 1%), and action jitter (share of action power above a quarter of the
+exceeds its speed limit), and action jitter (share of action power above a quarter of the
 control frequency). In Isaac Lab 3.x, it runs Isaac Lab's own play entry point unchanged:
 
 ```bash
@@ -88,6 +88,12 @@ python -m sim2gate.checks.isaaclab_exploits --steps 1000 -- --task Isaac-Velocit
 Name the policy explicitly (`--checkpoint`, or `--load_run`): without it Isaac Lab plays the newest run, and check 2
 refuses to start unless you pass `--allow-latest`. The report records the loaded checkpoint's path and SHA-256 under
 `checkpoint`, and the play arguments under `play_args`.
+
+Measure every policy on the same fixed velocity commands, as the MVP plan requires: make the set once
+(`python -m sim2gate.checks.commands --n 64 --seed 20261012 --out go2_flat_commands_64.json`) and pass
+`--commands go2_flat_commands_64.json`. Each environment then holds its own command for the whole run (no
+resampling, no heading control, no standing environments). The report records the set's seed and SHA-256 under
+`commands`; without `--commands` the task's random commands are used and the report says so.
 
 How to read the report:
 
@@ -102,7 +108,7 @@ How to read the report:
   step, the covered share and which path ran, and a note appears when coverage is below 1. The sensor's history
   buffer is not used: what it spans depends on that update cadence. On Isaac Lab 3.0's Go2 flat task the default
   (Newton with Newton actuators) is the single-call path, so 1 of 4 substeps; `env.sim.use_newton_actuators=false`
-  (same Newton physics, Isaac Lab's actuator path) or `physics=physx` gives 4 of 4. Full coverage was shown for those
+  (same Newton physics, Isaac Lab's actuator path) or `physics=isaacsim_physx` (Isaac Sim's PhysX) gives 4 of 4. Full coverage was shown for those
   settings only, not for the default path. The report records the physics path and these overrides
   (`physics_context`).
 - **Thresholds carry their measurement settings.** A thresholds file records the settings it was calibrated under
@@ -113,12 +119,15 @@ How to read the report:
 - **Missing data is never "ok".** A channel that was not measured is `null`. The actuator flag is `ok` only when
   both channels (torque clipping and joint speed) were measured on every step; `coverage` gives the share for each.
   A violation in a partially measured run is still flagged.
-- **Ground penetration** is measured only on flat ground (`terrain_type == "plane"`), from body-origin heights:
-  foot origin minus the foot radius (`--foot-radius`, 0.022 m for the Go2), and other bodies' origins only. On any
-  other terrain it is `null`.
+- **Ground penetration** is measured only on flat ground (`terrain_type == "plane"`; on any other terrain it is
+  `null`). It is the lowest point of each body's authored collision shapes, read once from the USD stage (spheres,
+  capsules, boxes, cylinders, meshes, instanced ones included) and placed every step from the body's pose. The
+  shapes found are listed under `geometry`. If they can't be read, check 2 falls back to body origins and
+  `--foot-radius` (0.022 m for the Go2) and says why (`geometry.why_not_shapes`); `--foot-geometry radius` forces
+  that.
 - **Percentiles** use contact samples from the whole run; past 2 million samples they are thinned uniformly in
   time (`contact_sample_stride`).
-- **Thresholds.** Only the actuator-limit flag has a fixed threshold (1% of steps). The others stay
+- **Thresholds.** Every flag, actuator limits included, stays
   `uncalibrated` until you pass a versioned thresholds file. `sim2gate.checks.calibrate` makes one from the check 2
   reports of the calibration baselines (clean policies, P0 seeds 1 to 3), by the plan's rule: the largest value
   across the baselines times 1.5. It refuses fewer than three baselines, a repeated or unrecorded checkpoint, reports

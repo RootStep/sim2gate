@@ -1,0 +1,458 @@
+{
+ "check": 1,
+ "success_threshold_mps": 0.1077962647090118,
+ "nominal_success_rate": 0.9375,
+ "nominal_episodes": 64,
+ "params": {
+  "ground_friction": {
+   "series": [
+    {
+     "index": 0,
+     "value": 0.8,
+     "success_rate": 0.9375,
+     "episodes": 64
+    },
+    {
+     "index": 1,
+     "value": 0.7333333333,
+     "success_rate": 0.90625,
+     "episodes": 64
+    },
+    {
+     "index": 2,
+     "value": 0.6666666667,
+     "success_rate": 0.921875,
+     "episodes": 64
+    },
+    {
+     "index": 3,
+     "value": 0.6,
+     "success_rate": 0.921875,
+     "episodes": 64
+    },
+    {
+     "index": 4,
+     "value": 0.5333333333,
+     "success_rate": 0.875,
+     "episodes": 64
+    },
+    {
+     "index": 5,
+     "value": 0.4666666667,
+     "success_rate": 0.875,
+     "episodes": 64
+    },
+    {
+     "index": 6,
+     "value": 0.4,
+     "success_rate": 0.8125,
+     "episodes": 64
+    },
+    {
+     "index": 7,
+     "value": 0.3333333333,
+     "success_rate": 0.53125,
+     "episodes": 64
+    },
+    {
+     "index": 8,
+     "value": 0.2666666667,
+     "success_rate": 0.171875,
+     "episodes": 64
+    },
+    {
+     "index": 9,
+     "value": 0.2,
+     "success_rate": 0.078125,
+     "episodes": 64
+    }
+   ],
+   "cliff": 0.3333333333,
+   "cliff_index": 7,
+   "plausible": [
+    0.4,
+    1.2
+   ],
+   "flagged": false,
+   "unit": "static coefficient",
+   "training_range": {
+    "static_friction_range": null
+   }
+  },
+  "added_base_mass_kg": {
+   "series": [
+    {
+     "index": 0,
+     "value": 0.0,
+     "success_rate": 0.9375,
+     "episodes": 64
+    },
+    {
+     "index": 1,
+     "value": 0.5,
+     "success_rate": 0.921875,
+     "episodes": 64
+    },
+    {
+     "index": 2,
+     "value": 1.0,
+     "success_rate": 0.9375,
+     "episodes": 64
+    },
+    {
+     "index": 3,
+     "value": 1.5,
+     "success_rate": 0.921875,
+     "episodes": 64
+    },
+    {
+     "index": 4,
+     "value": 2.0,
+     "success_rate": 0.921875,
+     "episodes": 64
+    },
+    {
+     "index": 5,
+     "value": 2.5,
+     "success_rate": 0.875,
+     "episodes": 64
+    },
+    {
+     "index": 6,
+     "value": 3.0,
+     "success_rate": 0.84375,
+     "episodes": 64
+    },
+    {
+     "index": 7,
+     "value": 3.5,
+     "success_rate": 0.75,
+     "episodes": 64
+    },
+    {
+     "index": 8,
+     "value": 4.0,
+     "success_rate": 0.796875,
+     "episodes": 64
+    },
+    {
+     "index": 9,
+     "value": 4.5,
+     "success_rate": 0.75,
+     "episodes": 64
+    }
+   ],
+   "cliff": 3.5,
+   "cliff_index": 7,
+   "plausible": [
+    0.0,
+    3.0
+   ],
+   "flagged": false,
+   "unit": "kg",
+   "training_range": {
+    "operation": "scale",
+    "params": null,
+    "distribution": "log_uniform"
+   }
+  },
+  "motor_strength_scale": {
+   "series": [
+    {
+     "index": 0,
+     "value": 1.0,
+     "success_rate": 0.9375,
+     "episodes": 64
+    },
+    {
+     "index": 1,
+     "value": 0.975,
+     "success_rate": 0.9375,
+     "episodes": 64
+    },
+    {
+     "index": 2,
+     "value": 0.95,
+     "success_rate": 0.9375,
+     "episodes": 64
+    },
+    {
+     "index": 3,
+     "value": 0.925,
+     "success_rate": 0.90625,
+     "episodes": 64
+    },
+    {
+     "index": 4,
+     "value": 0.9,
+     "success_rate": 0.890625,
+     "episodes": 64
+    },
+    {
+     "index": 5,
+     "value": 0.875,
+     "success_rate": 0.875,
+     "episodes": 64
+    },
+    {
+     "index": 6,
+     "value": 0.85,
+     "success_rate": 0.859375,
+     "episodes": 64
+    },
+    {
+     "index": 7,
+     "value": 0.825,
+     "success_rate": 0.828125,
+     "episodes": 64
+    },
+    {
+     "index": 8,
+     "value": 0.8,
+     "success_rate": 0.75,
+     "episodes": 64
+    },
+    {
+     "index": 9,
+     "value": 0.775,
+     "success_rate": 0.703125,
+     "episodes": 64
+    }
+   ],
+   "cliff": 0.8,
+   "cliff_index": 8,
+   "plausible": [
+    0.85,
+    1.0
+   ],
+   "flagged": false,
+   "unit": "x nominal torque",
+   "training_range": "not randomized"
+  },
+  "action_latency_ms": {
+   "series": [
+    {
+     "index": 0,
+     "value": 0.0,
+     "success_rate": 0.9375,
+     "episodes": 64
+    },
+    {
+     "index": 1,
+     "value": 5.0,
+     "success_rate": 0.921875,
+     "episodes": 64
+    },
+    {
+     "index": 2,
+     "value": 10.0,
+     "success_rate": 0.890625,
+     "episodes": 64
+    },
+    {
+     "index": 3,
+     "value": 15.0,
+     "success_rate": 0.90625,
+     "episodes": 64
+    },
+    {
+     "index": 4,
+     "value": 20.0,
+     "success_rate": 0.84375,
+     "episodes": 64
+    },
+    {
+     "index": 5,
+     "value": 25.0,
+     "success_rate": 0.78125,
+     "episodes": 64
+    },
+    {
+     "index": 6,
+     "value": 30.0,
+     "success_rate": 0.609375,
+     "episodes": 64
+    },
+    {
+     "index": 7,
+     "value": 35.0,
+     "success_rate": 0.40625,
+     "episodes": 64
+    },
+    {
+     "index": 8,
+     "value": 40.0,
+     "success_rate": 0.171875,
+     "episodes": 64
+    },
+    {
+     "index": 9,
+     "value": 45.0,
+     "success_rate": 0.0625,
+     "episodes": 64
+    }
+   ],
+   "cliff": 25.0,
+   "cliff_index": 5,
+   "plausible": [
+    0.0,
+    30.0
+   ],
+   "flagged": true,
+   "unit": "ms",
+   "training_range": "no delay in the actuator model"
+  },
+  "observation_noise_scale": {
+   "series": [
+    {
+     "index": 0,
+     "value": 1.0,
+     "success_rate": 0.9375,
+     "episodes": 64
+    },
+    {
+     "index": 1,
+     "value": 1.1666666667,
+     "success_rate": 0.921875,
+     "episodes": 64
+    },
+    {
+     "index": 2,
+     "value": 1.3333333333,
+     "success_rate": 0.90625,
+     "episodes": 64
+    },
+    {
+     "index": 3,
+     "value": 1.5,
+     "success_rate": 0.921875,
+     "episodes": 64
+    },
+    {
+     "index": 4,
+     "value": 1.6666666667,
+     "success_rate": 0.921875,
+     "episodes": 64
+    },
+    {
+     "index": 5,
+     "value": 1.8333333333,
+     "success_rate": 0.875,
+     "episodes": 64
+    },
+    {
+     "index": 6,
+     "value": 2.0,
+     "success_rate": 0.875,
+     "episodes": 64
+    },
+    {
+     "index": 7,
+     "value": 2.1666666667,
+     "success_rate": 0.875,
+     "episodes": 64
+    },
+    {
+     "index": 8,
+     "value": 2.3333333333,
+     "success_rate": 0.796875,
+     "episodes": 64
+    },
+    {
+     "index": 9,
+     "value": 2.5,
+     "success_rate": 0.796875,
+     "episodes": 64
+    }
+   ],
+   "cliff": 2.3333333333,
+   "cliff_index": 8,
+   "plausible": [
+    1.0,
+    2.0
+   ],
+   "flagged": false,
+   "unit": "x task noise",
+   "training_range": {
+    "enable_corruption": true
+   }
+  }
+ },
+ "risks": [
+  {
+   "check": 1,
+   "metric": "action_latency_ms cliff",
+   "value": 25.0,
+   "threshold": 30.0,
+   "margin": 5.0,
+   "evidence": [
+    {
+     "index": 0,
+     "value": 0.0,
+     "success_rate": 0.9375,
+     "episodes": 64
+    },
+    {
+     "index": 1,
+     "value": 5.0,
+     "success_rate": 0.921875,
+     "episodes": 64
+    },
+    {
+     "index": 2,
+     "value": 10.0,
+     "success_rate": 0.890625,
+     "episodes": 64
+    },
+    {
+     "index": 3,
+     "value": 15.0,
+     "success_rate": 0.90625,
+     "episodes": 64
+    },
+    {
+     "index": 4,
+     "value": 20.0,
+     "success_rate": 0.84375,
+     "episodes": 64
+    },
+    {
+     "index": 5,
+     "value": 25.0,
+     "success_rate": 0.78125,
+     "episodes": 64
+    },
+    {
+     "index": 6,
+     "value": 30.0,
+     "success_rate": 0.609375,
+     "episodes": 64
+    },
+    {
+     "index": 7,
+     "value": 35.0,
+     "success_rate": 0.40625,
+     "episodes": 64
+    },
+    {
+     "index": 8,
+     "value": 40.0,
+     "success_rate": 0.171875,
+     "episodes": 64
+    },
+    {
+     "index": 9,
+     "value": 45.0,
+     "success_rate": 0.0625,
+     "episodes": 64
+    }
+   ],
+   "likely_cause": "the policy was not trained across this parameter's real range",
+   "fix": "randomize action latency over 0-30 ms in training, then retrain",
+   "training_range": "no delay in the actuator model"
+  }
+ ],
+ "reasons": [],
+ "status": "scored",
+ "flagged": true
+}

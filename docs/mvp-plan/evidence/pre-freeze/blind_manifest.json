@@ -1,0 +1,22 @@
+{
+ "version": 1,
+ "created": "2026-10-16T14:32:23+00:00",
+ "policies": {
+  "B9KTU": {
+   "checkpoint": "B9KTU/model.pt",
+   "sha256": "db9a475503abea4102c4d05181ff22d5b7e731707469004378e256a0535c49c5"
+  },
+  "BSUBF": {
+   "checkpoint": "BSUBF/model.pt",
+   "sha256": "2c827cd663dc98d4ad5a0d38579744b11e6a5dca2a9860474e2ef5cfc9e8753d"
+  },
+  "BT7YY": {
+   "checkpoint": "BT7YY/model.pt",
+   "sha256": "1e72124312d1d497b0ac912a8b9de49f5da7a5abedd20d4a580bce375fa75ffe"
+  },
+  "BV71C": {
+   "checkpoint": "BV71C/model.pt",
+   "sha256": "8a3f361525d81d520bb3453069716b5d0e5d28f79fe414cf20d8db401a8ef5d3"
+  }
+ }
+}

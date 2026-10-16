@@ -1,0 +1,85 @@
+{
+ "version": 1,
+ "calibration": "max over 3 baselines x1.5",
+ "created": "2026-10-14T18:34:29+00:00",
+ "rule": {
+  "statistic": "max",
+  "factor": 1.5,
+  "baselines": 3
+ },
+ "baseline_maxima": {
+  "foot_slip_p95_mps": 0.15823769569396973,
+  "ground_penetration_m": 0.002308020368218422,
+  "contact_force_p99_bw": 1.0181313753128052,
+  "action_jitter_high_freq_power_share": 0.016740309733497022,
+  "actuator_limit_step_share": 0.0519375
+ },
+ "thresholds": {
+  "foot_slip_p95_mps": 0.2373565435409546,
+  "ground_penetration_m": 0.003462030552327633,
+  "contact_force_p99_bw": 1.5271970629692078,
+  "action_jitter_high_freq_power_share": 0.025110464600245533,
+  "actuator_limit_step_share": 0.07790625
+ },
+ "sources": [
+  {
+   "report": "/workspaces/isaaclab_arena/mvp_runs/P0/check2_P0_s1.json",
+   "report_sha256": "dff7efc0542730981595622d594ffdbff7a053fe731335c50627d0357de96958",
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v2/2026-10-14_17-37-50/model_999.pt",
+   "checkpoint_sha256": "2c827cd663dc98d4ad5a0d38579744b11e6a5dca2a9860474e2ef5cfc9e8753d",
+   "env_steps": 64000
+  },
+  {
+   "report": "/workspaces/isaaclab_arena/mvp_runs/P0/check2_P0_s2.json",
+   "report_sha256": "6328907672fbfc3a54a9ee74cf4528ba6b40f8db5480eb7c022b962ef9247ec6",
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v2/2026-10-14_17-57-28/model_999.pt",
+   "checkpoint_sha256": "0691617d383c3f2ccdcb1d02208b0bb5834a52d9ee8ff54e409234002623fec1",
+   "env_steps": 64000
+  },
+  {
+   "report": "/workspaces/isaaclab_arena/mvp_runs/P0/check2_P0_s3.json",
+   "report_sha256": "99cb80692e2645a8898711ccee521a4308562563be0089cff6ba1b2436079661",
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v2/2026-10-14_18-15-11/model_999.pt",
+   "checkpoint_sha256": "3d4f90bb3e3bdcbf665766be1c3fa7de6cef464f4769bd75f2b92a753aece7d6",
+   "env_steps": 64000
+  }
+ ],
+ "measurement_config": {
+  "dt": 0.02,
+  "contact_force_n": 1.0,
+  "foot_radius_m": 0.0,
+  "penetration_tol_m": 0.005,
+  "jitter_window": 50,
+  "flat_ground": true,
+  "measurement_version": 3,
+  "foot_geometry": "collision_shapes"
+ },
+ "contact_force_samples_per_step": 4,
+ "physics_context": {
+  "physics_handles_decimation": false,
+  "overrides": [
+   "physics=isaacsim_physx"
+  ]
+ },
+ "command_set": {
+  "sha256": "56222a90befd10592b31ac2a15155d1ffa8d5bb908cb9ee075df8bc8a0df2cea",
+  "seed": 20261012,
+  "n": 64,
+  "ranges": {
+   "lin_vel_x": [
+    -1.0,
+    1.0
+   ],
+   "lin_vel_y": [
+    -1.0,
+    1.0
+   ],
+   "ang_vel_z": [
+    -1.0,
+    1.0
+   ]
+  },
+  "source": "/isaac-sim/kit/python/lib/python3.12/site-packages/sim2gate/mvp/go2_flat_commands_64.json"
+ },
+ "sim2gate_version": "0.1.0.dev0"
+}

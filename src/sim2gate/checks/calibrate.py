@@ -9,7 +9,9 @@ policy checkpoint each one measured, so a threshold can be traced to the exact p
 
 Refuses (exit 2) rather than guessing when: fewer than --min-baselines reports; a report has no recorded checkpoint;
 two reports measured the same checkpoint; the reports were measured with different settings (control step, foot
-radius, contact threshold, flat ground, number of steps or envs); or any metric is missing or not finite.
+radius, contact threshold, flat ground, measurement version, number of steps or envs), different contact-force
+sampling, a different physics path or overrides, or not all on the same fixed command set; or any metric is
+missing or not finite. The thresholds file records all of these, and check 2 applies it only to matching runs.
 """
 import argparse
 import datetime
@@ -75,6 +77,12 @@ def calibrate(reports, factor=1.5, min_baselines=3, require_checkpoint=True):
     context = docs[0].get("physics_context")
     if not isinstance(context, dict):
         raise CalibrationError("reports do not record the physics context (older check 2?)")
+    cmds = [d.get("commands") or {} for d in docs]
+    if not all(c.get("fixed") and c.get("sha256") for c in cmds):
+        raise CalibrationError("every baseline must be measured on a fixed command set (check 2 --commands)")
+    if len({c["sha256"] for c in cmds}) > 1:
+        raise CalibrationError(f"baselines used different command sets: {sorted({c['sha256'][:12] for c in cmds})}")
+    command_set = {k: cmds[0].get(k) for k in ("sha256", "seed", "n", "ranges", "source")}
     thresholds, maxima = {}, {}
     for m in CALIBRATED_METRICS:
         vals = [d["metrics"].get(m) for d in docs]
@@ -96,6 +104,7 @@ def calibrate(reports, factor=1.5, min_baselines=3, require_checkpoint=True):
             "measurement_config": {k: docs[0]["config"].get(k) for k in SAME_CONFIG},
             "contact_force_samples_per_step": samples.pop(),
             "physics_context": context,
+            "command_set": command_set,
             "sim2gate_version": version}
 
 

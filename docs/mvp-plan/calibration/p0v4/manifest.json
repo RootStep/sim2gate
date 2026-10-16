@@ -1,0 +1,299 @@
+{
+ "policy": "P0",
+ "task": "Sim2Gate-Velocity-Flat-Go2-P0-v4",
+ "task_variant": {
+  "policy": "P0",
+  "version": 4,
+  "base_task": "Isaac-Velocity-Flat-UnitreeGo2",
+  "changes": [
+   {
+    "what": "add reward term rewards.feet_slide",
+    "func": "isaaclab_tasks.core.velocity.mdp.feet_slide",
+    "weight": -0.25,
+    "feet": ".*_foot",
+    "sensor": "contact_forces",
+    "weight_status": "proposed starting value (Isaac Lab H1), not validated for the Go2"
+   },
+   {
+    "what": "training iterations 300 -> 1000",
+    "max_iterations": 1000
+   },
+   {
+    "what": "events.physics_material ranges",
+    "static_friction_range": [
+     0.4,
+     1.2
+    ],
+    "dynamic_friction_range": [
+     0.3,
+     0.9
+    ],
+    "make_consistent": true
+   },
+   {
+    "what": "actuators.base_legs: DC motor with a per-episode command delay",
+    "class": "sim2gate.mvp.actuators.DelayedDCMotor",
+    "delay_physics_steps": [
+     0,
+     6
+    ],
+    "delay_ms": [
+     0,
+     30
+    ]
+   },
+   {
+    "what": "sim.use_newton_actuators = False",
+    "why": "Isaac Lab rejects a custom motor under Newton-native motors, also on PhysX, where the setting has no effect (Oct 15)"
+   },
+   {
+    "what": "delay ramp in training",
+    "no_delay_before_round": 500,
+    "full_delay_from_round": 800,
+    "physics_steps": [
+     48000,
+     76800
+    ],
+    "evaluation": "play mode: full 0-30 ms range, no ramp"
+   },
+   {
+    "what": "training rounds 1000 -> 2000",
+    "max_iterations": 2000
+   }
+  ],
+  "max_iterations": 2000,
+  "experiment_name": "sim2gate_go2_flat_p0_v4",
+  "status": "current"
+ },
+ "baseline_criteria": {
+  "max_mean_tracking_error_mps": 0.15,
+  "max_falls": 1,
+  "max_sustained_slip_p95_mps": 0.5
+ },
+ "physics": "isaacsim_physx",
+ "train_args": [],
+ "play_args": [],
+ "command_set": {
+  "path": "/isaac-sim/kit/python/lib/python3.12/site-packages/sim2gate/mvp/go2_flat_commands_64.json",
+  "sha256": "56222a90befd10592b31ac2a15155d1ffa8d5bb908cb9ee075df8bc8a0df2cea",
+  "seed": 20261012,
+  "n": 64
+ },
+ "check2": {
+  "steps": 1000,
+  "num_envs": 64
+ },
+ "seeds": {
+  "1": {
+   "started": "2026-10-15T16:14:09+00:00",
+   "train_cmd": [
+    "/workspaces/isaaclab_arena/submodules/IsaacLab/scripts/reinforcement_learning/train.py",
+    "--rl_library",
+    "rsl_rl",
+    "--task",
+    "Sim2Gate-Velocity-Flat-Go2-P0-v4",
+    "--seed",
+    "1",
+    "--external_callback",
+    "sim2gate.mvp.tasks.register",
+    "physics=isaacsim_physx"
+   ],
+   "train_returncode": 0,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_16-14-26",
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_16-14-26/model_1999.pt",
+    "sha256": "db9a475503abea4102c4d05181ff22d5b7e731707469004378e256a0535c49c5",
+    "bytes": 983989
+   },
+   "configs": {
+    "agent.yaml": {
+     "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_16-14-26/params/agent.yaml",
+     "sha256": "64d6d788f6d2eda248d709711df872ea2cf8e2ae241f75977b58fed493f46b84",
+     "bytes": 1206
+    },
+    "env.yaml": {
+     "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_16-14-26/params/env.yaml",
+     "sha256": "39da8d11af42554ffa1263eb508741c3a8fd7c24de226180332067500173f7cc",
+     "bytes": 33184
+    }
+   },
+   "check2_returncode": 0,
+   "check2_report": {
+    "path": "/workspaces/isaaclab_arena/mvp_runs/P0/check2_P0_s1.json",
+    "sha256": "2890ffc7ea4ec28e0200143f465991fb4809738b6549faacae65a5c8cf9a9377",
+    "bytes": 10175
+   },
+   "acceptance": {
+    "accepted": true,
+    "details": {
+     "criteria": {
+      "max_mean_tracking_error_mps": 0.15,
+      "max_falls": 1,
+      "max_sustained_slip_p95_mps": 0.5
+     },
+     "measured": {
+      "mean_tracking_error_mps": 0.07101135570853694,
+      "falls": 0,
+      "sustained_slip_p95_mps": 0.08680537343025208
+     },
+     "passed": {
+      "tracking": true,
+      "falls": true,
+      "sustained_slip": true
+     }
+    }
+   }
+  },
+  "2": {
+   "started": "2026-10-15T16:46:36+00:00",
+   "train_cmd": [
+    "/workspaces/isaaclab_arena/submodules/IsaacLab/scripts/reinforcement_learning/train.py",
+    "--rl_library",
+    "rsl_rl",
+    "--task",
+    "Sim2Gate-Velocity-Flat-Go2-P0-v4",
+    "--seed",
+    "2",
+    "--external_callback",
+    "sim2gate.mvp.tasks.register",
+    "physics=isaacsim_physx"
+   ],
+   "train_returncode": 1,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_16-46-53",
+   "train_shutdown_crash": {
+    "returncode": 1,
+    "last_iteration": "1999/2000",
+    "final_checkpoint": "model_1999.pt",
+    "crash": "process died in Isaac Sim's SimulationApp.close() after training finished"
+   },
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_16-46-53/model_1999.pt",
+    "sha256": "8a3f361525d81d520bb3453069716b5d0e5d28f79fe414cf20d8db401a8ef5d3",
+    "bytes": 983989
+   },
+   "configs": {
+    "agent.yaml": {
+     "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_16-46-53/params/agent.yaml",
+     "sha256": "807ed0685f6caccb96a9d90ee0fed3ebc1489cef55a12f7921b2d318b0273d2e",
+     "bytes": 1206
+    },
+    "env.yaml": {
+     "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_16-46-53/params/env.yaml",
+     "sha256": "9d47803b895cc7ecc1f0cba7733c5216080e2c385cdc46f62ec7a0f7d98bb1c8",
+     "bytes": 33184
+    }
+   },
+   "check2_returncode": 0,
+   "check2_report": {
+    "path": "/workspaces/isaaclab_arena/mvp_runs/P0/check2_P0_s2.json",
+    "sha256": "9e45e5da74bf45d745f52a375c0da16ae090919c0e63e36650aee3ff1620869c",
+    "bytes": 10174
+   },
+   "acceptance": {
+    "accepted": true,
+    "details": {
+     "criteria": {
+      "max_mean_tracking_error_mps": 0.15,
+      "max_falls": 1,
+      "max_sustained_slip_p95_mps": 0.5
+     },
+     "measured": {
+      "mean_tracking_error_mps": 0.0655709712202788,
+      "falls": 0,
+      "sustained_slip_p95_mps": 0.0891612246632576
+     },
+     "passed": {
+      "tracking": true,
+      "falls": true,
+      "sustained_slip": true
+     }
+    }
+   }
+  },
+  "3": {
+   "started": "2026-10-15T17:20:09+00:00",
+   "train_cmd": [
+    "/workspaces/isaaclab_arena/submodules/IsaacLab/scripts/reinforcement_learning/train.py",
+    "--rl_library",
+    "rsl_rl",
+    "--task",
+    "Sim2Gate-Velocity-Flat-Go2-P0-v4",
+    "--seed",
+    "3",
+    "--external_callback",
+    "sim2gate.mvp.tasks.register",
+    "physics=isaacsim_physx"
+   ],
+   "train_returncode": 0,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_17-20-26",
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_17-20-26/model_1999.pt",
+    "sha256": "1e72124312d1d497b0ac912a8b9de49f5da7a5abedd20d4a580bce375fa75ffe",
+    "bytes": 983989
+   },
+   "configs": {
+    "agent.yaml": {
+     "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_17-20-26/params/agent.yaml",
+     "sha256": "f58bb15c3a54aee9f05b7109c4c4a2e05c75fb28646e799bc3e2f3e5bca78a13",
+     "bytes": 1206
+    },
+    "env.yaml": {
+     "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_17-20-26/params/env.yaml",
+     "sha256": "3ca71a1ac9b019b5377092ad0a122ec2ce93441f560653639eabdb8a9067864a",
+     "bytes": 33184
+    }
+   },
+   "check2_returncode": 0,
+   "check2_report": {
+    "path": "/workspaces/isaaclab_arena/mvp_runs/P0/check2_P0_s3.json",
+    "sha256": "e26aa71dccb92bf47ec2982d8bb05b3231becc642e907cbbd75357c75dc00556",
+    "bytes": 10186
+   },
+   "acceptance": {
+    "accepted": true,
+    "details": {
+     "criteria": {
+      "max_mean_tracking_error_mps": 0.15,
+      "max_falls": 1,
+      "max_sustained_slip_p95_mps": 0.5
+     },
+     "measured": {
+      "mean_tracking_error_mps": 0.08147583425267703,
+      "falls": 0,
+      "sustained_slip_p95_mps": 0.08500071614980698
+     },
+     "passed": {
+      "tracking": true,
+      "falls": true,
+      "sustained_slip": true
+     }
+    }
+   }
+  }
+ },
+ "versions": {
+  "sim2gate": "0.1.0.dev0",
+  "rsl-rl-lib": "5.4.1"
+ },
+ "calibration": {
+  "thresholds": {
+   "path": "/workspaces/isaaclab_arena/mvp_runs/P0/thresholds.json",
+   "sha256": "1abb4fcc1b585769c3993b20a22644657efdf391a3eb3f2b054311759e9db739",
+   "bytes": 2742
+  },
+  "thresholds_values": {
+   "foot_slip_p95_mps": 0.16123884916305542,
+   "ground_penetration_m": 0.005929444916546345,
+   "contact_force_p99_bw": 1.7179248332977295,
+   "action_jitter_high_freq_power_share": 0.016232847519787253,
+   "actuator_limit_step_share": 0.0034453124999999996
+  },
+  "baseline_maxima": {
+   "foot_slip_p95_mps": 0.10749256610870361,
+   "ground_penetration_m": 0.003952963277697563,
+   "contact_force_p99_bw": 1.1452832221984863,
+   "action_jitter_high_freq_power_share": 0.010821898346524835,
+   "actuator_limit_step_share": 0.002296875
+  }
+ }
+}

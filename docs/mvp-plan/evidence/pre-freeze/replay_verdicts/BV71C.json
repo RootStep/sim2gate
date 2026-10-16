@@ -1,0 +1,73 @@
+{
+ "version": 1,
+ "policy_id": "BV71C",
+ "verdict": "go",
+ "exit_code": 0,
+ "checkpoint_sha256": "8a3f361525d81d520bb3453069716b5d0e5d28f79fe414cf20d8db401a8ef5d3",
+ "checks": {
+  "2": {
+   "status": "scored",
+   "flagged": false,
+   "reasons": [],
+   "risks": []
+  },
+  "1": {
+   "status": "scored",
+   "flagged": false,
+   "reasons": [],
+   "risks": [],
+   "nominal_success_rate": 0.984375,
+   "flagged_params": [],
+   "cliffs": {
+    "ground_friction": 0.2666666667,
+    "added_base_mass_kg": null,
+    "motor_strength_scale": null,
+    "action_latency_ms": null,
+    "observation_noise_scale": null
+   }
+  },
+  "5": {
+   "status": "scored",
+   "flagged": false,
+   "reasons": [],
+   "risks": [],
+   "parity": "passed",
+   "physx_success_rate": 1.0,
+   "newton_success_rate": 0.625,
+   "newton_fall_free_rate": 0.984375,
+   "error_ratio": 1.4540493310292533
+  }
+ },
+ "risks": [],
+ "problems": [],
+ "inputs_sha256": {
+  "check2_report": "1b83ff4e3380392701cf520d6a6432a9e5cd21f95c207b6b3ff842f362a173f7",
+  "sweep_raw": "070b68133183b4d7aa85b8f11f76bda5dd8d9956a4591c1ac38ffd59a97a134a",
+  "physx_raw": "0c6a6bca8337b28c090c1aa1265b541a698fdf429f306b747d1c4ab7f90713c9",
+  "newton_raw": "a2707cb6a6f3582ede04331c22bba37c3597869345529d1a071d05c1df573ade",
+  "thresholds": "c960fd8e7bfdbd8e42d60534c874bca93c6b1a99f12c961baa10709a1bf86a90",
+  "success": "08fba447ba9e001b355f087f4b12a5063ca4547e7c29c1eb98facc8745981148"
+ },
+ "frozen": {
+  "thresholds_sha256": "1abb4fcc1b585769c3993b20a22644657efdf391a3eb3f2b054311759e9db739",
+  "success_sha256": "7708a731ded35468a352deb8511da40aa2f987b42dc6d947adfa6c140eef1dee"
+ },
+ "measurements": {
+  "check2": {
+   "path": "policies/BV71C/check2.json",
+   "sha256": "e2dd1abe5b1b2de3e4e147285ddbbcbe45ed0c31feadc6f879abe3aec64b3937"
+  },
+  "sweep": {
+   "path": "policies/BV71C/sweep.json",
+   "sha256": "c8020b92504809d13ef44eb1cfdf2ad1025132431781c21d2a221a6355ee95ac"
+  },
+  "physx": {
+   "path": "policies/BV71C/physx.json",
+   "sha256": "7a767aee7d54e12177e34e076d63cd0cff380a87e8f42a68fd234e870aa7c798"
+  },
+  "newton": {
+   "path": "policies/BV71C/newton.json",
+   "sha256": "64a958bf9cff5f955dfc7ddb033d2c334ff38c3b770e9cc72ae59cf5777bf7cc"
+  }
+ }
+}

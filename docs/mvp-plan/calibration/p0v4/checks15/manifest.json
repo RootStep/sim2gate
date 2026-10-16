@@ -1,0 +1,253 @@
+{
+ "baselines": "/workspaces/isaaclab_arena/mvp_runs/P0",
+ "task": "Sim2Gate-Velocity-Flat-Go2-P0-v4",
+ "fixed_overrides": [
+  "env.sim.use_newton_actuators=false",
+  "env.scene.robot.joint_ordering=physx",
+  "env.scene.robot.body_ordering=physx"
+ ],
+ "grid": {
+  "version": 1,
+  "n_values": 10,
+  "extend": 1.5,
+  "episodes_per_value": 64,
+  "cliff_success": 0.8,
+  "params": {
+   "ground_friction": {
+    "nominal": 0.8,
+    "edge": 0.4,
+    "plausible": [
+     0.4,
+     1.2
+    ],
+    "unit": "static coefficient",
+    "fix": "randomize ground friction over the plausible range (0.4-1.2) in training, then retrain",
+    "values": [
+     0.8,
+     0.7333333333,
+     0.6666666667,
+     0.6,
+     0.5333333333,
+     0.4666666667,
+     0.4,
+     0.3333333333,
+     0.2666666667,
+     0.2
+    ]
+   },
+   "added_base_mass_kg": {
+    "nominal": 0.0,
+    "edge": 3.0,
+    "plausible": [
+     0.0,
+     3.0
+    ],
+    "unit": "kg",
+    "fix": "randomize added base mass over 0-3 kg in training, then retrain",
+    "values": [
+     0.0,
+     0.5,
+     1.0,
+     1.5,
+     2.0,
+     2.5,
+     3.0,
+     3.5,
+     4.0,
+     4.5
+    ]
+   },
+   "motor_strength_scale": {
+    "nominal": 1.0,
+    "edge": 0.85,
+    "plausible": [
+     0.85,
+     1.0
+    ],
+    "unit": "x nominal torque",
+    "fix": "randomize motor strength over 0.85-1.0 in training, then retrain",
+    "values": [
+     1.0,
+     0.975,
+     0.95,
+     0.925,
+     0.9,
+     0.875,
+     0.85,
+     0.825,
+     0.8,
+     0.775
+    ]
+   },
+   "action_latency_ms": {
+    "nominal": 0.0,
+    "edge": 30.0,
+    "plausible": [
+     0.0,
+     30.0
+    ],
+    "unit": "ms",
+    "fix": "randomize action latency over 0-30 ms in training, then retrain",
+    "values": [
+     0.0,
+     5.0,
+     10.0,
+     15.0,
+     20.0,
+     25.0,
+     30.0,
+     35.0,
+     40.0,
+     45.0
+    ]
+   },
+   "observation_noise_scale": {
+    "nominal": 1.0,
+    "edge": 2.0,
+    "plausible": [
+     1.0,
+     2.0
+    ],
+    "unit": "x task noise",
+    "fix": "train with observation noise up to 2x the task default, then retrain",
+    "values": [
+     1.0,
+     1.1666666667,
+     1.3333333333,
+     1.5,
+     1.6666666667,
+     1.8333333333,
+     2.0,
+     2.1666666667,
+     2.3333333333,
+     2.5
+    ]
+   }
+  },
+  "dynamic_friction_ratio": 0.7499999999999999,
+  "reading": "last value = nominal + 1.5 x (edge - nominal); swept from nominal towards harder conditions; one shared nominal group",
+  "sha256": "65f05de8c3ca4edc1f79e1c4d9aec836b0c2ede7a02d00d0d07db09ccc584146"
+ },
+ "seeds": {
+  "1": {
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_16-14-26/model_1999.pt",
+    "sha256": "db9a475503abea4102c4d05181ff22d5b7e731707469004378e256a0535c49c5",
+    "bytes": 983989
+   },
+   "sweep": {
+    "returncode": 0,
+    "raw": {
+     "path": "/workspaces/isaaclab_arena/mvp_runs/P0_checks15/raw_sweep_s1.json",
+     "sha256": "a209c494cab21fdabc3fd6379962e27266c6484c25201779df2bec797ce67402"
+    }
+   },
+   "physx": {
+    "returncode": 0,
+    "raw": {
+     "path": "/workspaces/isaaclab_arena/mvp_runs/P0_checks15/raw_physx_s1.json",
+     "sha256": "003a20f6efeb4edf63093cf12092b473d2609495eb715a0694bf3acdae484e73"
+    }
+   },
+   "newton": {
+    "returncode": 0,
+    "raw": {
+     "path": "/workspaces/isaaclab_arena/mvp_runs/P0_checks15/raw_newton_s1.json",
+     "sha256": "c4bbe1c933080e8c49937d3926c2087cb9ce65b19cd3bce56af7ec94855c4d0b"
+    }
+   },
+   "check1": {
+    "status": "scored",
+    "flagged": false,
+    "reasons": []
+   },
+   "check5": {
+    "status": "scored",
+    "flagged": false,
+    "reasons": []
+   }
+  },
+  "2": {
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_16-46-53/model_1999.pt",
+    "sha256": "8a3f361525d81d520bb3453069716b5d0e5d28f79fe414cf20d8db401a8ef5d3",
+    "bytes": 983989
+   },
+   "sweep": {
+    "returncode": 0,
+    "raw": {
+     "path": "/workspaces/isaaclab_arena/mvp_runs/P0_checks15/raw_sweep_s2.json",
+     "sha256": "77a5e48fa8a4a805e74510ab0e1cf12509b5ae02e4970fbaa8b6609c3394c7c2"
+    }
+   },
+   "physx": {
+    "returncode": 0,
+    "raw": {
+     "path": "/workspaces/isaaclab_arena/mvp_runs/P0_checks15/raw_physx_s2.json",
+     "sha256": "91c507ea3f5aab094927566de1bfe307ad674c9cfa742642e7a79f6003607a91"
+    }
+   },
+   "newton": {
+    "returncode": 0,
+    "raw": {
+     "path": "/workspaces/isaaclab_arena/mvp_runs/P0_checks15/raw_newton_s2.json",
+     "sha256": "423a4a1ab6a178c640452e7c6de5d97c3654c26ef272995b11096c0ff41b8ff2"
+    }
+   },
+   "check1": {
+    "status": "scored",
+    "flagged": false,
+    "reasons": []
+   },
+   "check5": {
+    "status": "scored",
+    "flagged": false,
+    "reasons": []
+   }
+  },
+  "3": {
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_17-20-26/model_1999.pt",
+    "sha256": "1e72124312d1d497b0ac912a8b9de49f5da7a5abedd20d4a580bce375fa75ffe",
+    "bytes": 983989
+   },
+   "sweep": {
+    "returncode": 1,
+    "raw": {
+     "path": "/workspaces/isaaclab_arena/mvp_runs/P0_checks15/raw_sweep_s3.json",
+     "sha256": "419033add688e1e8691040b9fb10383bb8f65c9892c5e91d951bd9f688e8c341"
+    }
+   },
+   "physx": {
+    "returncode": 0,
+    "raw": {
+     "path": "/workspaces/isaaclab_arena/mvp_runs/P0_checks15/raw_physx_s3.json",
+     "sha256": "4b0845d636bf726b37ac5a23ad8c1627f6499afb9cc3cc1c8240ecfa3704c22d"
+    }
+   },
+   "newton": {
+    "returncode": 0,
+    "raw": {
+     "path": "/workspaces/isaaclab_arena/mvp_runs/P0_checks15/raw_newton_s3.json",
+     "sha256": "dd5daac8335a8c5a7cc6fab30dc918c54ae16d9466ffc0b8f8f5b5e31b71c857"
+    }
+   },
+   "check1": {
+    "status": "scored",
+    "flagged": false,
+    "reasons": []
+   },
+   "check5": {
+    "status": "scored",
+    "flagged": false,
+    "reasons": []
+   }
+  }
+ },
+ "success": {
+  "path": "/workspaces/isaaclab_arena/mvp_runs/P0_checks15/success.json",
+  "sha256": "7708a731ded35468a352deb8511da40aa2f987b42dc6d947adfa6c140eef1dee",
+  "threshold_mps": 0.11326216416650246
+ },
+ "scored_only": true
+}

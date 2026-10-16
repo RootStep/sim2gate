@@ -1,0 +1,237 @@
+{
+ "version": 1,
+ "standins": {
+  "X11": {
+   "policy": "P0",
+   "seed": 5,
+   "made_from": "real: P0 v4 seed 2"
+  },
+  "X13": {
+   "policy": "P0",
+   "seed": 7,
+   "made_from": "real: P0 v4 seed 1"
+  },
+  "X15": {
+   "policy": "P0",
+   "seed": 6,
+   "made_from": "real: P0 v4 seed 3"
+  },
+  "X17": {
+   "policy": "P3",
+   "seed": 3,
+   "made_from": "synthetic: P0 v4 seed 3, foot slip doubled"
+  },
+  "X18": {
+   "policy": "P5",
+   "seed": 3,
+   "made_from": "synthetic: P0 v4 seed 3, 2 in 5 Newton episodes fall"
+  },
+  "X33": {
+   "policy": "P4",
+   "seed": 3,
+   "made_from": "synthetic: P0 v4 seed 3, action jitter doubled"
+  },
+  "X34": {
+   "policy": "P2",
+   "seed": 1,
+   "made_from": "real: P0 v2 seed 1 (trained without delay)"
+  },
+  "X35": {
+   "policy": "P0",
+   "seed": 2,
+   "made_from": "real: P0 v4 seed 2"
+  },
+  "X37": {
+   "policy": "P0",
+   "seed": 1,
+   "made_from": "real: P0 v4 seed 1"
+  },
+  "X39": {
+   "policy": "P3",
+   "seed": 1,
+   "made_from": "synthetic: P0 v4 seed 1, foot slip doubled"
+  },
+  "X44": {
+   "policy": "P5",
+   "seed": 2,
+   "made_from": "synthetic: P0 v4 seed 2, 2 in 5 Newton episodes fall"
+  },
+  "X60": {
+   "policy": "P1",
+   "seed": 1,
+   "made_from": "synthetic: P0 v4 seed 1, every episode fails at friction 0.6 and below"
+  },
+  "X64": {
+   "policy": "P2",
+   "seed": 3,
+   "made_from": "real: P0 v2 seed 3 (trained without delay)"
+  },
+  "X66": {
+   "policy": "P0",
+   "seed": 3,
+   "made_from": "real: P0 v4 seed 3"
+  },
+  "X71": {
+   "policy": "P0",
+   "seed": 4,
+   "made_from": "real: P0 v4 seed 1"
+  },
+  "X73": {
+   "policy": "P3",
+   "seed": 2,
+   "made_from": "synthetic: P0 v4 seed 2, foot slip doubled"
+  },
+  "X77": {
+   "policy": "P2",
+   "seed": 2,
+   "made_from": "real: P0 v2 seed 2 (trained without delay)"
+  },
+  "X80": {
+   "policy": "P4",
+   "seed": 2,
+   "made_from": "synthetic: P0 v4 seed 2, action jitter doubled"
+  },
+  "X83": {
+   "policy": "P1",
+   "seed": 2,
+   "made_from": "synthetic: P0 v4 seed 2, every episode fails at friction 0.6 and below"
+  },
+  "X85": {
+   "policy": "P4",
+   "seed": 1,
+   "made_from": "synthetic: P0 v4 seed 1, action jitter doubled"
+  },
+  "X87": {
+   "policy": "P5",
+   "seed": 1,
+   "made_from": "synthetic: P0 v4 seed 1, 2 in 5 Newton episodes fall"
+  },
+  "X88": {
+   "policy": "P0",
+   "seed": 8,
+   "made_from": "real: P0 v4 seed 2"
+  },
+  "X92": {
+   "policy": "P1",
+   "seed": 3,
+   "made_from": "synthetic: P0 v4 seed 3, every episode fails at friction 0.6 and below"
+  }
+ },
+ "control": {
+  "passed": true,
+  "criteria": {
+   "A1": true,
+   "A2": true,
+   "A3": true,
+   "A4": true,
+   "A5": true,
+   "A6": true
+  },
+  "problems": []
+ },
+ "bugs": [
+  {
+   "id": "check2-missed",
+   "check": "2",
+   "bug": "hides flags: check 2 thresholds 10x too high",
+   "edit": {
+    "from": "and v > t",
+    "to": "and v > t * 10"
+   },
+   "validation_passed": false,
+   "failed_criteria": [
+    "A1"
+   ],
+   "must_fail": [
+    "A1"
+   ],
+   "caught": true
+  },
+  {
+   "id": "check2-false-alarm",
+   "check": "2",
+   "bug": "false alarms: check 2 thresholds 10x too low",
+   "edit": {
+    "from": "and v > t",
+    "to": "and v > t / 10"
+   },
+   "validation_passed": false,
+   "failed_criteria": [
+    "A4"
+   ],
+   "must_fail": [
+    "A4"
+   ],
+   "caught": true
+  },
+  {
+   "id": "check1-missed",
+   "check": "1",
+   "bug": "hides flags: check 1 cliff only below 8% success, not 80%",
+   "edit": {
+    "from": "CLIFF_SUCCESS = 0.8",
+    "to": "CLIFF_SUCCESS = 0.08"
+   },
+   "validation_passed": false,
+   "failed_criteria": [
+    "A2"
+   ],
+   "must_fail": [
+    "A2"
+   ],
+   "caught": true
+  },
+  {
+   "id": "check1-false-alarm",
+   "check": "1",
+   "bug": "false alarms: check 1 flags any cliff, not only inside the realistic range",
+   "edit": {
+    "from": "flagged = cliff is not None and _inside(cliff[\"value\"], p[\"plausible\"])",
+    "to": "flagged = cliff is not None"
+   },
+   "validation_passed": false,
+   "failed_criteria": [
+    "A4"
+   ],
+   "must_fail": [
+    "A4"
+   ],
+   "caught": true
+  },
+  {
+   "id": "check5-missed",
+   "check": "5",
+   "bug": "hides flags: check 5 flags falls only below 8% fall-free, not 80%",
+   "edit": {
+    "from": "NEWTON_FALL_FREE_MIN = 0.8",
+    "to": "NEWTON_FALL_FREE_MIN = 0.08"
+   },
+   "validation_passed": false,
+   "failed_criteria": [
+    "A3"
+   ],
+   "must_fail": [
+    "A3"
+   ],
+   "caught": true
+  },
+  {
+   "id": "check5-false-alarm",
+   "check": "5",
+   "bug": "false alarms: check 5 error-ratio limit 0.2, not 2",
+   "edit": {
+    "from": "ERROR_RATIO_MAX = 2.0",
+    "to": "ERROR_RATIO_MAX = 0.2"
+   },
+   "validation_passed": false,
+   "failed_criteria": [
+    "A4"
+   ],
+   "must_fail": [
+    "A4"
+   ],
+   "caught": true
+  }
+ ],
+ "passed": true
+}

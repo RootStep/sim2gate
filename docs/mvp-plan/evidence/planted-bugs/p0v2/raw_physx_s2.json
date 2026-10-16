@@ -1,0 +1,762 @@
+{
+ "version": 1,
+ "mode": "nominal",
+ "profile": "sim2gate-nominal-v1",
+ "profile_record": {
+  "profile": "sim2gate-nominal-v1",
+  "removed_events": [
+   "add_base_mass",
+   "base_com"
+  ],
+  "actuators": {
+   "base_legs": "SweptDCMotor"
+  },
+  "contact_material": {
+   "static": 0.8,
+   "dynamic": 0.6
+  },
+  "observation_noise": "on (task default)"
+ },
+ "task": "Sim2Gate-Velocity-Flat-Go2-P0-v2",
+ "checkpoint": {
+  "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v2/2026-10-14_17-57-28/model_999.pt",
+  "sha256": "0691617d383c3f2ccdcb1d02208b0bb5834a52d9ee8ff54e409234002623fec1"
+ },
+ "checkpoint_sha256": "0691617d383c3f2ccdcb1d02208b0bb5834a52d9ee8ff54e409234002623fec1",
+ "checkpoints_loaded": [
+  {
+   "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v2/2026-10-14_17-57-28/model_999.pt",
+   "sha256": "0691617d383c3f2ccdcb1d02208b0bb5834a52d9ee8ff54e409234002623fec1"
+  }
+ ],
+ "command_set_sha256": "56222a90befd10592b31ac2a15155d1ffa8d5bb908cb9ee075df8bc8a0df2cea",
+ "commands": {
+  "source": "/isaac-sim/kit/python/lib/python3.12/site-packages/sim2gate/mvp/go2_flat_commands_64.json",
+  "seed": 20261012,
+  "n": 64,
+  "ranges": {
+   "lin_vel_x": [
+    -1.0,
+    1.0
+   ],
+   "lin_vel_y": [
+    -1.0,
+    1.0
+   ],
+   "ang_vel_z": [
+    -1.0,
+    1.0
+   ]
+  },
+  "sha256": "56222a90befd10592b31ac2a15155d1ffa8d5bb908cb9ee075df8bc8a0df2cea",
+  "term": "base_velocity",
+  "task_ranges": {
+   "lin_vel_x": [
+    -1.0,
+    1.0
+   ],
+   "lin_vel_y": [
+    -1.0,
+    1.0
+   ],
+   "ang_vel_z": [
+    -1.0,
+    1.0
+   ]
+  },
+  "outside_task_ranges": [],
+  "tiled": 1
+ },
+ "num_envs": 64,
+ "episodes_per_group": 64,
+ "episode_steps": 1000,
+ "joint_names": [
+  "FL_hip_joint",
+  "FR_hip_joint",
+  "RL_hip_joint",
+  "RR_hip_joint",
+  "FL_thigh_joint",
+  "FR_thigh_joint",
+  "RL_thigh_joint",
+  "RR_thigh_joint",
+  "FL_calf_joint",
+  "FR_calf_joint",
+  "RL_calf_joint",
+  "RR_calf_joint"
+ ],
+ "body_names": [
+  "base",
+  "FL_hip",
+  "FR_hip",
+  "Head_upper",
+  "RL_hip",
+  "RR_hip",
+  "FL_thigh",
+  "FR_thigh",
+  "Head_lower",
+  "RL_thigh",
+  "RR_thigh",
+  "FL_calf",
+  "FR_calf",
+  "RL_calf",
+  "RR_calf",
+  "FL_foot",
+  "FR_foot",
+  "RL_foot",
+  "RR_foot"
+ ],
+ "steps_run": 1000,
+ "all_ended": true,
+ "step_dt": 0.02,
+ "sim_dt": 0.005,
+ "decimation": 4,
+ "seed": 42,
+ "overrides": [
+  "physics=isaacsim_physx",
+  "env.sim.use_newton_actuators=false",
+  "env.scene.robot.joint_ordering=physx",
+  "env.scene.robot.body_ordering=physx"
+ ],
+ "play_args": [
+  "--task",
+  "Sim2Gate-Velocity-Flat-Go2-P0-v2",
+  "--checkpoint",
+  "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v2/2026-10-14_17-57-28/model_999.pt",
+  "--external_callback",
+  "sim2gate.mvp.tasks.register",
+  "physics=isaacsim_physx",
+  "env.sim.use_newton_actuators=false",
+  "env.scene.robot.joint_ordering=physx",
+  "env.scene.robot.body_ordering=physx"
+ ],
+ "env_cfg_sha256": "b9dc8aa1831a0c563519d66e4b58539bbe491fe5ab517c29db10705dbce9928d",
+ "env_cfg_digest_excludes": [
+  "sim",
+  "armature"
+ ],
+ "physics": {
+  "manager": "PhysxManager",
+  "solver_cfg": {
+   "class_type": "isaaclab_physx.physics.physx_manager:PhysxManager",
+   "deterministic": false,
+   "solver_type": 1,
+   "solve_articulation_contact_last": false,
+   "min_position_iteration_count": 1,
+   "max_position_iteration_count": 255,
+   "min_velocity_iteration_count": 0,
+   "max_velocity_iteration_count": 255,
+   "enable_scene_query_support": false,
+   "enable_ccd": false,
+   "enable_stabilization": false,
+   "enable_external_forces_every_iteration": true,
+   "enable_enhanced_determinism": false,
+   "bounce_threshold_velocity": 0.5,
+   "friction_offset_threshold": 0.04,
+   "friction_correlation_distance": 0.025,
+   "gpu_max_rigid_contact_count": 8388608,
+   "gpu_max_rigid_patch_count": 327680,
+   "gpu_found_lost_pairs_capacity": 2097152,
+   "gpu_found_lost_aggregate_pairs_capacity": 33554432,
+   "gpu_total_aggregate_pairs_capacity": 2097152,
+   "gpu_collision_stack_size": 67108864,
+   "gpu_heap_capacity": 67108864,
+   "gpu_temp_buffer_capacity": 16777216,
+   "gpu_max_num_partitions": 8,
+   "gpu_max_soft_body_contacts": 1048576,
+   "gpu_max_particle_contacts": 1048576
+  },
+  "use_newton_actuators": false,
+  "versions": {
+   "isaaclab": "17.0.2",
+   "isaaclab_physx": "6.0.0",
+   "isaaclab_newton": "5.4.1",
+   "newton": "1.5.2",
+   "mujoco-warp": "3.11.0",
+   "mujoco_warp": "3.11.0",
+   "warp-lang": "1.16.0",
+   "rsl-rl-lib": "5.4.1",
+   "sim2gate": "0.1.0.dev0"
+  }
+ },
+ "grid": null,
+ "groups": [
+  {
+   "group": 0,
+   "param": null,
+   "index": 0,
+   "value": null,
+   "condition": {
+    "ground_friction": 0.8,
+    "added_base_mass_kg": 0.0,
+    "motor_strength_scale": 1.0,
+    "action_latency_ms": 0.0,
+    "observation_noise_scale": 1.0
+   }
+  }
+ ],
+ "conditions": {
+  "varied": [],
+  "readback": {
+   "action_latency_ms": {
+    "0": [
+     0.0,
+     0.0
+    ]
+   },
+   "motor_strength_scale": {
+    "0": [
+     1.0,
+     1.0
+    ]
+   },
+   "observation_noise_scale": {
+    "0": [
+     1.0,
+     1.0
+    ]
+   },
+   "ground_friction": {
+    "0": [
+     0.8,
+     0.8
+    ]
+   }
+  },
+  "noise_terms": [
+   "base_lin_vel",
+   "base_ang_vel",
+   "projected_gravity",
+   "joint_pos",
+   "joint_vel"
+  ]
+ },
+ "training_ranges": {
+  "ground_friction": {
+   "static_friction_range": null
+  },
+  "added_base_mass_kg": {
+   "operation": "scale",
+   "params": null,
+   "distribution": "log_uniform"
+  },
+  "action_latency_ms": "no delay in the actuator model",
+  "motor_strength_scale": "not randomized",
+  "observation_noise_scale": {
+   "enable_corruption": true
+  }
+ },
+ "episodes": [
+  {
+   "env": 0,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.08211056702747009,
+   "ended": true
+  },
+  {
+   "env": 1,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.07561290739127435,
+   "ended": true
+  },
+  {
+   "env": 2,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.08205955683480716,
+   "ended": true
+  },
+  {
+   "env": 3,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.05008041691314429,
+   "ended": true
+  },
+  {
+   "env": 4,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.059930372959235687,
+   "ended": true
+  },
+  {
+   "env": 5,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.07020011861715465,
+   "ended": true
+  },
+  {
+   "env": 6,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.06255474254570435,
+   "ended": true
+  },
+  {
+   "env": 7,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.08473912760743406,
+   "ended": true
+  },
+  {
+   "env": 8,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.07504678137158044,
+   "ended": true
+  },
+  {
+   "env": 9,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.08165696885576472,
+   "ended": true
+  },
+  {
+   "env": 10,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.07394186883606016,
+   "ended": true
+  },
+  {
+   "env": 11,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.0828313836636953,
+   "ended": true
+  },
+  {
+   "env": 12,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.06103398062940687,
+   "ended": true
+  },
+  {
+   "env": 13,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.07071995338611305,
+   "ended": true
+  },
+  {
+   "env": 14,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.06535448981740047,
+   "ended": true
+  },
+  {
+   "env": 15,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.048751736340578646,
+   "ended": true
+  },
+  {
+   "env": 16,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.06593720916728489,
+   "ended": true
+  },
+  {
+   "env": 17,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.05388898840930779,
+   "ended": true
+  },
+  {
+   "env": 18,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.06521982107497752,
+   "ended": true
+  },
+  {
+   "env": 19,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.0742413069861941,
+   "ended": true
+  },
+  {
+   "env": 20,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.06379327902314254,
+   "ended": true
+  },
+  {
+   "env": 21,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.07112097726471256,
+   "ended": true
+  },
+  {
+   "env": 22,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.1173246462069219,
+   "ended": true
+  },
+  {
+   "env": 23,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.08697903678799047,
+   "ended": true
+  },
+  {
+   "env": 24,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.0654112133269664,
+   "ended": true
+  },
+  {
+   "env": 25,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.06381837919179816,
+   "ended": true
+  },
+  {
+   "env": 26,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.07015271490428131,
+   "ended": true
+  },
+  {
+   "env": 27,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.0581972178875003,
+   "ended": true
+  },
+  {
+   "env": 28,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.07110682666953654,
+   "ended": true
+  },
+  {
+   "env": 29,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.055049674230162056,
+   "ended": true
+  },
+  {
+   "env": 30,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.07098225913243368,
+   "ended": true
+  },
+  {
+   "env": 31,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.06646335316548357,
+   "ended": true
+  },
+  {
+   "env": 32,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.06569493458460783,
+   "ended": true
+  },
+  {
+   "env": 33,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.07538606756436639,
+   "ended": true
+  },
+  {
+   "env": 34,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.06788301011780278,
+   "ended": true
+  },
+  {
+   "env": 35,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.07356628067744896,
+   "ended": true
+  },
+  {
+   "env": 36,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.060729031701688654,
+   "ended": true
+  },
+  {
+   "env": 37,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.0842495489353314,
+   "ended": true
+  },
+  {
+   "env": 38,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.11116767904348672,
+   "ended": true
+  },
+  {
+   "env": 39,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.06918177085230127,
+   "ended": true
+  },
+  {
+   "env": 40,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.054065598982968366,
+   "ended": true
+  },
+  {
+   "env": 41,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.061523843246424806,
+   "ended": true
+  },
+  {
+   "env": 42,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.056475315610179676,
+   "ended": true
+  },
+  {
+   "env": 43,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.07670239167870023,
+   "ended": true
+  },
+  {
+   "env": 44,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.060435823804698884,
+   "ended": true
+  },
+  {
+   "env": 45,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.07003954742453061,
+   "ended": true
+  },
+  {
+   "env": 46,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.07769209702848456,
+   "ended": true
+  },
+  {
+   "env": 47,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.08055374811182264,
+   "ended": true
+  },
+  {
+   "env": 48,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.05869562016229611,
+   "ended": true
+  },
+  {
+   "env": 49,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.0791015555979684,
+   "ended": true
+  },
+  {
+   "env": 50,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.057740831737057303,
+   "ended": true
+  },
+  {
+   "env": 51,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.05279577227972913,
+   "ended": true
+  },
+  {
+   "env": 52,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.08676728598074987,
+   "ended": true
+  },
+  {
+   "env": 53,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.05154985715460498,
+   "ended": true
+  },
+  {
+   "env": 54,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.05051720338023733,
+   "ended": true
+  },
+  {
+   "env": 55,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.0659994061018806,
+   "ended": true
+  },
+  {
+   "env": 56,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.05041634541068925,
+   "ended": true
+  },
+  {
+   "env": 57,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.05313119592989096,
+   "ended": true
+  },
+  {
+   "env": 58,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.05738774601335172,
+   "ended": true
+  },
+  {
+   "env": 59,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.05638065170682967,
+   "ended": true
+  },
+  {
+   "env": 60,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.06606110932282172,
+   "ended": true
+  },
+  {
+   "env": 61,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.05786346386070363,
+   "ended": true
+  },
+  {
+   "env": 62,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.07852657286613249,
+   "ended": true
+  },
+  {
+   "env": 63,
+   "group": 0,
+   "fell": false,
+   "steps": 1000,
+   "mean_error_mps": 0.08230883762100712,
+   "ended": true
+  }
+ ]
+}
