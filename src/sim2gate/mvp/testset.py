@@ -65,8 +65,22 @@ def quiet_run(cmd, log_path):
 
 # ---- encryption (OpenSSL: RSA-OAEP for a random AES-256 key) ------------------------------------------------------
 
+# Isaac Sim's Python points programs at its own bundled libraries (LD_LIBRARY_PATH and the like); the system's openssl
+# fails when it loads those instead of its own. Run it with them removed.
+_OPENSSL_ENV_DROP = ("LD_LIBRARY_PATH", "LD_PRELOAD", "OPENSSL_CONF", "OPENSSL_MODULES", "OPENSSL_ENGINES")
+
+
+class OpenSSLError(ValueError):
+    pass
+
+
 def _openssl(*args, **kw):
-    return subprocess.run(["openssl", *args], check=True, capture_output=True, **kw)
+    env = {k: v for k, v in os.environ.items() if k not in _OPENSSL_ENV_DROP}
+    r = subprocess.run(["openssl", *args], capture_output=True, env=env, **kw)
+    if r.returncode != 0:
+        err = (r.stderr or b"").decode(errors="replace").strip().splitlines()
+        raise OpenSSLError(f"openssl {args[0]} failed (exit {r.returncode}): {' | '.join(err[-3:]) or 'no message'}")
+    return r
 
 
 def check_pubkey(pubkey):
@@ -358,7 +372,7 @@ def main(argv=None):
             return smoke(a.pubkey, a.work)
         _say(f"unsealed into {unseal(a.privkey, a.sealed, a.out)}")
         return 0
-    except (ValueError, subprocess.CalledProcessError, OSError) as e:
+    except (ValueError, OSError) as e:
         print(f"[sim2gate] {e}", file=sys.stderr)
         return 2
 

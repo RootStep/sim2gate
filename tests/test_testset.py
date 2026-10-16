@@ -87,7 +87,7 @@ def test_trains_walks_blinds_and_seals(world, capsys):
         assert man["policies"][pid]["sha256"] == k["sha256"]
     runs = list((tmp / "unsealed" / "work" / "runs").glob("*/*"))
     assert len(runs) == 20 and all(sorted(p.name for p in r.glob("model_*.pt")) == ["model_1999.pt"] for r in runs)
-    with pytest.raises(subprocess.CalledProcessError):           # only the private key opens it
+    with pytest.raises(testset.OpenSSLError):           # only the private key opens it
         testset.unseal("pub.pem", "sealed", "nope")
 
 
@@ -125,7 +125,7 @@ def test_three_failures_stop_for_a_decision(world):
 
 def test_check_refuses_a_bad_key_and_missing_calibration(world):
     tmp, args, fail, calls = world
-    with pytest.raises(subprocess.CalledProcessError):
+    with pytest.raises(testset.OpenSSLError):
         testset.check_pubkey("priv.pem")
     (tmp / "logs" / "rsl_rl" / "sim2gate_go2_flat_p0_v4" / "cal2" / "model_1999.pt").write_bytes(b"changed")
     with pytest.raises(ValueError, match="seed 2"):
@@ -140,3 +140,13 @@ def test_smoke_runs_the_pipeline_once_and_cleans_up(world, capsys):
     assert not (tmp / "smoke").exists()
     assert not list((tmp / "logs" / "rsl_rl").glob("sim2gate_go2_flat_p2_v1/*"))
     assert "--max_iterations" in [c for c in calls if "train.py" in c][0]
+
+
+def test_openssl_runs_without_a_foreign_library_path(world, monkeypatch):
+    """Inside Isaac Sim's Python, LD_LIBRARY_PATH points at bundled libraries the system openssl must not load."""
+    tmp, args, fail, calls = world
+    monkeypatch.setenv("LD_LIBRARY_PATH", str(tmp / "not-a-real-lib-dir"))
+    monkeypatch.setenv("OPENSSL_CONF", str(tmp / "missing.cnf"))     # would make openssl fail if passed through
+    assert "Public-Key" in testset.check_pubkey("pub.pem")
+    with pytest.raises(testset.OpenSSLError, match="failed"):
+        testset.check_pubkey("priv.pem")
