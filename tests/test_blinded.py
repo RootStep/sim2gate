@@ -195,3 +195,13 @@ def test_a_failed_report_only_measurement_does_not_block_the_verdict(world, monk
     for v in vs.values():
         assert v["exit_code"] in (0, 1) and "joint: no output" in v["report_only"]["problems"][0]
     assert blinded.seal(str(tmp / "out"), str(tmp / "blind"))
+
+
+def test_p5_ground_and_its_fallback():
+    assert tasks.p5_contact() == (2000.0, pytest.approx(2 * 2000 ** 0.5))
+    main, fb = tasks.VARIANTS[tasks.PLANTED_TASKS["P5"]], tasks.VARIANTS[tasks.P5_FALLBACK_TASK]
+    assert main["changes"][0]["compliant_contact_stiffness"] == 2000.0
+    assert main["changes"][0]["fallback"]["task"] == tasks.P5_FALLBACK_TASK
+    assert fb["policy"] == "P5" and fb["changes"][0]["compliant_contact_stiffness"] == 3000.0
+    assert "fallback" not in fb["changes"][0] and fb["experiment_name"] != main["experiment_name"]
+    assert not hasattr(tasks, "P5_PILOT_STIFFNESS_ENV")                 # the pilot setting is gone

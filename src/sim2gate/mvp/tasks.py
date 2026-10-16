@@ -17,7 +17,7 @@ The planted-flaw policies P1-P5 (test set v1, docs/mvp-plan/test-set.md) are eac
     P3 sliding exploit: low ground friction, static 0.2-0.4 (dynamic 0.15-0.3), and no foot-slip penalty
     P4 jittery: no action-rate penalty
     P5 engine overfit: a soft, PhysX-only ground contact (compliant spring in acceleration units, which Newton does
-       not reproduce)
+       not reproduce): stiffness 2000 (fallback 3000, task P5-v2, only if a P5 seed fails the walking check)
 Each is evaluated in its own task (play mode), like any user's policy in the simulator it was trained in.
 
 The stock task has no foot-slip penalty, and the plan defines P3 as "foot-slip penalty removed" (plus low ground
@@ -95,23 +95,24 @@ P1_MASS_SCALE = (1 / 1.01, 1.01)         # the stock task's base-mass scale (1/1
 P2_DELAY_STEPS = (0, 0)
 P3_STATIC_FRICTION = (0.2, 0.4)          # below the plausible real range (0.4-1.2)
 P3_DYNAMIC_FRICTION = (0.15, 0.3)
-P5_CONTACT_STIFFNESS = 1000.0            # PhysX compliant contact, acceleration units (1/s^2); NOT FINAL: the Oct 16
-                                         # stand test sank the robot 8.7 cm on PhysX (intended ~1 cm); a pilot picks the value
-P5_CONTACT_DAMPING = 60.0                # about critical (2 x sqrt(1000) = 63)
-# Pilot only (Oct 16, before the freeze and before any training): a stiffness to stand-test instead of the value above,
-# with damping 2 x sqrt(stiffness). Removed once the value is chosen; the blinded run never sets it.
-P5_PILOT_STIFFNESS_ENV = "SIM2GATE_P5_PILOT_STIFFNESS"
+# P5's ground (VJ, Oct 16): stiffness 2000 in PhysX's acceleration units, damping critical (2 x sqrt(stiffness)). Chosen
+# from the Oct 16 stand pilot, before any training: at 2000 the robot sinks 5.4 cm on PhysX against normal ground and
+# the PhysX-Newton standing-height gap is 3.1 cm, against 1.8 cm on normal ground; above ~3000 the gap falls below
+# normal ground's, and the original 1000 sank it 8.7 cm. Fallback, fixed in advance: if any P5 seed fails the walking
+# check at 2000, all three P5 seeds are trained at 3000 (task P5-v2: sinks 4.2 cm, gap 2.1 cm).
+P5_CONTACT_STIFFNESS = 2000.0
+P5_FALLBACK_STIFFNESS = 3000.0
 
 
-def p5_contact():
-    """(stiffness, damping) for P5's ground: the defined values, or the pilot's if SIM2GATE_P5_PILOT_STIFFNESS is set."""
+def p5_contact(stiffness=P5_CONTACT_STIFFNESS):
+    """(stiffness, damping) of P5's ground: damping is critical, 2 x sqrt(stiffness)."""
     import math
-    import os
-    k = os.environ.get(P5_PILOT_STIFFNESS_ENV)
-    if not k:
-        return P5_CONTACT_STIFFNESS, P5_CONTACT_DAMPING
-    k = float(k)
-    return k, 2.0 * math.sqrt(k)
+    return float(stiffness), 2.0 * math.sqrt(float(stiffness))
+
+
+P5_CONTACT_DAMPING = p5_contact()[1]
+
+
 PLANTED = {
     "P1": {"flaw": "narrow randomization", "target_check": 1,
            "changes": [{"what": "events.physics_material ranges", "static_friction_range": list(P1_STATIC_FRICTION),
@@ -129,7 +130,9 @@ PLANTED = {
     "P5": {"flaw": "engine overfit", "target_check": 5,
            "changes": [{"what": "ground material: PhysX compliant contact, acceleration spring",
                         "compliant_contact_stiffness": P5_CONTACT_STIFFNESS,
-                        "compliant_contact_damping": P5_CONTACT_DAMPING,
+                        "compliant_contact_damping": round(P5_CONTACT_DAMPING, 4),
+                        "fallback": {"task": "Sim2Gate-Velocity-Flat-Go2-P5-v2", "stiffness": P5_FALLBACK_STIFFNESS,
+                                     "when": "any P5 seed fails the walking check at 2000: all three P5 seeds"},
                         "compliant_contact_acceleration_spring": True,
                         "why": "Isaac Lab: the acceleration-spring flag is PhysX-only, not consumed by Newton, which "
                                "reads the same stiffness and damping as a force spring"}]},
@@ -143,6 +146,17 @@ for _pol, _d in PLANTED.items():
         "target_check": _d["target_check"], "changes": _d["changes"],
         "max_iterations": P0_V4_ITERATIONS, "experiment_name": f"sim2gate_go2_flat_{_pol.lower()}_v{TEST_SET_VERSION}",
         "status": "test set v1", "env_class": f"Go2Flat{_pol}EnvCfg", "agent_class": f"Go2Flat{_pol}PPORunnerCfg"}
+
+P5_FALLBACK_TASK = f"Sim2Gate-Velocity-Flat-Go2-P5-v{TEST_SET_VERSION + 1}"
+VARIANTS[P5_FALLBACK_TASK] = {
+    **VARIANTS[PLANTED_TASKS["P5"]], "version": TEST_SET_VERSION + 1,
+    "changes": [dict(PLANTED["P5"]["changes"][0], compliant_contact_stiffness=P5_FALLBACK_STIFFNESS,
+                     compliant_contact_damping=round(p5_contact(P5_FALLBACK_STIFFNESS)[1], 4))],
+    "experiment_name": f"sim2gate_go2_flat_p5_v{TEST_SET_VERSION + 1}",
+    "status": "test set v1, P5 fallback: used only if a P5 seed fails the walking check at 2000",
+    "env_class": "Go2FlatP5FallbackEnvCfg", "agent_class": "Go2FlatP5FallbackPPORunnerCfg"}
+for _c in VARIANTS[P5_FALLBACK_TASK]["changes"]:
+    _c.pop("fallback", None)
 
 
 def _p0_env_cfg(version=1):
@@ -200,7 +214,7 @@ def _p0_agent_cfg(task):
     return Go2FlatP0PPORunnerCfg
 
 
-def _planted_env_cfg(pol):
+def _planted_env_cfg(pol, p5_stiffness=P5_CONTACT_STIFFNESS):
     """P0 v4's environment with policy `pol`'s one planted change."""
     from isaaclab.utils import configclass
     base = _p0_env_cfg(4)
@@ -231,14 +245,16 @@ def _planted_env_cfg(pol):
                 mat = PhysxRigidBodyMaterialCfg(
                     static_friction=ground.static_friction, dynamic_friction=ground.dynamic_friction,
                     friction_combine_mode="multiply", restitution_combine_mode="multiply",
-                    compliant_contact_stiffness=p5_contact()[0], compliant_contact_damping=p5_contact()[1],
+                    compliant_contact_stiffness=p5_contact(p5_stiffness)[0],
+                    compliant_contact_damping=p5_contact(p5_stiffness)[1],
                     compliant_contact_acceleration_spring=True)
                 self.scene.terrain.physics_material = mat
                 self.sim.physics_material = mat
             else:
                 raise ValueError(f"no planted change for {pol}")
 
-    Go2FlatPlantedEnvCfg.__name__ = f"Go2Flat{pol}EnvCfg"
+    Go2FlatPlantedEnvCfg.__name__ = (f"Go2Flat{pol}EnvCfg" if p5_stiffness == P5_CONTACT_STIFFNESS
+                                     else f"Go2Flat{pol}FallbackEnvCfg")
     return Go2FlatPlantedEnvCfg
 
 
@@ -253,6 +269,8 @@ _LAZY = {"Go2FlatP0EnvCfgV1": lambda: _p0_env_cfg(1), "Go2FlatP0EnvCfgV2": lambd
 for _pol, _task in PLANTED_TASKS.items():
     _LAZY[f"Go2Flat{_pol}EnvCfg"] = (lambda p: (lambda: _planted_env_cfg(p)))(_pol)
     _LAZY[f"Go2Flat{_pol}PPORunnerCfg"] = (lambda t: (lambda: _p0_agent_cfg(t)))(_task)
+_LAZY["Go2FlatP5FallbackEnvCfg"] = lambda: _planted_env_cfg("P5", P5_FALLBACK_STIFFNESS)
+_LAZY["Go2FlatP5FallbackPPORunnerCfg"] = lambda: _p0_agent_cfg(P5_FALLBACK_TASK)
 _built = {}
 
 

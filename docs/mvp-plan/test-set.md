@@ -1,8 +1,8 @@
 # Test set v1: the planted-flaw policies and the blinded run (Oct 15, 2026)
 
 Fixed before any planted or held-out policy is trained (plan, step 3). **Approved by VJ, Oct 15, 2026**: the P1–P5
-definitions below and the rule that each policy is checked in its own task. P5 stays conditional on the GPU check
-below. Code: `sim2gate.mvp.tasks` (the
+definitions below and the rule that each policy is checked in its own task. **P5's ground revised and approved by VJ,
+Oct 16, 2026** (stiffness 2000, fallback 3000), from the stand pilot below. Code: `sim2gate.mvp.tasks` (the
 definitions), `sim2gate.mvp.blinded` (the run), `sim2gate.mvp.verdict` and `sim2gate.mvp.acceptance` (the scoring).
 
 ## The policies
@@ -17,17 +17,29 @@ Every test-set policy is P0 v4 (C7) with at most one change: the same task, rewa
 | P2 | no latency | command delay 0 throughout (the same delay motor, range 0–0), instead of 0–30 ms | check 1 (latency) | 1–3 |
 | P3 | sliding exploit | ground friction 0.2–0.4 static (0.15–0.3 dynamic), and no foot-slip penalty | check 2 | 1–3 |
 | P4 | jittery | no action-rate penalty | check 2 | 1–3 |
-| P5 | engine overfit | a soft ground contact PhysX models and Newton does not reproduce: PhysX compliant contact, stiffness 1000 and damping 60 in acceleration units | check 5 | 1–3 |
+| P5 | engine overfit | a soft ground contact PhysX models and Newton does not reproduce: PhysX compliant contact in acceleration units, stiffness 2000, damping critical (89.4); fallback 3000 (below) | check 5 | 1–3 |
 
 Task ids: `Sim2Gate-Velocity-Flat-Go2-P1-v1` … `-P5-v1`; P0 is `Sim2Gate-Velocity-Flat-Go2-P0-v4`. 23 policies.
 
-- **P5's mechanism.** Isaac Lab documents the acceleration-spring flag as PhysX-only ("not consumed by Newton"),
-  while Newton reads the same stiffness and damping as a force spring. On PhysX, 1000 /s² sinks a standing robot
-  about 1 cm (g / 1000); read as a force spring on a ~15 kg robot, the same number is far softer. **To verify on
-  the GPU before the freeze** with a standing robot, no training and no check involved: P5's ground on PhysX
-  versus Newton must settle the robot measurably differently, more than P0's ground does. If it does not, P5's
-  definition is revisited and approved again before anything is trained. Nothing about P5 is tuned on check 5's
-  output.
+- **P5's mechanism.** Isaac Lab documents the acceleration-spring flag as PhysX-only ("not consumed by Newton").
+  The Oct 15 definition (stiffness 1000) was checked on the GPU on Oct 16 with a standing robot, no training and no
+  check involved (`evidence/pre-freeze/`): its ground differed between the engines as intended, but the robot sank
+  8.7 cm on PhysX, against the ~1 cm assumed. VJ chose to stiffen it; a stand pilot over stiffness 2000–10000
+  (`evidence/p5-pilot/`) then showed that the 2 cm sink limit set beforehand and the purpose of P5 conflict:
+
+  | Stiffness | PhysX sink | Standing-height gap, PhysX vs Newton |
+  |---|---|---|
+  | normal ground (P0) | – | 1.8 cm (Newton lower) |
+  | 1000 | 8.7 cm | 6.0 cm |
+  | 2000 | 5.4 cm | 3.1 cm |
+  | 3000 | 4.2 cm | 2.1 cm |
+  | 4000 | 3.6 cm | 1.5 cm |
+  | 10000 | 2.1 cm | 0.2 cm |
+
+  The sink levels off near 1.3 cm (2 cm would need about 12,000), and from about 4000 the engine gap is smaller than
+  normal ground's, so P5 would no longer be an engine-overfit policy. **Decision (VJ, Oct 16): stiffness 2000**,
+  damping critical (2√k). **Fallback, fixed now:** if any P5 seed fails the walking check at 2000, all three P5 seeds
+  are trained at 3000 (task `Sim2Gate-Velocity-Flat-Go2-P5-v2`). Nothing about P5 is tuned on check 5's output.
 - **A weakened recipe is not a weak policy.** Each planted policy is trained once per seed with these settings.
   Whether its flaw makes it detectably weak is what the run finds out; no setting is changed afterwards to make a
   label come true. If a target check misses its policy, the criterion fails and is reported (`evidence/
@@ -69,7 +81,7 @@ someone set on decoding them could (there are only nine task ids). The runner ag
 ## Before the freeze (GPU, one session)
 
 - The five planted tasks build and run on PhysX (a standing robot on each).
-- P5's ground behaves differently on PhysX and Newton (above).
+- P5's ground behaves differently on PhysX and Newton (above): done Oct 16, then revised (2000, fallback 3000).
 - A known-answer dry run of the whole blinded pipeline on 4 policies whose answers are known: P0 v4 seeds 1–3
   (expected go) and P0 v2 seed 1 (trained without delay; expected no-go, latency), with prepare, run, seal and
   replay. This tests the live chain (GPU measurement → scoring → verdict), not just saved files.
