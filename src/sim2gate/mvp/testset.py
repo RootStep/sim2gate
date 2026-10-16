@@ -290,6 +290,42 @@ def finish(state, cal, pubkey, work, blind, sealed):
     return 0
 
 
+def smoke(pubkey, work, runner=quiet_run, iterations=20):
+    """Pre-freeze GPU test of this pipeline on one throwaway policy (P2's task, seed 99, a few rounds; it will not
+    walk, which is fine): quiet training, checkpoint discovery, the walking check and sealing all run for real; the
+    run folder and the sealed files are deleted afterwards. Prints what it saw; names are fine, nothing is blinded."""
+    check_pubkey(pubkey)
+    success = json.load(open(blinded.FROZEN_SUCCESS))
+    for d in (work, os.path.join(work, "logs"), os.path.join(work, "walk")):
+        os.makedirs(d, exist_ok=True)
+    task, seed = tasks.PLANTED_TASKS["P2"], 99
+    before = _run_dirs()
+    rc, text = runner(train_command(task, seed) + ["--max_iterations", str(iterations)],
+                      os.path.join(work, "logs", "train.log"))
+    new = sorted(_run_dirs() - before)
+    ck = _last_checkpoint(new[0]) if len(new) == 1 else None
+    _say(f"training exit {rc}; new run folders {len(new)}; checkpoint {ck}")
+    if ck is None:
+        return 1
+    out = os.path.join(work, "walk", "walk.json")
+    rc2, _ = runner(walk_command(task, ck, out), os.path.join(work, "logs", "walk.log"))
+    if not os.path.exists(out):
+        _say(f"walking check wrote no result (exit {rc2})")
+        return 1
+    w = walking(json.load(open(out)), success)
+    _say(f"walking check (exit {rc2}): success {w['success_rate']}, falls {w['falls']}/{w['episodes']}, "
+         f"same checkpoint {w['checkpoint_sha256'] == sha256(ck)}")
+    sealed = os.path.join(work, "sealed")
+    hashes = seal([os.path.join(work, "logs"), os.path.join(work, "walk")], pubkey, sealed, work)
+    sizes = {n: os.path.getsize(os.path.join(sealed, n)) for n in hashes}
+    _say(f"sealed: {sizes}")
+    for rd in new:
+        shutil.rmtree(rd, ignore_errors=True)
+    shutil.rmtree(work)
+    _say("SMOKE OK" if all(v > 0 for v in sizes.values()) else "SMOKE FAILED")
+    return 0 if all(v > 0 for v in sizes.values()) else 1
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(prog="python -m sim2gate.mvp.testset", description=__doc__.splitlines()[0])
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -301,6 +337,9 @@ def main(argv=None):
             q.add_argument("--work", required=True)
             q.add_argument("--blind", required=True)
             q.add_argument("--sealed", required=True)
+    sm = sub.add_parser("smoke", help="pre-freeze GPU test on one throwaway policy")
+    sm.add_argument("--pubkey", required=True)
+    sm.add_argument("--work", default="mvp_runs/testset_smoke")
     u = sub.add_parser("unseal")
     u.add_argument("--privkey", required=True)
     u.add_argument("--sealed", required=True)
@@ -315,6 +354,8 @@ def main(argv=None):
             return 0
         if a.cmd == "train":
             return train_all(a.pubkey, a.calibration, a.work, a.blind, a.sealed)
+        if a.cmd == "smoke":
+            return smoke(a.pubkey, a.work)
         _say(f"unsealed into {unseal(a.privkey, a.sealed, a.out)}")
         return 0
     except (ValueError, subprocess.CalledProcessError, OSError) as e:

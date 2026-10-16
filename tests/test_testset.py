@@ -131,3 +131,12 @@ def test_check_refuses_a_bad_key_and_missing_calibration(world):
     with pytest.raises(ValueError, match="seed 2"):
         testset._calibration("cal.json")
     assert testset.main(["check", "--pubkey", "pub.pem", "--calibration", "cal.json"]) == 2
+
+
+def test_smoke_runs_the_pipeline_once_and_cleans_up(world, capsys):
+    tmp, args, fail, calls = world
+    assert testset.smoke("pub.pem", "smoke", runner=args["runner"]) == 0
+    assert "SMOKE OK" in capsys.readouterr().out
+    assert not (tmp / "smoke").exists()
+    assert not list((tmp / "logs" / "rsl_rl").glob("sim2gate_go2_flat_p2_v1/*"))
+    assert "--max_iterations" in [c for c in calls if "train.py" in c][0]
