@@ -1,0 +1,6 @@
+{"policies": [
+ {"policy": "P0", "seed": 1, "task": "Sim2Gate-Velocity-Flat-Go2-P0-v4", "checkpoint": "logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_16-14-26/model_1999.pt"},
+ {"policy": "P0", "seed": 2, "task": "Sim2Gate-Velocity-Flat-Go2-P0-v4", "checkpoint": "logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_16-46-53/model_1999.pt"},
+ {"policy": "P0", "seed": 3, "task": "Sim2Gate-Velocity-Flat-Go2-P0-v4", "checkpoint": "logs/rsl_rl/sim2gate_go2_flat_p0_v4/2026-10-15_17-20-26/model_1999.pt"},
+ {"policy": "P2-standin", "seed": 1, "task": "Sim2Gate-Velocity-Flat-Go2-P0-v2", "checkpoint": "logs/rsl_rl/sim2gate_go2_flat_p0_v2/2026-10-14_17-37-50/model_999.pt"}
+]}

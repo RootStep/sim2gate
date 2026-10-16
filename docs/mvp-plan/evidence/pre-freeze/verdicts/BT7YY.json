@@ -1,0 +1,73 @@
+{
+ "version": 1,
+ "policy_id": "BT7YY",
+ "verdict": "go",
+ "exit_code": 0,
+ "checkpoint_sha256": "1e72124312d1d497b0ac912a8b9de49f5da7a5abedd20d4a580bce375fa75ffe",
+ "checks": {
+  "2": {
+   "status": "scored",
+   "flagged": false,
+   "reasons": [],
+   "risks": []
+  },
+  "1": {
+   "status": "scored",
+   "flagged": false,
+   "reasons": [],
+   "risks": [],
+   "nominal_success_rate": 0.953125,
+   "flagged_params": [],
+   "cliffs": {
+    "ground_friction": 0.3333333333,
+    "added_base_mass_kg": 3.5,
+    "motor_strength_scale": 0.825,
+    "action_latency_ms": 40.0,
+    "observation_noise_scale": 2.3333333333
+   }
+  },
+  "5": {
+   "status": "scored",
+   "flagged": false,
+   "reasons": [],
+   "risks": [],
+   "parity": "passed",
+   "physx_success_rate": 0.953125,
+   "newton_success_rate": 0.359375,
+   "newton_fall_free_rate": 0.984375,
+   "error_ratio": 1.4880912568327835
+  }
+ },
+ "risks": [],
+ "problems": [],
+ "inputs_sha256": {
+  "check2_report": "25f69e984224f5e622dba44c104623c253a6a5f0031c709922b94cb74f6aa024",
+  "sweep_raw": "41bc65dede6fc6391cfe4bd38aa49b396096788ce8c7d115b17a78f6b0fed3ce",
+  "physx_raw": "a623a8893ee7f4f5d0f49159fa8a24cd1ea8f6849e75c61ad15e13f3714259a0",
+  "newton_raw": "375e9c70be2fe74e6ee7d85c422b9813342b455cea27cf68de2497fa770ec233",
+  "thresholds": "c960fd8e7bfdbd8e42d60534c874bca93c6b1a99f12c961baa10709a1bf86a90",
+  "success": "08fba447ba9e001b355f087f4b12a5063ca4547e7c29c1eb98facc8745981148"
+ },
+ "frozen": {
+  "thresholds_sha256": "1abb4fcc1b585769c3993b20a22644657efdf391a3eb3f2b054311759e9db739",
+  "success_sha256": "7708a731ded35468a352deb8511da40aa2f987b42dc6d947adfa6c140eef1dee"
+ },
+ "measurements": {
+  "check2": {
+   "path": "policies/BT7YY/check2.json",
+   "sha256": "3b8c7e02a3ee8964977100c66216f00d1a6ac3e8e2315f2ae7a2d97adf544578"
+  },
+  "sweep": {
+   "path": "policies/BT7YY/sweep.json",
+   "sha256": "86a92fb4098929a17b4ffb540ecb900c65540e57160f4d35c70375c725575477"
+  },
+  "physx": {
+   "path": "policies/BT7YY/physx.json",
+   "sha256": "73f200ad0f08de11a6cd0340b0fc3da45e86f0e21b16e3eeead04c01512acad6"
+  },
+  "newton": {
+   "path": "policies/BT7YY/newton.json",
+   "sha256": "a3e9e82408b53768d77a66e5a20910700767a5969a63c419355b2c7f85dc7724"
+  }
+ }
+}
