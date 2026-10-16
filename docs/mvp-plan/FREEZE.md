@@ -45,3 +45,8 @@ with the joint sweep and the HTML report gave **go**).
 
 Next (plan step 4): `python -m sim2gate.mvp.testset train` with Vihaan's public key, then `blinded run`, `seal`,
 `replay`; step 5: Vihaan unseals the key and `acceptance` scores A1–A6.
+
+## Vihaan's public key (received Oct 16, 2026)
+
+RSA 3072-bit, `vihaan_public.pem`, SHA-256 `9db064c8f10bd8c4831874064fca7aa7783dac6ca77f97efdfefe2f8cf7f0617`. The test
+set's key and training records are sealed to this key only; Vihaan holds the private key.
