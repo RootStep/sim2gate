@@ -212,3 +212,97 @@ def score(raw, success):
     out["status"] = "invalid" if reasons else "scored"
     out["flagged"] = None if reasons else bool(out["risks"])
     return out
+
+
+# ---- joint sweep (report only; MVP plan, check 1 "Also run") ------------------------------------------------------
+# All five parameters vary together. Each episode draws each parameter independently and uniformly from its 10 sweep
+# values (the plan asks for a uniform draw, which Arena's sensitivity analyzer assumes; the grid values keep latency
+# on whole physics steps and friction to a few material settings). Same number of episodes as the one-at-a-time
+# sweep. Never a flag in the MVP: the verdict ignores it.
+JOINT_VERSION = 1
+JOINT_EPISODES = 46 * EPISODES_PER_VALUE     # 2,944, the one-at-a-time sweep's size
+JOINT_SEED = 20261016
+HARD_HALF = 0.5                              # "harder half of the realistic range": severity above this, up to 1
+
+
+def joint_conditions(n=JOINT_EPISODES, seed=JOINT_SEED):
+    import random
+    rng = random.Random(seed)
+    vals = {k: values(k) for k in PARAMS}
+    return [{"group": i, "param": "joint", "index": None, "value": None,
+             "condition": {k: rng.choice(vals[k]) for k in PARAMS}} for i in range(n)]
+
+
+def joint_definition(n=JOINT_EPISODES, seed=JOINT_SEED):
+    conds = [g["condition"] for g in joint_conditions(n, seed)]
+    d = {"version": JOINT_VERSION, "episodes": n, "seed": seed, "grid_sha256": grid_definition()["sha256"],
+         "sampling": "each parameter independently and uniformly from its 10 sweep values",
+         "conditions_sha256": hashlib.sha256(json.dumps(conds, sort_keys=True).encode()).hexdigest()}
+    d["sha256"] = hashlib.sha256(json.dumps(d, sort_keys=True).encode()).hexdigest()
+    return d
+
+
+def severity(name, v):
+    """0 at nominal, 1 at the plausible edge, 1.5 at the end of the sweep."""
+    p = PARAMS[name]
+    return (v - p["nominal"]) / (p["edge"] - p["nominal"])
+
+
+def _rate(eps):
+    return (sum(e["ok"] for e in eps) / len(eps)) if eps else None
+
+
+def joint_report(raw, success):
+    """Report-only summary of a joint sweep: success when every condition is realistic at once, per-value marginal
+    success rates, and pairs of conditions that fail more together than either does alone. Plus the per-episode
+    table in the form Arena's sensitivity analyzer reads (factors, theta, x), to run its analysis after the port."""
+    reasons = check_compatible(raw, success)
+    if raw.get("mode") != "joint":
+        reasons.append(f"not a joint sweep (mode {raw.get('mode')!r})")
+    if (raw.get("grid") or {}).get("sha256") != joint_definition()["sha256"]:
+        reasons.append("the joint sweep differs from this version's definition")
+    out = {"check": "1-joint", "report_only": True, "flagged": None, "reasons": reasons}
+    if reasons:
+        out["status"] = "invalid"
+        return out
+    thr = success["threshold_mps"]
+    cond = {g["group"]: g["condition"] for g in raw["groups"]}
+    eps = []
+    for e in raw["episodes"]:
+        c = cond[e["group"]]
+        eps.append({"ok": episode_ok(e, thr), "sev": {k: severity(k, c[k]) for k in PARAMS}, "c": c})
+    realistic = [e for e in eps if all(s <= 1 + 1e-9 for s in e["sev"].values())]
+    beyond = [e for e in eps if any(s > 1 + 1e-9 for s in e["sev"].values())]
+    out.update(status="scored", episodes=len(eps), success_rate=_rate(eps),
+               all_realistic={"episodes": len(realistic), "success_rate": _rate(realistic),
+                              "meaning": "every condition inside its plausible real range at once"},
+               any_beyond={"episodes": len(beyond), "success_rate": _rate(beyond)})
+    out["marginal"] = {k: [{"value": v, "episodes": len(sel), "success_rate": _rate(sel)}
+                           for v in values(k) for sel in [[e for e in eps if abs(e["c"][k] - v) < 1e-9]]]
+                       for k in PARAMS}
+    # pairs, inside the realistic box: both in their harder half vs each alone (the other in its easier half)
+    names = list(PARAMS)
+    pairs = []
+    for i, a in enumerate(names):
+        for b in names[i + 1:]:
+            hard = lambda e, k: HARD_HALF < e["sev"][k] <= 1 + 1e-9  # noqa: E731
+            easy = lambda e, k: e["sev"][k] <= HARD_HALF  # noqa: E731
+            both = [e for e in realistic if hard(e, a) and hard(e, b)]
+            only_a = [e for e in realistic if hard(e, a) and easy(e, b)]
+            only_b = [e for e in realistic if easy(e, a) and hard(e, b)]
+            neither = [e for e in realistic if easy(e, a) and easy(e, b)]
+            r = {"pair": [a, b], "both_hard": _rate(both), "a_hard_only": _rate(only_a), "b_hard_only": _rate(only_b),
+                 "neither": _rate(neither), "episodes": [len(both), len(only_a), len(only_b), len(neither)]}
+            if None not in (r["both_hard"], r["a_hard_only"], r["b_hard_only"], r["neither"]) and r["neither"] > 0:
+                # independence: failures from each hardening multiply as success ratios
+                expected = r["a_hard_only"] * r["b_hard_only"] / r["neither"]
+                r["expected_if_independent"] = expected
+                r["interaction"] = r["both_hard"] - expected      # negative: worse together than apart
+            pairs.append(r)
+    out["pairs"] = sorted(pairs, key=lambda r: r.get("interaction", 0.0))
+    out["arena_dataset"] = {
+        "factors": [{"name": k, "type": "continuous", "range": [min(values(k)), max(values(k))]} for k in PARAMS],
+        "outcome_names": ["success"],
+        "theta": [[e["c"][k] for k in PARAMS] for e in eps], "x": [[1.0 if e["ok"] else 0.0] for e in eps],
+        "note": "isaaclab_arena.analysis.sensitivity.SensitivityDataset(factors, theta, x); continuous factors"}
+    return out

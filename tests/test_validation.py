@@ -234,3 +234,26 @@ def test_scratch_copy_refuses_an_ambiguous_or_absent_line():
         pb.scratch_copy(transfer, "no such line", "x")
     with pytest.raises(ValueError, match="times, not once"):
         pb.scratch_copy(robustness, "return", "x")
+
+
+# ---- HTML report -----------------------------------------------------------------------------------------------
+
+def test_report_shows_each_risk_with_its_evidence_and_provenance(run, tmp_path):
+    from sim2gate.mvp import report
+    inputs, key, verdicts, _ = run
+    pid = next(p for p, k in key.items() if k["policy"] == "P2")
+    page = report.render(verdicts[pid])
+    assert "NO-GO" in page and "action_latency_ms cliff" in page and "Suggested fix" in page
+    assert "randomize action latency over 0-30 ms" in page                       # the fix
+    assert "Episode success" in page and "Realistic range 0–30" in page          # the sweep table as evidence
+    assert verdicts[pid]["checkpoint_sha256"] in page and "Simulation warning signs" in page
+    go = next(p for p, k in key.items() if k["policy"] == "P0")
+    assert "No risk flagged" in report.render(verdicts[go])
+    bad = copy.deepcopy(verdicts[go])
+    bad["problems"] = ["<script>alert(1)</script>"]
+    assert "<script>alert" not in report.render(bad)                            # escaped
+    f = tmp_path / "v.json"
+    f.write_text(json.dumps(verdicts[pid]))
+    assert report.main([str(f), "--out", str(tmp_path / "r.html")]) == 1     # exit code = the verdict's
+    f.write_text(json.dumps(verdicts[go]))
+    assert report.main([str(f), "--out", str(tmp_path / "r.html")]) == 0

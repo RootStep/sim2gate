@@ -72,3 +72,25 @@ nominal fall is refused (the C4 tolerance, change C8). For checks 1 and 5 a cond
   P1 and P2 remove them.
 - **Check 5's first rule** counts Newton falls (fall-free rate at least 80%); tracking is judged by the error-ratio
   rule alone. See CHANGES.md, C6.
+
+## Joint sweep (report only; plan, check 1 "Also run")
+
+- **What.** All five parameters vary together: 2,944 episodes (the one-at-a-time sweep's size), each drawing every
+  parameter independently and **uniformly from its 10 sweep values** (seed 20261016, `robustness.joint_conditions`).
+  The plan asks for a uniform draw because Arena's sensitivity analyzer assumes one; drawing from the grid values
+  keeps latency on whole 5 ms physics steps and friction to at most 9 material settings.
+- **Reported, never flagged.** The verdict ignores it (`report_only.joint_sweep`); a failed joint measurement does not
+  block a verdict. The summary gives the success rate when every condition is realistic at once (about 17% of
+  episodes, ~500), the success rate per value of each parameter across all the others, and the pairs that fail more
+  together than apart: success with both in the harder half of their realistic range (severity above 0.5, up to the
+  edge), against the product expected if the two acted independently.
+- **Arena.** Each joint report also holds the per-episode table in the form Arena's `SensitivityDataset` reads
+  (factors, theta, x), so Arena's simulation-based analysis can run on it once the checks are ported (C2).
+
+## Report
+
+`python -m sim2gate.mvp.report verdict.json --out report.html` renders one verdict as a self-contained page: the
+verdict and its exit code; each risk with check, metric, measured value, threshold, signed margin, likely cause and
+fix; the evidence (check 2's metric table, check 1's sweep table per parameter with its cliff, check 5's metrics and
+parity); the joint sweep; and the provenance (checkpoint, configuration, command set and input hashes, versions).
+The blinded run writes one per ID in `reports/`. Its exit code is the verdict's.

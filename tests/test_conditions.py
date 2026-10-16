@@ -595,3 +595,46 @@ def test_training_delay_ramp_c7():
     full = M(types.SimpleNamespace(min_delay=0, max_delay=6, delay_ramp_start_steps=0, delay_ramp_end_steps=0),
              num_envs=512)
     assert full.current_max_delay() == 6                        # no ramp: full range from the first reset
+
+
+# ---- joint sweep (report only) ---------------------------------------------------------------------------------
+
+def test_joint_sweep_draws_all_five_together_and_records_each_env(tmp_path):
+    raw, env = _play(tmp_path, mode="joint", name="joint.json")
+    assert raw["mode"] == "joint" and raw["num_envs"] == rb.JOINT_EPISODES == len(raw["episodes"])
+    assert raw["grid"]["sha256"] == rb.joint_definition()["sha256"]
+    rbk = raw["conditions"]["readback"]
+    for g in raw["groups"][:50]:
+        c = g["condition"]
+        assert rbk["action_latency_ms"][str(g["group"])] == [c["action_latency_ms"]] * 2
+        assert rbk["added_base_mass_kg"][str(g["group"])] == pytest.approx([c["added_base_mass_kg"]] * 2, abs=1e-5)
+    # uniform over the grid: every value of every parameter is drawn, roughly equally often
+    for k in rb.PARAMS:
+        counts = [sum(abs(g["condition"][k] - v) < 1e-9 for g in raw["groups"]) for v in rb.values(k)]
+        assert min(counts) > 0.7 * rb.JOINT_EPISODES / 10 and max(counts) < 1.3 * rb.JOINT_EPISODES / 10
+
+
+def test_joint_report_matches_the_planted_robot(tmp_path):
+    sweep, _ = _play(tmp_path)
+    succ = rb.success_reference([("P0 s1", sweep)])
+    joint, _ = _play(tmp_path, mode="joint", name="joint.json")
+    rep = rb.joint_report(joint, succ)
+    assert rep["status"] == "scored" and rep["report_only"] and rep["flagged"] is None
+    # the fake robot, inside the realistic box, fails exactly at latency >= 25 ms or friction below 0.45
+    real = [g["condition"] for g in joint["groups"]
+            if all(rb.severity(k, g["condition"][k]) <= 1 + 1e-9 for k in rb.PARAMS)]
+    want = sum(c["action_latency_ms"] < 25 and c["ground_friction"] >= 0.45 for c in real) / len(real)
+    assert rep["all_realistic"]["episodes"] == len(real) and rep["all_realistic"]["success_rate"] == pytest.approx(want)
+    lat = {m["value"]: m["success_rate"] for m in rep["marginal"]["action_latency_ms"]}
+    assert lat[25.0] == 0.0 and lat[30.0] == 0.0 and lat[0.0] > 0.2           # other conditions also fail some
+    ds = rep["arena_dataset"]
+    assert len(ds["theta"]) == len(ds["x"]) == rb.JOINT_EPISODES and len(ds["theta"][0]) == 5
+    assert [f["name"] for f in ds["factors"]] == list(rb.PARAMS)
+    assert len(rep["pairs"]) == 10
+
+
+def test_joint_report_refuses_other_runs(tmp_path):
+    sweep, _ = _play(tmp_path)
+    succ = rb.success_reference([("P0 s1", sweep)])
+    rep = rb.joint_report(sweep, succ)
+    assert rep["status"] == "invalid" and any("not a joint sweep" in r for r in rep["reasons"])

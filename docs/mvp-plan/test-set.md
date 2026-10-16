@@ -52,7 +52,8 @@ observation noise on, no pushes). The calibration (P0 v4 in its own task) was me
    each ID's task alias (`Sim2Gate-Blind-<ID>`) to an opaque token of its task. The key (ID → policy, seed, task)
    is written outside the blind folder, and Vihaan keeps it.
 2. **The runner** runs `blinded run`: for each ID, check 2, check 1's sweep, and check 5's PhysX and Newton runs,
-   all under the alias, then the verdict with the frozen thresholds and success reference shipped in the package
+   plus the report-only joint sweep, all under the alias, then the verdict (and its HTML report) with the frozen
+   thresholds and success reference shipped in the package
    (`frozen_thresholds_p0v4.json`, `frozen_success_p0v4.json`; a test pins them to `calibration/p0v4`). Logs and
    records name only the ID.
 3. **Seal.** When every ID has a complete verdict, `blinded seal` writes `verdicts.sha256` and prints one digest.

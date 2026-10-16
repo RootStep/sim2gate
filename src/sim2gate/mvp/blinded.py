@@ -30,9 +30,9 @@ import secrets
 import shutil
 import sys
 
-from ..checks import transfer
+from ..checks import robustness, transfer
 from ..training.smoke_go2 import isaac_python, run
-from . import acceptance, tasks, verdict
+from . import acceptance, report, tasks, verdict
 from .baselines import GO2_COMMANDS, sha256
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -42,7 +42,8 @@ REPLAY_SEED = 20261015                   # A6: which 3 policies are rerun, fixed
 CALLBACK = ["--external_callback", "sim2gate.mvp.tasks.register"]
 CHECK2 = {"steps": 1000, "num_envs": 64, "physics": transfer.PHYSX}
 FIXED = list(transfer.FIXED_OVERRIDES) + list(transfer.ORDERING)
-MEASUREMENTS = ("check2", "sweep", "physx", "newton")
+MEASUREMENTS = ("check2", "sweep", "physx", "newton", "joint")
+REPORT_ONLY = ("joint",)                 # measured and reported, never part of the verdict
 
 
 def alias(pid):
@@ -122,6 +123,7 @@ def commands(pid, ckpt, out_dir, commands_path=GO2_COMMANDS):
         "sweep": cond("sweep", transfer.PHYSX, o["sweep"]),
         "physx": cond("nominal", transfer.PHYSX, o["physx"]),
         "newton": cond("nominal", transfer.NEWTON, o["newton"]),
+        "joint": cond("joint", transfer.PHYSX, o["joint"]),
     }, o
 
 
@@ -136,7 +138,7 @@ def measure(pid, entry, blind, out, runner=None):
     d = os.path.join(out, "policies", pid)
     os.makedirs(d, exist_ok=True)
     cmds, outs = commands(pid, ckpt, d)
-    problems = []
+    problems, report_problems = [], []
     if sha256(ckpt) != entry["sha256"]:
         problems.append("the checkpoint does not match the blind manifest")
     else:
@@ -147,17 +149,22 @@ def measure(pid, entry, blind, out, runner=None):
             if not os.path.exists(outs[m]):
                 err = outs[m] + ".error.txt"
                 tail = [x for x in open(err).read().splitlines() if x.strip()][-1:] if os.path.exists(err) else []
-                problems.append(f"{m}: no output (exit {rc}){': ' + tail[0] if tail else ''}")
+                msg = f"{m}: no output (exit {rc}){': ' + tail[0] if tail else ''}"
+                (report_problems if m in REPORT_ONLY else problems).append(msg)
     data = {k: _load(outs[m]) for k, m in (("check2_report", "check2"), ("sweep_raw", "sweep"),
-                                           ("physx_raw", "physx"), ("newton_raw", "newton"))}
-    v = verdict.build(pid, thresholds=json.load(open(FROZEN_THRESHOLDS)), success=json.load(open(FROZEN_SUCCESS)),
-                      **data)
+                                           ("physx_raw", "physx"), ("newton_raw", "newton"), ("joint_raw", "joint"))}
+    success = json.load(open(FROZEN_SUCCESS))
+    v = verdict.build(pid, thresholds=json.load(open(FROZEN_THRESHOLDS)), success=success, **data)
+    if data["joint_raw"] is not None:                 # the full report-only analysis, with Arena's dataset table
+        _save(robustness.joint_report(data["joint_raw"], success), os.path.join(d, "joint_report.json"))
     measured = {v["checkpoint_sha256"]} - {None}
     if measured and measured != {entry["sha256"]}:
         problems.append("the measurements are of a different checkpoint than the blind manifest names")
     if problems:
         v["problems"] = problems + v["problems"]
         v["verdict"], v["exit_code"] = "incomplete", 2
+    if report_problems:                               # a report-only measurement never blocks the verdict
+        v["report_only"]["problems"] = report_problems
     v["frozen"] = {"thresholds_sha256": sha256(FROZEN_THRESHOLDS), "success_sha256": sha256(FROZEN_SUCCESS)}
     v["measurements"] = {m: {"path": os.path.relpath(outs[m], out), "sha256": sha256(outs[m])}
                          for m in MEASUREMENTS if os.path.exists(outs[m])}
@@ -180,6 +187,7 @@ def run_all(blind, out, runner=None, only=None):
             continue
         v = measure(pid, entry, blind, out, runner)
         _save(v, os.path.join(vdir, f"{pid}.json"))
+        report.write(v, os.path.join(out, "reports", f"{pid}.html"))
         done[pid] = v
         print(f"[sim2gate] {pid}: {v['verdict']} (exit {v['exit_code']})", flush=True)
     return done

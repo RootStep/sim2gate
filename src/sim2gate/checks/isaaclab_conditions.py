@@ -186,8 +186,13 @@ class ConditionRecorder:
         self.mode, self.out_path, self.play_args = mode, out_path, list(play_args or [])
         self.command_set, self.command_source = command_set, command_source
         self.episodes = episodes
-        self.groups = robustness.conditions() if mode == "sweep" else robustness.conditions()[:1]
-        self.env_group = robustness.layout(self.groups, episodes)
+        if mode == "joint":
+            # report only: every env its own draw of all five conditions (robustness.joint_conditions)
+            self.groups = robustness.joint_conditions()
+            self.env_group = [g["group"] for g in self.groups]
+        else:
+            self.groups = robustness.conditions() if mode == "sweep" else robustness.conditions()[:1]
+            self.env_group = robustness.layout(self.groups, episodes)
         self.profile_record = None
         self.checkpoints = []
         self.env = None
@@ -335,7 +340,8 @@ class ConditionRecorder:
             "physics": {"manager": getattr(phys, "__name__", str(phys)), "solver_cfg": _to_dict(cfg.sim.physics),
                         "use_newton_actuators": getattr(cfg.sim, "use_newton_actuators", None),
                         "versions": _versions()},
-            "grid": robustness.grid_definition() if self.mode == "sweep" else None,
+            "grid": (robustness.grid_definition() if self.mode == "sweep"
+                     else robustness.joint_definition() if self.mode == "joint" else None),
             "groups": self.groups, "conditions": self.applied,
             "training_ranges": training_ranges_near(ck["path"]) if ck and ck.get("path") else None,
             "episodes": episodes,
@@ -343,7 +349,7 @@ class ConditionRecorder:
         os.makedirs(os.path.dirname(os.path.abspath(self.out_path)), exist_ok=True)
         with open(self.out_path, "w") as f:
             json.dump(raw, f, indent=1)
-        nominal = [e for e in episodes if e["group"] == 0]
+        nominal = [e for e in episodes if e["group"] == 0] if self.mode != "joint" else []
         print(f"\n[sim2gate] {self.mode}: {len(episodes)} episodes in {len(self.groups)} group(s), "
               f"{sum(e['fell'] for e in episodes)} fell; nominal: {sum(e['fell'] for e in nominal)} of "
               f"{len(nominal)} fell, mean error "
@@ -477,12 +483,13 @@ def _as_t(x, device):
 
 
 def _per_group(values, group, groups):
-    out = {}
-    for g in groups:
-        m = group == g["group"]
-        v = values[m.to(values.device)]
-        out[str(g["group"])] = [round(float(v.min()), 6), round(float(v.max()), 6)] if v.numel() else None
-    return out
+    """{group: [min, max]} of an env-wise value, in one transfer (the joint sweep has one group per env)."""
+    acc = {}
+    for g, v in zip(group.flatten().tolist(), values.flatten().tolist()):
+        lo_hi = acc.setdefault(g, [v, v])
+        lo_hi[0], lo_hi[1] = min(lo_hi[0], v), max(lo_hi[1], v)
+    return {str(g["group"]): ([round(float(acc[g["group"]][0]), 6), round(float(acc[g["group"]][1]), 6)]
+                              if g["group"] in acc else None) for g in groups}
 
 
 # ---- training ranges, for the report ---------------------------------------------------------------------------
@@ -579,8 +586,9 @@ def main(argv=None):
     ours, rest = (argv[:argv.index("--")], argv[argv.index("--") + 1:]) if "--" in argv else (argv, [])
     p = argparse.ArgumentParser(prog="python -m sim2gate.checks.isaaclab_conditions",
                                 description="Record a policy's episodes under controlled conditions (checks 1, 5).")
-    p.add_argument("--mode", choices=("sweep", "nominal"), required=True,
-                   help="sweep: check 1's whole grid; nominal: the nominal condition only (check 5)")
+    p.add_argument("--mode", choices=("sweep", "nominal", "joint"), required=True,
+                   help="sweep: check 1's whole grid; nominal: the nominal condition only (check 5); joint: all five "
+                        "conditions drawn together per episode (report only)")
     p.add_argument("--commands", required=True, help="fixed command set JSON, or 'mvp' for the MVP's Go2 set")
     p.add_argument("--out", required=True)
     a = p.parse_args(ours)
