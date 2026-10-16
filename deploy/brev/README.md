@@ -30,6 +30,18 @@ found during the Experiment T step 1 run on Oct 9, 2026.
   viewer; leave them closed otherwise.
 - Check direct exposure from your own computer: `curl -m 5 -sI http://<instance public IP>/` should time out
   (port closed). If it answers, it must be a redirect to `./login`, never the editor itself.
+- Full ingress check, every port: on the instance, `bash deploy/brev/check_exposure.sh` lists each listening socket,
+  its owner and whether it is loopback-only (services use host networking, so anything else is reachable unless
+  the cloud firewall blocks it), and prints a probe command. Run that probe from your own computer
+  (`bash check_exposure.sh --probe <public IP> <ports>`): it exits 0 only if every listed TCP port is
+  closed or filtered. Each port is first tried against an address that cannot answer, so a home network that
+  answers DNS (port 53) itself shows as `INTERCEPTED-LOCALLY` (exit code 3), not as open.
+- What the Oct 13 check found listening beyond loopback: nginx (80) and sshd (22, key-only), Brev's own
+  influxd (8086) and NetBird (DNS on its private 100.x address, WireGuard on UDP 51820), and the viewer dev
+  server (5173). From the internet, 22, 80, 5173 and 8086 were closed or filtered. The viewer now listens on
+  127.0.0.1 only, so it is reachable solely through nginx and its password check. After a rebuild, confirm it on
+  the instance with `bash deploy/brev/verify_viewer.sh` (loopback-only listener; `/viewer/` refused without the
+  password, served with it).
 - The VS Code container runs privileged with host networking because Isaac Sim needs GPU and device access.
   Treat anyone with the password as having root on the instance.
 

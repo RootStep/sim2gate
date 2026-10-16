@@ -18,6 +18,13 @@ Every record also checks the reconstruction against what the trainer actually co
 its own returns - values vs the reconstructed A' for BSRSPPO, or A for stock PPO), so a trainer that does not
 apply the claimed shaping shows up. Feed-forward actor and critic only.
 
+When the trainer normalizes advantages per minibatch, the monitor wraps the storage's own mini_batch_generator:
+it records the one shuffle that generator draws and the advantage tensors it actually yields, checks that each
+yielded tensor is exactly the trainer's advantages at the recorded indices, and computes the per-minibatch
+statistics on those groups. If any of that cannot be established, the record keeps normalization_group
+"minibatch", reports the reason in minibatch_capture and leaves the group statistics empty; it never falls back to
+rollout statistics.
+
 For stock PPO, `eta` (default 1.0) is a what-if: the signals describe what same-critic BSRS at that eta would
 do to this rollout's actor signal. For BSRSPPO the algorithm's own eta is used.
 """
@@ -42,10 +49,16 @@ class TrainingMonitor:
         self.use_writer = writer
         self.f = open(path, "a", buffering=1)
         self.iteration = 0
+        if getattr(self.alg, "rnd", None):
+            raise NotImplementedError("TrainingMonitor does not support RND: intrinsic rewards are added to the stored "
+                                      "rewards inside the trainer, so the captured environment rewards would not match")
         st = self.alg.storage
         self._time_outs = torch.zeros(st.num_transitions_per_env, st.num_envs, device=st.device, dtype=torch.bool)
+        # environment rewards as passed to the trainer, before RSL-RL adds gamma * V on time-limit steps
+        self._raw = torch.zeros(st.num_transitions_per_env, st.num_envs, device=st.device, dtype=st.rewards.dtype)
         self._terms = {}
         self._pending = None
+        self._mb = None
         self._restore = []
         self._install()
 
@@ -61,6 +74,7 @@ class TrainingMonitor:
                 self._time_outs[step].copy_(to.to(self._time_outs.device).reshape(-1).bool())
             else:
                 self._time_outs[step].zero_()
+            self._raw[step].copy_(rewards.detach().reshape(-1).to(self._raw.dtype))   # RSL-RL adds to a clone
             log = extras.get("log", extras.get("episode"))
             if isinstance(log, dict):
                 for k, val in log.items():
@@ -76,7 +90,8 @@ class TrainingMonitor:
             with torch.inference_mode():
                 last_values = alg.critic(obs).detach().clone()
                 self._pending = dict(stored=st.rewards.clone(), values=st.values.clone(), dones=st.dones.clone(),
-                                     time_outs=self._time_outs.clone(), last_values=last_values)
+                                     time_outs=self._time_outs.clone(), last_values=last_values,
+                                     raw=self._raw.clone())
             out = orig_cr(obs)
             # what the trainer actually produced: unnormalized advantages, and what it will train on
             self._pending["trainer_adv"] = (st.returns - st.values).detach().clone()
@@ -86,46 +101,85 @@ class TrainingMonitor:
         alg.compute_returns = compute_returns
         self._restore.append(lambda: setattr(alg, "compute_returns", orig_cr))
 
-        orig_update = alg.update
-        def update(*a, **k):
-            perms = []
-            if alg.normalize_advantage_per_mini_batch:
+        if alg.normalize_advantage_per_mini_batch:
+            had_own = "mini_batch_generator" in vars(st)
+            orig_gen = st.mini_batch_generator
+
+            def mini_batch_generator(num_mini_batches, *ga, **gk):
+                """Pass-through: same batches, same order, same random numbers; records the shuffle the
+                generator draws and the advantages it yields for the first epoch."""
+                cap = {"perms": [], "yielded": [], "num_mini_batches": int(num_mini_batches)}
+                self._mb = cap
+                g = orig_gen(num_mini_batches, *ga, **gk)
                 orig_randperm = torch.randperm
                 def randperm(*ra, **rk):
-                    out = orig_randperm(*ra, **rk); perms.append(out.clone()); return out
-                torch.randperm = randperm
+                    out = orig_randperm(*ra, **rk); cap["perms"].append(out.clone()); return out
+                torch.randperm = randperm          # the generator body runs up to its first yield inside next()
                 try:
-                    out = orig_update(*a, **k)
+                    batch = next(g)
+                except StopIteration:
+                    return
                 finally:
                     torch.randperm = orig_randperm
-            else:
-                out = orig_update(*a, **k)
-            self._log(out, perms)
+                while True:
+                    if len(cap["yielded"]) < cap["num_mini_batches"]:
+                        cap["yielded"].append(batch.advantages.detach().reshape(-1).clone())
+                    yield batch
+                    try:
+                        batch = next(g)
+                    except StopIteration:
+                        return
+            st.mini_batch_generator = mini_batch_generator
+            self._restore.append(lambda: delattr(st, "mini_batch_generator") if not had_own
+                                 else setattr(st, "mini_batch_generator", orig_gen))
+
+        orig_update = alg.update
+        def update(*a, **k):
+            self._mb = None
+            out = orig_update(*a, **k)
+            self._log(out)
             return out
         alg.update = update
         self._restore.append(lambda: setattr(alg, "update", orig_update))
 
     # ---- logging ----------------------------------------------------------------------------------
-    def _log(self, loss_dict, perms):
+    def _minibatch_groups(self, p):
+        """(indices, yielded advantages, None) for the update's minibatches, or (None, None, reason)."""
+        cap = self._mb
+        if cap is None:
+            return None, None, "the storage's mini_batch_generator was not used in this update"
+        m = cap["num_mini_batches"]
+        n = p["values"].shape[0] * p["values"].shape[1]
+        size = n // m
+        if len(cap["perms"]) != 1 or cap["perms"][0].numel() != m * size:
+            return None, None, (f"expected the generator to draw one shuffle of {m * size} indices, saw "
+                                f"{[int(q.numel()) for q in cap['perms']]}")
+        if len(cap["yielded"]) != m:
+            return None, None, f"expected {m} minibatches in the first epoch, saw {len(cap['yielded'])}"
+        perm = cap["perms"][0].to(p["trainer_adv"].device)
+        ix = [perm[i * size:(i + 1) * size] for i in range(m)]
+        flat = p["trainer_adv"].reshape(-1)
+        for i, (j, y) in enumerate(zip(ix, cap["yielded"])):
+            if y.numel() != j.numel() or not torch.equal(y.to(flat.dtype).to(flat.device), flat[j]):
+                return None, None, f"minibatch {i}: yielded advantages are not the trainer's at the recorded indices"
+        return ix, cap["yielded"], None
+
+    def _log(self, loss_dict):
         p = self._pending
         if p is None:
             return
         alg = self.alg
-        mb_ix, capture = None, None
+        mb_ix, yielded, group, capture = None, None, "rollout", None
         if alg.normalize_advantage_per_mini_batch:
-            n = p["values"].shape[0] * p["values"].shape[1]
-            size = n // alg.num_mini_batches
-            full = [q for q in perms if q.numel() == alg.num_mini_batches * size]
-            if len(full) == 1:      # RSL-RL draws exactly one shuffle per update and reuses it for every epoch
-                mb_ix = [full[0][i * size:(i + 1) * size] for i in range(alg.num_mini_batches)]
-                capture = "ok"
-            else:
-                capture = f"expected one rollout-sized randperm in update, saw {len(full)}; minibatch groups unavailable"
+            group = "minibatch"
+            mb_ix, yielded, reason = self._minibatch_groups(p)
+            capture = "ok" if reason is None else reason
         with torch.no_grad():
             sig = rollout_signals(p["stored"], p["values"], p["last_values"], p["dones"], p["time_outs"],
                                   eta=self.eta, gamma=alg.gamma, lam=alg.lam, minibatch_indices=mb_ix,
                                   trainer_advantages=p.get("trainer_adv"), trainer_normalized=p.get("trainer_norm"),
-                                  training_eta=self.measured, minibatch_capture=capture)
+                                  training_eta=self.measured, minibatch_capture=capture,
+                                  normalization_group=group, minibatch_yielded=yielded, raw_rewards=p["raw"])
         terms = {k: sum(v) / len(v) for k, v in self._terms.items() if v}
         total = sum(abs(x) for x in terms.values())
         shares = {k: (abs(x) / total if total > 0 else None) for k, x in terms.items()}
@@ -140,6 +194,7 @@ class TrainingMonitor:
         self.f.write(json.dumps(rec) + "\n")
         self._write_scalars(sig, shares)
         self._pending = None
+        self._mb = None
         self._terms = {}
         self.iteration += 1
 

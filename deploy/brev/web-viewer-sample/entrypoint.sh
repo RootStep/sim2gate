@@ -69,7 +69,9 @@ main() {
   sed -i "s/mediaServer: '[^']*'/mediaServer: '${MEDIA_SERVER}'/" /app/web-viewer-sample/src/main.tsx
   sed -i "s/forceWSS: [^,]*/forceWSS: ${FORCE_WSS}/" /app/web-viewer-sample/src/main.tsx
 
-  exec npm run dev -- --host 0.0.0.0
+  # RootStep: loopback only. nginx (host networking) proxies /viewer/ here behind basic auth; listening on
+  # 0.0.0.0 would expose the dev server without that auth wherever the cloud firewall allows port 5173.
+  exec npm run dev -- --host 127.0.0.1
 }
 
 main "${@}"

@@ -76,6 +76,10 @@ def main(argv=None):
     p.add_argument("--no-monitor", action="store_true", help="only swap in BSRSPPO, log nothing extra")
     p.add_argument("--negative-control", action="store_true",
                    help="acceptance testing only: a trainer that claims --eta but ignores it")
+    p.add_argument("--update-identity", default=None, metavar="OUT.json",
+                   help="acceptance testing only: replay the first PPO update stock, stock again and with Sim2Gate "
+                        "attached, from the same state, and write the comparison (stock PPO, eta 0, no monitor "
+                        "otherwise; use --max_iterations 1)")
     args = p.parse_args(ours)
     if not args.isaaclab_script:
         # as Isaac Lab 3.0's train.py does: set before anything defines Warp kernels (halves cold kernel builds)
@@ -86,8 +90,14 @@ def main(argv=None):
             pass
     if args.negative_control and args.eta == 0.0:
         p.error("--negative-control needs a nonzero --eta")
-    install(args.eta, args.signals, args.what_if_eta, monitor=not args.no_monitor,
-            negative_control=args.negative_control)
+    if args.update_identity:
+        if args.eta != 0.0 or args.negative_control:
+            p.error("--update-identity compares stock PPO with Sim2Gate attached at eta 0; leave --eta at 0")
+        from .update_identity import install as install_identity
+        install_identity(args.update_identity)
+    else:
+        install(args.eta, args.signals, args.what_if_eta, monitor=not args.no_monitor,
+                negative_control=args.negative_control)
     if args.isaaclab_script:
         script = os.path.abspath(args.isaaclab_script)
         sys.path.insert(0, os.path.dirname(script))       # train.py imports its sibling cli_args.py
