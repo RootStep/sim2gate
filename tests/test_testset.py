@@ -8,7 +8,7 @@ import subprocess
 
 import pytest
 
-from sim2gate.mvp import blinded, tasks, testset
+from sim2gate.mvp import tasks, testset
 from sim2gate.mvp.baselines import sha256
 
 pytestmark = pytest.mark.skipif(shutil.which("openssl") is None, reason="needs openssl")
