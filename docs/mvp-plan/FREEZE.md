@@ -8,7 +8,7 @@ if it touches anything above, the results say so.
 
 | | |
 |---|---|
-| Tag | `mvp-freeze-2026-10-16` |
+| Tag / branch | `mvp-freeze-2026-10-16` (branch pinned at the commit; the release tag is added on GitHub by VJ). The commit and tree hashes below are the fingerprint |
 | Commit | `7dcece14494aabf09a12adc594802120a42300b3` (main, after merging PRs #1, #2, #3 and #5) |
 | Git tree | `4a06c7f78eba6217e970dd64395f84e60699e3b2` |
 | `git archive --format=tar --prefix=sim2gate/ mvp-freeze-2026-10-16` SHA-256 (git 2.43) | `1c8cecd02480c177f715619cf053054cd5918b3a844ac22ca0535db99304553d` |
@@ -36,7 +36,7 @@ adb2b3d5f1c8b9879a384d1607b2172d426a4b83f9cfdc53f48833d5aa192ead  src/sim2gate/c
 31258f39b78a9ba6337657220acacc4afbed02b990ea6eba5a6fd7774e2d8efd  src/sim2gate/mvp/report.py
 ```
 
-Check the tree with `git rev-parse mvp-freeze-2026-10-16^{tree}`; every value above can be recomputed from the tag.
+Check the tree with `git rev-parse 7dcece14494aabf09a12adc594802120a42300b3^{tree}`; every value above can be recomputed from the tag.
 
 Verified before the freeze: 269 tests passing (CI green on `7dcece14494aabf09a12adc594802120a42300b3`); the planted-bug test (all six bugs caught,
 control passes); the pre-freeze GPU sessions (`evidence/pre-freeze/`, `evidence/p5-pilot/`, and on Oct 16
