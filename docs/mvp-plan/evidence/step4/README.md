@@ -1,7 +1,9 @@
 # Step 4 and 5: the blinded run and its scoring (Oct 16–17, 2026)
 
-**Result: the MVP validation failed its pre-registered acceptance criteria. A3, A4 and A6 passed; A1, A2 and A5
-failed.** Nothing below was tuned after unblinding; the thresholds, success reference and rules are the frozen ones
+**Result: the MVP did not meet three of its six preregistered acceptance criteria (A1, A2, A5); A3, A4 and A6 were
+met.** Under the plan's rule that is a failed validation, so Sim2Gate is not called validated. It does not show that
+three capabilities are defective: A1 is one target (P4) missed at the frozen threshold, A2 is one target (P1) flagged
+but attributed to a different parameter, and A5 is about one test robot, not a check (see below). Nothing below was tuned after unblinding; the thresholds, success reference and rules are the frozen ones
 (`../../FREEZE.md`, commit `4b25f92` with change C9).
 
 ## Run

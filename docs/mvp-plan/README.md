@@ -19,5 +19,5 @@ episode-success reference, checks 1 and 5 on P0 v4) and the planted-bug test of 
 [`evidence/planted-bugs`](evidence/planted-bugs/README.md).
 The planted-flaw policies P1–P5 and the blinded-run procedure: [`test-set.md`](test-set.md).
 
-**Result (Oct 17, 2026): the blinded validation failed its acceptance criteria (A3, A4, A6 passed; A1, A2, A5
-failed).** Scores, verdicts, reports and the released key: [`evidence/step4`](evidence/step4/README.md).
+**Result (Oct 17, 2026): the MVP did not meet three of its six preregistered acceptance criteria (A1, A2, A5 not
+met; A3, A4, A6 met), so it is not validated.** Scores, verdicts, reports and the released key: [`evidence/step4`](evidence/step4/README.md).
