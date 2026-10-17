@@ -57,3 +57,19 @@ P3 failed the walking check during step 4's training; VJ approved P3-v2 (`CHANGE
 freeze only in `src/sim2gate/mvp/tasks.py` (P3-v2) and `src/sim2gate/mvp/testset.py` (`redefine`, and refusing to
 continue or blind while a job waits for a decision). Every other frozen file is unchanged; check with
 `git diff 7dcece14494aabf09a12adc594802120a42300b3 -- src/`.
+
+## Known blinding gap found during step 4 (Oct 17, 2026)
+
+`blinded run` launches each measurement through `training.smoke_go2.run`, which streams Isaac Lab's console output to
+the screen and to `step4_run.log` (training, by contrast, used `testset.quiet_run`, which writes only to files). Isaac
+Lab prints each task's configuration at start-up, including its reward terms, next to the command line that names the
+blind ID. Because P3 (no foot-slip penalty) and P4 (no action-rate penalty) differ from P0 in their reward terms, and
+P5 in its ground contact, someone reading that output could tie some IDs to their flaw. VJ saw one such reward table
+on Oct 17 at about 12:50 (its terms matched P0's, so it does not single out a planted flaw); no ID was read with it
+and nothing was changed.
+
+Effect on the result: the verdicts are computed automatically from frozen code, thresholds and success reference, and
+are sealed before the key is released, so nobody can act on what the console shows during the run. The protection
+that is weakened is the runner's not knowing which ID is which; the remedy for the rest of the run is not to read the
+console or the run logs until after sealing. Not fixed mid-run, to keep the frozen code unchanged. For v2: send
+`blinded run`'s subprocess output to files only, as `testset` does.
