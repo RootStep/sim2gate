@@ -15,7 +15,7 @@ Every test-set policy is P0 v4 (C7) with at most one change: the same task, rewa
 | P0 | none | none | all should pass | 1–8 (1–3 calibrate; 4–8 held out) |
 | P1 | narrow randomization | friction 0.78–0.82 static (0.585–0.615 dynamic), instead of 0.4–1.2; base-mass scale 1/1.01–1.01, instead of the task's 1/1.25–1.25 | check 1 (friction or mass) | 1–3 |
 | P2 | no latency | command delay 0 throughout (the same delay motor, range 0–0), instead of 0–30 ms | check 1 (latency) | 1–3 |
-| P3 | sliding exploit | ground friction 0.2–0.4 static (0.15–0.3 dynamic), and no foot-slip penalty | check 2 | 1–3 |
+| P3 | sliding exploit | ground friction 0.3–0.5 static (0.225–0.375 dynamic), and no foot-slip penalty (P3-v2, C9; was 0.2–0.4) | check 2 | 1–3 |
 | P4 | jittery | no action-rate penalty | check 2 | 1–3 |
 | P5 | engine overfit | a soft ground contact PhysX models and Newton does not reproduce: PhysX compliant contact in acceleration units, stiffness 2000, damping critical (89.4); fallback 3000 (below) | check 5 | 1–3 |
 

@@ -14,7 +14,8 @@
 The planted-flaw policies P1-P5 (test set v1, docs/mvp-plan/test-set.md) are each P0 v4 with exactly one change:
     P1 narrow randomization: friction static 0.78-0.82 (dynamic 0.585-0.615) and base mass scale 1/1.01-1.01
     P2 no latency: command delay 0 throughout (the same delay motor, range 0-0)
-    P3 sliding exploit: low ground friction, static 0.2-0.4 (dynamic 0.15-0.3), and no foot-slip penalty
+    P3 sliding exploit: low ground friction, static 0.3-0.5 (dynamic 0.225-0.375), and no foot-slip penalty
+       (task P3-v2, change C9; P3-v1 trained on 0.2-0.4 and failed the walking check on 4 of 5 seeds)
     P4 jittery: no action-rate penalty
     P5 engine overfit: a soft, PhysX-only ground contact (compliant spring in acceleration units, which Newton does
        not reproduce): stiffness 2000 (fallback 3000, task P5-v2, only if a P5 seed fails the walking check)
@@ -93,8 +94,10 @@ P1_STATIC_FRICTION = (0.78, 0.82)        # "near-zero range" around the task's n
 P1_DYNAMIC_FRICTION = (0.585, 0.615)     # the same 0.75 dynamic/static ratio
 P1_MASS_SCALE = (1 / 1.01, 1.01)         # the stock task's base-mass scale (1/1.25-1.25, log-uniform) narrowed to 1%
 P2_DELAY_STEPS = (0, 0)
-P3_STATIC_FRICTION = (0.2, 0.4)          # below the plausible real range (0.4-1.2)
+P3_STATIC_FRICTION = (0.2, 0.4)          # P3-v1 (superseded, C9): below the plausible real range (0.4-1.2)
 P3_DYNAMIC_FRICTION = (0.15, 0.3)
+P3_V2_STATIC_FRICTION = (0.3, 0.5)       # C9: still low and mostly below the realistic range, walkable at nominal 0.8
+P3_V2_DYNAMIC_FRICTION = (0.225, 0.375)  # the task's 0.75 dynamic/static ratio
 # P5's ground (VJ, Oct 16): stiffness 2000 in PhysX's acceleration units, damping critical (2 x sqrt(stiffness)). Chosen
 # from the Oct 16 stand pilot, before any training: at 2000 the robot sinks 5.4 cm on PhysX against normal ground and
 # the PhysX-Newton standing-height gap is 3.1 cm, against 1.8 cm on normal ground; above ~3000 the gap falls below
@@ -157,6 +160,17 @@ VARIANTS[P5_FALLBACK_TASK] = {
     "env_class": "Go2FlatP5FallbackEnvCfg", "agent_class": "Go2FlatP5FallbackPPORunnerCfg"}
 for _c in VARIANTS[P5_FALLBACK_TASK]["changes"]:
     _c.pop("fallback", None)
+P3_V1_TASK = PLANTED_TASKS["P3"]
+P3_V2_TASK = f"Sim2Gate-Velocity-Flat-Go2-P3-v{TEST_SET_VERSION + 1}"
+VARIANTS[P3_V2_TASK] = {
+    **VARIANTS[P3_V1_TASK], "version": TEST_SET_VERSION + 1,
+    "changes": [{"what": "events.physics_material ranges", "static_friction_range": list(P3_V2_STATIC_FRICTION),
+                 "dynamic_friction_range": list(P3_V2_DYNAMIC_FRICTION), "make_consistent": True},
+                {"what": "remove reward term rewards.feet_slide"}],
+    "experiment_name": f"sim2gate_go2_flat_p3_v{TEST_SET_VERSION + 1}", "status": "test set v1, P3 after change C9",
+    "env_class": "Go2FlatP3V2EnvCfg", "agent_class": "Go2FlatP3V2PPORunnerCfg"}
+VARIANTS[P3_V1_TASK] = {**VARIANTS[P3_V1_TASK], "status": "superseded by P3-v2 (C9): failed the walking check"}
+PLANTED_TASKS["P3"] = P3_V2_TASK                 # the P3 trained from now on
 
 
 def _p0_env_cfg(version=1):
@@ -214,7 +228,7 @@ def _p0_agent_cfg(task):
     return Go2FlatP0PPORunnerCfg
 
 
-def _planted_env_cfg(pol, p5_stiffness=P5_CONTACT_STIFFNESS):
+def _planted_env_cfg(pol, p5_stiffness=P5_CONTACT_STIFFNESS, p3_version=2):
     """P0 v4's environment with policy `pol`'s one planted change."""
     from isaaclab.utils import configclass
     base = _p0_env_cfg(4)
@@ -232,7 +246,11 @@ def _planted_env_cfg(pol, p5_stiffness=P5_CONTACT_STIFFNESS):
                 act.min_delay, act.max_delay = P2_DELAY_STEPS
             elif pol == "P3":
                 pm = self.events.physics_material.params
-                pm["static_friction_range"], pm["dynamic_friction_range"] = P3_STATIC_FRICTION, P3_DYNAMIC_FRICTION
+                if p3_version == 1:
+                    pm["static_friction_range"], pm["dynamic_friction_range"] = P3_STATIC_FRICTION, P3_DYNAMIC_FRICTION
+                else:
+                    pm["static_friction_range"] = P3_V2_STATIC_FRICTION
+                    pm["dynamic_friction_range"] = P3_V2_DYNAMIC_FRICTION
                 self.rewards.feet_slide = None
             elif pol == "P4":
                 self.rewards.action_rate_l2 = None
@@ -253,8 +271,9 @@ def _planted_env_cfg(pol, p5_stiffness=P5_CONTACT_STIFFNESS):
             else:
                 raise ValueError(f"no planted change for {pol}")
 
-    Go2FlatPlantedEnvCfg.__name__ = (f"Go2Flat{pol}EnvCfg" if p5_stiffness == P5_CONTACT_STIFFNESS
-                                     else f"Go2Flat{pol}FallbackEnvCfg")
+    Go2FlatPlantedEnvCfg.__name__ = (f"Go2Flat{pol}FallbackEnvCfg" if p5_stiffness != P5_CONTACT_STIFFNESS
+                                     else f"Go2Flat{pol}V2EnvCfg" if pol == "P3" and p3_version == 2
+                                     else f"Go2Flat{pol}EnvCfg")
     return Go2FlatPlantedEnvCfg
 
 
@@ -269,6 +288,10 @@ _LAZY = {"Go2FlatP0EnvCfgV1": lambda: _p0_env_cfg(1), "Go2FlatP0EnvCfgV2": lambd
 for _pol, _task in PLANTED_TASKS.items():
     _LAZY[f"Go2Flat{_pol}EnvCfg"] = (lambda p: (lambda: _planted_env_cfg(p)))(_pol)
     _LAZY[f"Go2Flat{_pol}PPORunnerCfg"] = (lambda t: (lambda: _p0_agent_cfg(t)))(_task)
+_LAZY["Go2FlatP3EnvCfg"] = lambda: _planted_env_cfg("P3", p3_version=1)
+_LAZY["Go2FlatP3PPORunnerCfg"] = lambda: _p0_agent_cfg(P3_V1_TASK)
+_LAZY["Go2FlatP3V2EnvCfg"] = lambda: _planted_env_cfg("P3", p3_version=2)
+_LAZY["Go2FlatP3V2PPORunnerCfg"] = lambda: _p0_agent_cfg(P3_V2_TASK)
 _LAZY["Go2FlatP5FallbackEnvCfg"] = lambda: _planted_env_cfg("P5", P5_FALLBACK_STIFFNESS)
 _LAZY["Go2FlatP5FallbackPPORunnerCfg"] = lambda: _p0_agent_cfg(P5_FALLBACK_TASK)
 _built = {}

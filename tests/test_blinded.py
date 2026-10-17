@@ -176,7 +176,8 @@ def test_planted_variants_are_p0_v4_plus_one_change():
     for pol, task in tasks.PLANTED_TASKS.items():
         v = tasks.VARIANTS[task]
         assert v["base_task"] == tasks.P0_TASK_V4 and v["max_iterations"] == tasks.P0_V4_ITERATIONS
-        assert v["experiment_name"] == f"sim2gate_go2_flat_{pol.lower()}_v1"
+        assert v["experiment_name"] == f"sim2gate_go2_flat_{pol.lower()}_v{v['version']}"
+        assert v["version"] == (2 if pol == "P3" else 1)                 # P3-v2 since C9
     assert len({tasks.task_token(t) for t in tasks.VARIANTS}) == len(tasks.VARIANTS)
 
 

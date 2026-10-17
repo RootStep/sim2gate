@@ -220,6 +220,11 @@ def train_all(pubkey, calibration, work, blind, sealed, runner=quiet_run, rng=No
         rng.shuffle(jobs)
         state = {"version": 1, "started": _now(), "jobs": jobs, "p5_fallback": False}
         _save(state, spath)
+    failed = [j for j in state["jobs"] if j["status"] == "failed"]
+    if failed:
+        _say(f"{len(failed)} job(s) failed the walking check and are waiting for a decision. After the decision, run "
+             f"`testset redefine` (see test-set.md); nothing was trained.")
+        return 1
     n = len(state["jobs"])
     while True:
         pending = [j for j in state["jobs"] if j["status"] == "pending"]
@@ -270,8 +275,29 @@ def _now():
     return datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
 
 
+def redefine(work, policy, task, change):
+    """After a decision on a policy that cannot pass the walking check: every job of `policy` is reset to train on
+    `task` from its original seed. Earlier attempts stay in the record (and in the sealed archive)."""
+    if task not in tasks.VARIANTS or tasks.VARIANTS[task]["policy"] != policy:
+        raise ValueError(f"{task} is not a task of {policy}")
+    spath = os.path.join(work, "state.json")
+    state = json.load(open(spath))
+    jobs = [j for j in state["jobs"] if j["policy"] == policy]
+    if not jobs:
+        raise ValueError(f"no {policy} jobs in {spath}")
+    for j in jobs:
+        j.update(task=task, seed=j["base_seed"], status="pending")
+    state.setdefault("redefinitions", []).append({"policy": policy, "task": task, "change": change, "at": _now(),
+                                                  "jobs": len(jobs)})
+    _save(state, spath)
+    _say(f"{len(jobs)} {policy} job(s) reset to {task} ({change}); run `testset train` again to continue")
+    return len(jobs)
+
+
 def finish(state, cal, pubkey, work, blind, sealed):
     """Blind all 23, seal everything labelled for Vihaan, delete the plaintext."""
+    if any(j["status"] != "walks" for j in state["jobs"]):
+        raise ValueError("not every job passed the walking check; nothing is blinded")
     pols = list(cal)
     for j in state["jobs"]:
         att = j["attempts"][-1]
@@ -354,6 +380,11 @@ def main(argv=None):
     sm = sub.add_parser("smoke", help="pre-freeze GPU test on one throwaway policy")
     sm.add_argument("--pubkey", required=True)
     sm.add_argument("--work", default="mvp_runs/testset_smoke")
+    rd = sub.add_parser("redefine", help="after a decision: retrain every job of a policy on a new task")
+    rd.add_argument("--work", required=True)
+    rd.add_argument("--policy", required=True)
+    rd.add_argument("--task", required=True)
+    rd.add_argument("--change", required=True, help="the logged plan change, e.g. C9")
     u = sub.add_parser("unseal")
     u.add_argument("--privkey", required=True)
     u.add_argument("--sealed", required=True)
@@ -370,6 +401,9 @@ def main(argv=None):
             return train_all(a.pubkey, a.calibration, a.work, a.blind, a.sealed)
         if a.cmd == "smoke":
             return smoke(a.pubkey, a.work)
+        if a.cmd == "redefine":
+            redefine(a.work, a.policy, a.task, a.change)
+            return 0
         _say(f"unsealed into {unseal(a.privkey, a.sealed, a.out)}")
         return 0
     except (ValueError, OSError) as e:

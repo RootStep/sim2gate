@@ -245,3 +245,26 @@ unless an entry says otherwise.
   baseline acceptance was a mismatch in the code, not a plan decision. Including the fallen episode would let a
   fall's tracking error move the success threshold, so it is left out.
 - **Approved by:** VJ, Oct 15, 2026.
+
+## C9 — P3-v2: P3 trains on friction 0.3–0.5 instead of 0.2–0.4 (Oct 16, 2026)
+
+- **Was (test set v1, Oct 15):** P3 = P0 v4 trained on ground friction 0.2–0.4 static (0.15–0.3 dynamic) with no
+  foot-slip penalty (`Sim2Gate-Velocity-Flat-Go2-P3-v1`).
+- **Now:** P3 = P0 v4 trained on ground friction **0.3–0.5** static (0.225–0.375 dynamic) with no foot-slip penalty
+  (`Sim2Gate-Velocity-Flat-Go2-P3-v2`). Still low friction, mostly below the realistic range (0.4–1.2), still with
+  no penalty for sliding. All three P3 seeds are trained on P3-v2 from their original seeds (1, 2, 3); the P3-v1
+  checkpoints are set aside (kept in the sealed training record), including the one that passed.
+- **Why** (Oct 16, during step 4's training, before any blinded check): the walking check (at least 80% of 64
+  nominal PhysX episodes succeed, the A5 bar) failed P3-v1 on 4 of 5 seeds (2, 3, 13, 23; seed 12 passed). The
+  failed policies walked but tracked loosely at nominal friction: mean tracking error of the episodes without a
+  fall 0.094–0.120 m/s against the 0.113 m/s episode-success threshold (clean policies: 0.072–0.077). By the
+  plan's rule a planted policy that cannot meet nominal success tests nothing, and A5 would fail on it. Retrying
+  more seeds until three passed (rejected) would have selected marginal policies likely to fail A5 again; dropping
+  P3 (rejected) would leave check 2's slip test without its target.
+- **Seen by the runner:** to decide, VJ saw which job failed and its walking numbers, and so which training jobs were
+  P3, P0 seed 7 and P4 seeds 2–3. This does not reach the blind: random IDs are assigned only after all training,
+  and every P3 policy is retrained.
+- **Code after the freeze:** `sim2gate.mvp.tasks` (P3-v2) and `sim2gate.mvp.testset` (`redefine`, and refusing to
+  continue or blind while a job waits for a decision). No check, threshold, success reference, command set or
+  scoring rule changed.
+- **Approved by:** VJ, Oct 16, 2026.

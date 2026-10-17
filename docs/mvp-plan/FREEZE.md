@@ -50,3 +50,10 @@ Next (plan step 4): `python -m sim2gate.mvp.testset train` with Vihaan's public 
 
 RSA 3072-bit, `vihaan_public.pem`, SHA-256 `9db064c8f10bd8c4831874064fca7aa7783dac6ca77f97efdfefe2f8cf7f0617`. The test
 set's key and training records are sealed to this key only; Vihaan holds the private key.
+
+## After the freeze: change C9 (Oct 16, 2026)
+
+P3 failed the walking check during step 4's training; VJ approved P3-v2 (`CHANGES.md`, C9). Code changed after the
+freeze only in `src/sim2gate/mvp/tasks.py` (P3-v2) and `src/sim2gate/mvp/testset.py` (`redefine`, and refusing to
+continue or blind while a job waits for a decision). Every other frozen file is unchanged; check with
+`git diff 7dcece14494aabf09a12adc594802120a42300b3 -- src/`.

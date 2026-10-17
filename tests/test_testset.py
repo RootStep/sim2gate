@@ -150,3 +150,42 @@ def test_openssl_runs_without_a_foreign_library_path(world, monkeypatch):
     assert "Public-Key" in testset.check_pubkey("pub.pem")
     with pytest.raises(testset.OpenSSLError, match="failed"):
         testset.check_pubkey("priv.pem")
+
+
+def test_a_stopped_run_resumes_only_after_a_redefinition(world, capsys):
+    tmp, args, fail, calls = world
+    t1 = tasks.P3_V1_TASK
+    fail["walk"].update({(t1, 3), (t1, 13), (t1, 23)})
+    import json as _j
+    st = None
+    # reproduce the Oct 16 situation: the P3 jobs were planned on P3-v1
+    orig = testset.plan
+    testset.plan = lambda: [(p, s, t1 if p == "P3" else t) for p, s, t in orig()]
+    try:
+        assert testset.train_all(**args) == 1
+    finally:
+        testset.plan = orig
+    assert testset.train_all(**args) == 1                       # refuses while a job waits for a decision
+    assert "waiting for a decision" in capsys.readouterr().out
+    n_before = len([c for c in calls if "train.py" in c])
+    with pytest.raises(ValueError):
+        testset.redefine("work", "P3", tasks.PLANTED_TASKS["P5"], "C9")
+    assert testset.redefine("work", "P3", tasks.P3_V2_TASK, "C9") == 3
+    assert testset.train_all(**args) == 0
+    trained = [(c[c.index("--task") + 1], int(c[c.index("--seed") + 1])) for c in calls if "train.py" in c][n_before:]
+    assert sorted(s for t, s in trained if t == tasks.P3_V2_TASK) == [1, 2, 3]
+    assert all(t != t1 for t, s in trained)
+    key = _key(tmp)
+    p3 = [k for k in key["policies"].values() if k["policy"] == "P3"]
+    assert {k["task"] for k in p3} == {tasks.P3_V2_TASK} and sorted(k["seed"] for k in p3) == [1, 2, 3]
+    st = _j.load(open(tmp / "unsealed" / "work" / "state.json"))
+    assert st["redefinitions"][0]["change"] == "C9"
+
+
+def test_p3_v2_definition():
+    v1, v2 = tasks.VARIANTS[tasks.P3_V1_TASK], tasks.VARIANTS[tasks.P3_V2_TASK]
+    assert v2["changes"][0]["static_friction_range"] == [0.3, 0.5] and v1["changes"][0]["static_friction_range"] == [0.2, 0.4]
+    assert tasks.PLANTED_TASKS["P3"] == tasks.P3_V2_TASK and "superseded" in v1["status"]
+    assert v2["experiment_name"] != v1["experiment_name"]
+    assert tasks._entry(v1)["env_cfg_entry_point"].endswith("Go2FlatP3EnvCfg")
+    assert tasks._entry(v2)["env_cfg_entry_point"].endswith("Go2FlatP3V2EnvCfg")
