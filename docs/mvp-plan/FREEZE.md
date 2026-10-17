@@ -64,9 +64,9 @@ continue or blind while a job waits for a decision). Every other frozen file is 
 the screen and to `step4_run.log` (training, by contrast, used `testset.quiet_run`, which writes only to files). Isaac
 Lab prints each task's configuration at start-up, including its reward terms, next to the command line that names the
 blind ID. Because P3 (no foot-slip penalty) and P4 (no action-rate penalty) differ from P0 in their reward terms, and
-P5 in its ground contact, someone reading that output could tie some IDs to their flaw. VJ saw one such reward table
-on Oct 17 at about 12:50 (its terms matched P0's, so it does not single out a planted flaw); no ID was read with it
-and nothing was changed.
+P5 in its ground contact, someone reading that output could tie some IDs to their flaw. VJ pasted part of one such
+reward table on Oct 17 at about 12:50 (cut off after 9 of its 11 terms; it includes the action-rate penalty, so it is
+not P4). Nothing was changed as a result.
 
 Effect on the result: the verdicts are computed automatically from frozen code, thresholds and success reference, and
 are sealed before the key is released, so nobody can act on what the console shows during the run. The protection

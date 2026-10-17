@@ -44,3 +44,9 @@ more episodes, and report the spread.
 ## 4. Port to Isaac Lab-Arena
 
 Planned since C2: checks 1, 2 and 5 as Arena variation and metric plug-ins, after the MVP validation.
+
+## 5. Quiet blinded runs
+
+Found during step 4 (`docs/mvp-plan/FREEZE.md`): `blinded run` streams Isaac Lab's start-up output, which lists each
+task's reward terms next to the blind ID. Send its subprocess output to files only, as `testset` does, and keep
+those logs out of the runner's view until the verdicts are sealed.
