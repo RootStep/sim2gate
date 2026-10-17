@@ -73,3 +73,12 @@ are sealed before the key is released, so nobody can act on what the console sho
 that is weakened is the runner's not knowing which ID is which; the remedy for the rest of the run is not to read the
 console or the run logs until after sealing. Not fixed mid-run, to keep the frozen code unchanged. For v2: send
 `blinded run`'s subprocess output to files only, as `testset` does.
+
+## Step 4 sealed (Oct 17, 2026)
+
+The blinded run finished on Oct 17 at about 18:10 ET (exit code 0). Sealed verdicts digest, i.e. the SHA-256 of
+`mvp_runs/blinded/verdicts.sha256`:
+
+`0edd2142cf6b2b2221ea827675a520c44b2496faf65ebc4e22c665cbbbe09fdb`
+
+Recorded here before Vihaan releases the key. A6 replays (seeded draw): BA6H6, BG6L1, BGTBL.
