@@ -1,0 +1,98 @@
+{
+ "version": 1,
+ "created": "2026-10-17T16:29:43+00:00",
+ "policies": {
+  "B2SZQ": {
+   "checkpoint": "B2SZQ/model.pt",
+   "sha256": "9f6ff5d42641f4b71f118f55829f8efc893e27ef0cc0e4b53b8e78a716aa5861"
+  },
+  "B3CLP": {
+   "checkpoint": "B3CLP/model.pt",
+   "sha256": "57bdf0903de7e1cf80c5eed39974c24d4cf3b2cd6da88b03804f815bd678594c"
+  },
+  "B681H": {
+   "checkpoint": "B681H/model.pt",
+   "sha256": "db9a475503abea4102c4d05181ff22d5b7e731707469004378e256a0535c49c5"
+  },
+  "B6J1X": {
+   "checkpoint": "B6J1X/model.pt",
+   "sha256": "1e72124312d1d497b0ac912a8b9de49f5da7a5abedd20d4a580bce375fa75ffe"
+  },
+  "B6VA0": {
+   "checkpoint": "B6VA0/model.pt",
+   "sha256": "64375b4b4fb1d9aaa722fb17788159170aa69d4b8c55bf39186bec786ef464ca"
+  },
+  "B91TY": {
+   "checkpoint": "B91TY/model.pt",
+   "sha256": "015b5aeaf3b14a85e38ae2fb994875738900565235769a2225102176392ea845"
+  },
+  "BA6H6": {
+   "checkpoint": "BA6H6/model.pt",
+   "sha256": "334735ff3e3ca10a927c06d445d475dce6323503c0713ae221bc153a463ebb3d"
+  },
+  "BARCD": {
+   "checkpoint": "BARCD/model.pt",
+   "sha256": "1c8674e028f47be6fa1df19839450ee5e7fdd450b8c2be9f5f1ab3161763e0fb"
+  },
+  "BB7B0": {
+   "checkpoint": "BB7B0/model.pt",
+   "sha256": "8b080f836e4d5154534db5192e7aae59697cb3fc25c62f91121c8f4838a8b26b"
+  },
+  "BD7JV": {
+   "checkpoint": "BD7JV/model.pt",
+   "sha256": "a4ac34b1e499b9bedbc9880b5eef0ed6eda0d7d5e1167a42e8156c693e5f6137"
+  },
+  "BDBHU": {
+   "checkpoint": "BDBHU/model.pt",
+   "sha256": "f20b491accde428d829c1536df161ddd5cb09762009c63439c5e968909d67875"
+  },
+  "BDBSZ": {
+   "checkpoint": "BDBSZ/model.pt",
+   "sha256": "cd27f56369e56330f53b9c34131a31f6293f171ac757a959b5c8c9bbc7fc2fb3"
+  },
+  "BEDC1": {
+   "checkpoint": "BEDC1/model.pt",
+   "sha256": "65e053f939b2e1bb596b6266f615081de87fea4f5999ec57afaa84e0a8ca3680"
+  },
+  "BF88T": {
+   "checkpoint": "BF88T/model.pt",
+   "sha256": "7d121c60e4f5f5ff70ae370e5335c07764a9fb21214bd2c0d06b83a8c76c2eee"
+  },
+  "BG6L1": {
+   "checkpoint": "BG6L1/model.pt",
+   "sha256": "8a3f361525d81d520bb3453069716b5d0e5d28f79fe414cf20d8db401a8ef5d3"
+  },
+  "BGTBL": {
+   "checkpoint": "BGTBL/model.pt",
+   "sha256": "eb5d5db631b312bc30b49b41776003d4004dab82aa9125f1dc1b6a7e50460f79"
+  },
+  "BLYV5": {
+   "checkpoint": "BLYV5/model.pt",
+   "sha256": "0ec3c66ade9322579e268e10987af040520cce5bec689ce46ae6bbe53c87e989"
+  },
+  "BNFXJ": {
+   "checkpoint": "BNFXJ/model.pt",
+   "sha256": "897991a18a06edec27383a322c9a78f3bf1168f6652d4bd45acdd683665c2d9b"
+  },
+  "BSCT3": {
+   "checkpoint": "BSCT3/model.pt",
+   "sha256": "4e481acbc9900ded69e86866b221f2d689977cc318c2f37640dc87304c84d991"
+  },
+  "BSGQ6": {
+   "checkpoint": "BSGQ6/model.pt",
+   "sha256": "e65ed8dab449ba24d97a76e80048d384c7039beec666eff494e308bc7d64f5fc"
+  },
+  "BU70R": {
+   "checkpoint": "BU70R/model.pt",
+   "sha256": "a25254473a4a3fc11d63264ee469aee2c8734eb7dfb97d5a504a53f2d0f746f4"
+  },
+  "BU73H": {
+   "checkpoint": "BU73H/model.pt",
+   "sha256": "5bce9b7abcafaaafb379291fb89a0cc1377007798ab113d5b8150934ead67067"
+  },
+  "BY52S": {
+   "checkpoint": "BY52S/model.pt",
+   "sha256": "56aef98532d2f3b92fbd2096929c4cdb96c2003dc9d526df3e3d5c8646c8a184"
+  }
+ }
+}

@@ -1,0 +1,52 @@
+[sim2gate] job 01/20: training (output in the work folder)
+[sim2gate] job 01/20: walking check passed
+[sim2gate] job 05/20: training (output in the work folder)
+[sim2gate] job 05/20: walking check passed
+[sim2gate] job 06/20: training (output in the work folder)
+[sim2gate] job 06/20: walking check passed
+[sim2gate] job 07/20: training (output in the work folder)
+[sim2gate] job 07/20: walking check passed
+[sim2gate] job 08/20: training (output in the work folder)
+[sim2gate] job 08/20: walking check passed
+[sim2gate] job 09/20: training (output in the work folder)
+[sim2gate] job 09/20: walking check passed
+[sim2gate] job 10/20: training (output in the work folder)
+[sim2gate] job 10/20: walking check failed; retraining with a new seed
+[sim2gate] job 10/20: training (output in the work folder)
+[sim2gate] job 10/20: walking check passed
+[sim2gate] job 11/20: training (output in the work folder)
+[sim2gate] job 11/20: walking check passed
+[sim2gate] job 12/20: training (output in the work folder)
+[sim2gate] job 12/20: walking check passed
+[sim2gate] job 13/20: training (output in the work folder)
+[sim2gate] job 13/20: walking check passed
+[sim2gate] job 14/20: training (output in the work folder)
+[sim2gate] job 14/20: walking check passed
+[sim2gate] job 15/20: training (output in the work folder)
+[sim2gate] job 15/20: walking check passed
+[sim2gate] job 16/20: training (output in the work folder)
+[sim2gate] job 16/20: walking check failed; retraining with a new seed
+[sim2gate] job 16/20: training (output in the work folder)
+[sim2gate] job 16/20: walking check passed
+[sim2gate] job 17/20: training (output in the work folder)
+[sim2gate] job 17/20: walking check failed; a predeclared rule changes some jobs (sealed)
+[sim2gate] job 06/20: training (output in the work folder)
+[sim2gate] job 06/20: walking check failed; retraining with a new seed
+[sim2gate] job 06/20: training (output in the work folder)
+[sim2gate] job 06/20: walking check failed; retraining with a new seed
+[sim2gate] job 06/20: training (output in the work folder)
+[sim2gate] job 06/20: walking check passed
+[sim2gate] job 17/20: training (output in the work folder)
+[sim2gate] job 17/20: walking check passed
+[sim2gate] job 18/20: training (output in the work folder)
+[sim2gate] job 18/20: walking check passed
+[sim2gate] job 19/20: training (output in the work folder)
+[sim2gate] job 19/20: walking check passed
+[sim2gate] job 20/20: training (output in the work folder)
+[sim2gate] job 20/20: walking check failed; retraining with a new seed
+[sim2gate] job 20/20: training (output in the work folder)
+[sim2gate] job 20/20: walking check passed
+[sim2gate] 23 policies blinded into mvp_runs/blind. Key and training records sealed for Vihaan in mvp_runs/sealed:
+[sim2gate]   sealed_for_vihaan.tar.enc  sha256 560c5346799f650197a61cd11d1dca60ca9c60d7da3b4397511cd34957d55132
+[sim2gate]   sealed_for_vihaan.key.enc  sha256 10f42743b438c0e3081e3bb7440c1bbaa110339174d2db639bfc47f48e0e9191
+[sim2gate] Nothing labelled remains outside the sealed files. Next: python -m sim2gate.mvp.blinded run

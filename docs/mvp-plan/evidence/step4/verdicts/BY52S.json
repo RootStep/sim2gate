@@ -1,0 +1,690 @@
+{
+ "version": 1,
+ "policy_id": "BY52S",
+ "verdict": "no-go",
+ "exit_code": 1,
+ "checkpoint_sha256": "56aef98532d2f3b92fbd2096929c4cdb96c2003dc9d526df3e3d5c8646c8a184",
+ "checks": {
+  "2": {
+   "status": "scored",
+   "flagged": false,
+   "reasons": [],
+   "risks": []
+  },
+  "1": {
+   "status": "scored",
+   "flagged": true,
+   "reasons": [],
+   "risks": [
+    "action_latency_ms cliff"
+   ],
+   "nominal_success_rate": 1.0,
+   "flagged_params": [
+    "action_latency_ms"
+   ],
+   "cliffs": {
+    "ground_friction": 0.3333333333,
+    "added_base_mass_kg": null,
+    "motor_strength_scale": null,
+    "action_latency_ms": 30.0,
+    "observation_noise_scale": null
+   }
+  },
+  "5": {
+   "status": "scored",
+   "flagged": false,
+   "reasons": [],
+   "risks": [],
+   "parity": "passed",
+   "physx_success_rate": 1.0,
+   "newton_success_rate": 0.8125,
+   "newton_fall_free_rate": 1.0,
+   "error_ratio": 1.467383114300168
+  }
+ },
+ "risks": [
+  {
+   "check": 1,
+   "metric": "action_latency_ms cliff",
+   "value": 30.0,
+   "threshold": 30.0,
+   "margin": 0.0,
+   "evidence": [
+    {
+     "index": 0,
+     "value": 0.0,
+     "success_rate": 1.0,
+     "episodes": 64
+    },
+    {
+     "index": 1,
+     "value": 5.0,
+     "success_rate": 1.0,
+     "episodes": 64
+    },
+    {
+     "index": 2,
+     "value": 10.0,
+     "success_rate": 1.0,
+     "episodes": 64
+    },
+    {
+     "index": 3,
+     "value": 15.0,
+     "success_rate": 1.0,
+     "episodes": 64
+    },
+    {
+     "index": 4,
+     "value": 20.0,
+     "success_rate": 1.0,
+     "episodes": 64
+    },
+    {
+     "index": 5,
+     "value": 25.0,
+     "success_rate": 0.890625,
+     "episodes": 64
+    },
+    {
+     "index": 6,
+     "value": 30.0,
+     "success_rate": 0.609375,
+     "episodes": 64
+    },
+    {
+     "index": 7,
+     "value": 35.0,
+     "success_rate": 0.203125,
+     "episodes": 64
+    },
+    {
+     "index": 8,
+     "value": 40.0,
+     "success_rate": 0.0,
+     "episodes": 64
+    },
+    {
+     "index": 9,
+     "value": 45.0,
+     "success_rate": 0.0,
+     "episodes": 64
+    }
+   ],
+   "likely_cause": "the policy was not trained across this parameter's real range",
+   "fix": "randomize action latency over 0-30 ms in training, then retrain",
+   "training_range": null
+  }
+ ],
+ "problems": [],
+ "inputs_sha256": {
+  "check2_report": "db905ee462593c5d03975ef93067c7e8d2e0a171276bffe5403096279fe7c4c5",
+  "sweep_raw": "a842ee40eded1d419a7d13b0d773ec9262a31ee38c4d7bf3861931b5d5519160",
+  "physx_raw": "df7510986f3caafb448c014c3e428f87f0feb750293c2762e56a02cb460f5221",
+  "newton_raw": "87ce81c2793c33a7ee2ec87cf4c7243312ae381cb8e5ea6c50cf40f4391f6355",
+  "thresholds": "c960fd8e7bfdbd8e42d60534c874bca93c6b1a99f12c961baa10709a1bf86a90",
+  "success": "08fba447ba9e001b355f087f4b12a5063ca4547e7c29c1eb98facc8745981148"
+ },
+ "report_only": {
+  "joint_sweep": {
+   "status": "scored",
+   "report_only": true,
+   "episodes": 2944,
+   "success_rate": 0.3529211956521739,
+   "all_realistic": {
+    "episodes": 504,
+    "success_rate": 0.7738095238095238,
+    "meaning": "every condition inside its plausible real range at once"
+   },
+   "any_beyond": {
+    "episodes": 2440,
+    "success_rate": 0.2659836065573771
+   },
+   "worst_pairs": [
+    {
+     "pair": [
+      "action_latency_ms",
+      "observation_noise_scale"
+     ],
+     "both_hard": 0.4090909090909091,
+     "a_hard_only": 0.627906976744186,
+     "b_hard_only": 0.9416666666666667,
+     "neither": 0.9580838323353293,
+     "episodes": [
+      88,
+      129,
+      120,
+      167
+     ],
+     "expected_if_independent": 0.6171475290697674,
+     "interaction": -0.20805661997885833
+    },
+    {
+     "pair": [
+      "added_base_mass_kg",
+      "motor_strength_scale"
+     ],
+     "both_hard": 0.6464646464646465,
+     "a_hard_only": 0.8016528925619835,
+     "b_hard_only": 0.8125,
+     "neither": 0.8012820512820513,
+     "episodes": [
+      99,
+      121,
+      128,
+      156
+     ],
+     "expected_if_independent": 0.8128760330578512,
+     "interaction": -0.16641138659320465
+    },
+    {
+     "pair": [
+      "motor_strength_scale",
+      "action_latency_ms"
+     ],
+     "both_hard": 0.46808510638297873,
+     "a_hard_only": 0.9323308270676691,
+     "b_hard_only": 0.5934959349593496,
+     "neither": 0.9675324675324676,
+     "episodes": [
+      94,
+      133,
+      123,
+      154
+     ],
+     "expected_if_independent": 0.5719028295899349,
+     "interaction": -0.10381772320695615
+    }
+   ]
+  }
+ },
+ "details": {
+  "2": {
+   "metrics": {
+    "foot_slip_p95_mps": {
+     "value": 0.09336639940738678,
+     "threshold": 0.16123884916305542,
+     "flagged": false,
+     "margin": 0.06787244975566864
+    },
+    "ground_penetration_m": {
+     "value": 0.0021354928612709045,
+     "threshold": 0.005929444916546345,
+     "flagged": false,
+     "margin": 0.00379395205527544
+    },
+    "contact_force_p99_bw": {
+     "value": 0.9104971885681152,
+     "threshold": 1.7179248332977295,
+     "flagged": false,
+     "margin": 0.8074276447296143
+    },
+    "action_jitter_high_freq_power_share": {
+     "value": 0.013290648996486777,
+     "threshold": 0.016232847519787253,
+     "flagged": false,
+     "margin": 0.002942198523300476
+    },
+    "actuator_limit_step_share": {
+     "value": 0.001703125,
+     "threshold": 0.0034453124999999996,
+     "flagged": false,
+     "margin": 0.0017421874999999996
+    }
+   }
+  },
+  "1": {
+   "params": {
+    "ground_friction": {
+     "series": [
+      {
+       "index": 0,
+       "value": 0.8,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 1,
+       "value": 0.7333333333,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 2,
+       "value": 0.6666666667,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 3,
+       "value": 0.6,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 4,
+       "value": 0.5333333333,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 5,
+       "value": 0.4666666667,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 6,
+       "value": 0.4,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 7,
+       "value": 0.3333333333,
+       "success_rate": 0.796875,
+       "episodes": 64
+      },
+      {
+       "index": 8,
+       "value": 0.2666666667,
+       "success_rate": 0.46875,
+       "episodes": 64
+      },
+      {
+       "index": 9,
+       "value": 0.2,
+       "success_rate": 0.3125,
+       "episodes": 64
+      }
+     ],
+     "cliff": 0.3333333333,
+     "plausible": [
+      0.4,
+      1.2
+     ],
+     "flagged": false,
+     "unit": "static coefficient",
+     "training_range": null
+    },
+    "added_base_mass_kg": {
+     "series": [
+      {
+       "index": 0,
+       "value": 0.0,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 1,
+       "value": 0.5,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 2,
+       "value": 1.0,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 3,
+       "value": 1.5,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 4,
+       "value": 2.0,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 5,
+       "value": 2.5,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 6,
+       "value": 3.0,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 7,
+       "value": 3.5,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 8,
+       "value": 4.0,
+       "success_rate": 0.96875,
+       "episodes": 64
+      },
+      {
+       "index": 9,
+       "value": 4.5,
+       "success_rate": 0.984375,
+       "episodes": 64
+      }
+     ],
+     "cliff": null,
+     "plausible": [
+      0.0,
+      3.0
+     ],
+     "flagged": false,
+     "unit": "kg",
+     "training_range": null
+    },
+    "motor_strength_scale": {
+     "series": [
+      {
+       "index": 0,
+       "value": 1.0,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 1,
+       "value": 0.975,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 2,
+       "value": 0.95,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 3,
+       "value": 0.925,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 4,
+       "value": 0.9,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 5,
+       "value": 0.875,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 6,
+       "value": 0.85,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 7,
+       "value": 0.825,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 8,
+       "value": 0.8,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 9,
+       "value": 0.775,
+       "success_rate": 0.984375,
+       "episodes": 64
+      }
+     ],
+     "cliff": null,
+     "plausible": [
+      0.85,
+      1.0
+     ],
+     "flagged": false,
+     "unit": "x nominal torque",
+     "training_range": null
+    },
+    "action_latency_ms": {
+     "series": [
+      {
+       "index": 0,
+       "value": 0.0,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 1,
+       "value": 5.0,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 2,
+       "value": 10.0,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 3,
+       "value": 15.0,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 4,
+       "value": 20.0,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 5,
+       "value": 25.0,
+       "success_rate": 0.890625,
+       "episodes": 64
+      },
+      {
+       "index": 6,
+       "value": 30.0,
+       "success_rate": 0.609375,
+       "episodes": 64
+      },
+      {
+       "index": 7,
+       "value": 35.0,
+       "success_rate": 0.203125,
+       "episodes": 64
+      },
+      {
+       "index": 8,
+       "value": 40.0,
+       "success_rate": 0.0,
+       "episodes": 64
+      },
+      {
+       "index": 9,
+       "value": 45.0,
+       "success_rate": 0.0,
+       "episodes": 64
+      }
+     ],
+     "cliff": 30.0,
+     "plausible": [
+      0.0,
+      30.0
+     ],
+     "flagged": true,
+     "unit": "ms",
+     "training_range": null
+    },
+    "observation_noise_scale": {
+     "series": [
+      {
+       "index": 0,
+       "value": 1.0,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 1,
+       "value": 1.1666666667,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 2,
+       "value": 1.3333333333,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 3,
+       "value": 1.5,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 4,
+       "value": 1.6666666667,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 5,
+       "value": 1.8333333333,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 6,
+       "value": 2.0,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 7,
+       "value": 2.1666666667,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 8,
+       "value": 2.3333333333,
+       "success_rate": 0.9375,
+       "episodes": 64
+      },
+      {
+       "index": 9,
+       "value": 2.5,
+       "success_rate": 0.9375,
+       "episodes": 64
+      }
+     ],
+     "cliff": null,
+     "plausible": [
+      1.0,
+      2.0
+     ],
+     "flagged": false,
+     "unit": "x task noise",
+     "training_range": null
+    }
+   },
+   "success_threshold_mps": 0.11326216416650246
+  },
+  "5": {
+   "metrics": {
+    "physx_success_rate": 1.0,
+    "newton_success_rate": 0.8125,
+    "newton_fall_free_rate": 1.0,
+    "physx_mean_error_mps": 0.06449688648560163,
+    "newton_mean_error_mps": 0.09464164215390655,
+    "error_ratio": 1.467383114300168,
+    "physx_falls": 0,
+    "newton_falls": 0
+   },
+   "rule": {
+    "newton_fall_free_min": 0.8,
+    "error_ratio_max": 2.0,
+    "plan_change": "C6"
+   },
+   "parity": "passed"
+  }
+ },
+ "provenance": {
+  "sim2gate_version": "0.1.0.dev0",
+  "check2": {
+   "physics_context": {
+    "physics_handles_decimation": false,
+    "overrides": [
+     "physics=isaacsim_physx"
+    ]
+   },
+   "control_steps": 1000,
+   "env_steps": 64000
+  },
+  "sweep": {
+   "task": "Sim2Gate-Blind-BY52S",
+   "env_cfg_sha256": "dddcfea7e2742002c889801caf832843aab2659e799439f7de323356534fa6a9",
+   "command_set_sha256": "56222a90befd10592b31ac2a15155d1ffa8d5bb908cb9ee075df8bc8a0df2cea",
+   "seed": 42,
+   "overrides": [
+    "physics=isaacsim_physx",
+    "env.sim.use_newton_actuators=false",
+    "env.scene.robot.joint_ordering=physx",
+    "env.scene.robot.body_ordering=physx"
+   ]
+  },
+  "physx": {
+   "env_cfg_sha256": "4dc11c491d5cd787107afc4f5ae50ab1af9d72b49739c79b8317532b5bda0812",
+   "seed": 42
+  },
+  "newton": {
+   "env_cfg_sha256": "4dc11c491d5cd787107afc4f5ae50ab1af9d72b49739c79b8317532b5bda0812",
+   "seed": 42
+  },
+  "simulator_versions": {
+   "isaaclab": "17.0.2",
+   "isaaclab_physx": "6.0.0",
+   "isaaclab_newton": "5.4.1",
+   "newton": "1.5.2",
+   "mujoco-warp": "3.11.0",
+   "mujoco_warp": "3.11.0",
+   "warp-lang": "1.16.0",
+   "rsl-rl-lib": "5.4.1",
+   "sim2gate": "0.1.0.dev0"
+  }
+ },
+ "frozen": {
+  "thresholds_sha256": "1abb4fcc1b585769c3993b20a22644657efdf391a3eb3f2b054311759e9db739",
+  "success_sha256": "7708a731ded35468a352deb8511da40aa2f987b42dc6d947adfa6c140eef1dee"
+ },
+ "measurements": {
+  "check2": {
+   "path": "policies/BY52S/check2.json",
+   "sha256": "3585a7d7e79dd31839a9a271f3d24b1096530392b11f69e8ef5f7b324d45a11d"
+  },
+  "sweep": {
+   "path": "policies/BY52S/sweep.json",
+   "sha256": "50a197b69991f6ab88ceaaab494896b48bf5012e0affae306243bd1743b8120b"
+  },
+  "physx": {
+   "path": "policies/BY52S/physx.json",
+   "sha256": "103f91d044dc7d1cbb9a1122d365d8028e032d99d6ef1e5f2eea0f659cfd8219"
+  },
+  "newton": {
+   "path": "policies/BY52S/newton.json",
+   "sha256": "28914f349335c7b680e00bd2c67a61f18fd6e4447721d13a93e65c4de9a42304"
+  },
+  "joint": {
+   "path": "policies/BY52S/joint.json",
+   "sha256": "20af3b8b2c45aff385648b2a13f8e35e8131b531f13e9e56342f080b6505617c"
+  }
+ }
+}

@@ -1,0 +1,10 @@
+{
+ "version": 1,
+ "sealed": "2026-10-17T16:29:45+00:00",
+ "files": {
+  "sealed_for_vihaan.tar.enc": "560c5346799f650197a61cd11d1dca60ca9c60d7da3b4397511cd34957d55132",
+  "sealed_for_vihaan.key.enc": "10f42743b438c0e3081e3bb7440c1bbaa110339174d2db639bfc47f48e0e9191"
+ },
+ "blind_manifest_sha256": "0ad3225bce95754edf8ac1118606626299d0df38f175561cd606f83d88689252",
+ "policies": 23
+}

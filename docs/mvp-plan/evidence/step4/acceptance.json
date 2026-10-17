@@ -1,0 +1,205 @@
+{
+ "version": 1,
+ "passed": false,
+ "criteria": {
+  "A1": {
+   "passed": false,
+   "P3": [
+    {
+     "seed": 1,
+     "id": "BLYV5",
+     "detected": true
+    },
+    {
+     "seed": 2,
+     "id": "BU73H",
+     "detected": true
+    },
+    {
+     "seed": 3,
+     "id": "BF88T",
+     "detected": true
+    }
+   ],
+   "P4": [
+    {
+     "seed": 1,
+     "id": "B3CLP",
+     "detected": false
+    },
+    {
+     "seed": 2,
+     "id": "BSCT3",
+     "detected": false
+    },
+    {
+     "seed": 3,
+     "id": "BNFXJ",
+     "detected": false
+    }
+   ],
+   "rule": "check 2 flags P3 and P4 in at least 2 of 3 seeds each"
+  },
+  "A2": {
+   "passed": false,
+   "P1": [
+    {
+     "seed": 1,
+     "id": "B2SZQ",
+     "detected": true
+    },
+    {
+     "seed": 2,
+     "id": "BDBSZ",
+     "detected": false
+    },
+    {
+     "seed": 3,
+     "id": "BD7JV",
+     "detected": false
+    }
+   ],
+   "P2": [
+    {
+     "seed": 1,
+     "id": "BARCD",
+     "detected": true
+    },
+    {
+     "seed": 2,
+     "id": "BY52S",
+     "detected": true
+    },
+    {
+     "seed": 3,
+     "id": "BA6H6",
+     "detected": true
+    }
+   ],
+   "rule": "check 1 flags friction or mass for P1, and latency for P2, in at least 2 of 3 seeds each"
+  },
+  "A3": {
+   "passed": true,
+   "P5": [
+    {
+     "seed": 1,
+     "id": "B91TY",
+     "detected": true
+    },
+    {
+     "seed": 2,
+     "id": "B6VA0",
+     "detected": true
+    },
+    {
+     "seed": 3,
+     "id": "BDBHU",
+     "detected": true
+    }
+   ],
+   "rule": "check 5 flags P5 in at least 2 of 3 seeds"
+  },
+  "A4": {
+   "passed": true,
+   "no_go": 0,
+   "P0": [
+    {
+     "seed": 4,
+     "id": "BU70R",
+     "verdict": "go",
+     "risks": []
+    },
+    {
+     "seed": 5,
+     "id": "BSGQ6",
+     "verdict": "go",
+     "risks": []
+    },
+    {
+     "seed": 6,
+     "id": "BEDC1",
+     "verdict": "go",
+     "risks": []
+    },
+    {
+     "seed": 7,
+     "id": "BB7B0",
+     "verdict": "go",
+     "risks": []
+    },
+    {
+     "seed": 8,
+     "id": "BGTBL",
+     "verdict": "go",
+     "risks": []
+    }
+   ],
+   "rule": "at most 1 of the 5 held-out baselines (P0 seeds 4 to 8) gets a no-go"
+  },
+  "A5": {
+   "passed": false,
+   "parity_failed": [],
+   "nominal_not_met": [
+    {
+     "id": "BU73H",
+     "check1_nominal": 0.78125,
+     "check5_physx": 0.828125
+    }
+   ],
+   "rule": "check 5 parity holds for every policy; every planted policy meets nominal success on PhysX"
+  },
+  "A6": {
+   "passed": true,
+   "replays": [
+    {
+     "id": "BA6H6",
+     "same": true,
+     "original": {
+      "verdict": "no-go",
+      "exit_code": 1,
+      "risks": [
+       "check 1: action_latency_ms cliff"
+      ]
+     },
+     "replay": {
+      "verdict": "no-go",
+      "exit_code": 1,
+      "risks": [
+       "check 1: action_latency_ms cliff"
+      ]
+     }
+    },
+    {
+     "id": "BG6L1",
+     "same": true,
+     "original": {
+      "verdict": "go",
+      "exit_code": 0,
+      "risks": []
+     },
+     "replay": {
+      "verdict": "go",
+      "exit_code": 0,
+      "risks": []
+     }
+    },
+    {
+     "id": "BGTBL",
+     "same": true,
+     "original": {
+      "verdict": "go",
+      "exit_code": 0,
+      "risks": []
+     },
+     "replay": {
+      "verdict": "go",
+      "exit_code": 0,
+      "risks": []
+     }
+    }
+   ],
+   "rule": "rerunning 3 randomly chosen policies reproduces their verdicts exactly"
+  }
+ },
+ "problems": []
+}

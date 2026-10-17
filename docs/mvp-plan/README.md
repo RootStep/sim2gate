@@ -18,3 +18,6 @@ Step 2 records: the current calibration in [`calibration/p0v4`](calibration/p0v4
 episode-success reference, checks 1 and 5 on P0 v4) and the planted-bug test of the validation in
 [`evidence/planted-bugs`](evidence/planted-bugs/README.md).
 The planted-flaw policies P1–P5 and the blinded-run procedure: [`test-set.md`](test-set.md).
+
+**Result (Oct 17, 2026): the blinded validation failed its acceptance criteria (A3, A4, A6 passed; A1, A2, A5
+failed).** Scores, verdicts, reports and the released key: [`evidence/step4`](evidence/step4/README.md).

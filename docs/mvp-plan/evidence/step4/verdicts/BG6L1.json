@@ -1,0 +1,613 @@
+{
+ "version": 1,
+ "policy_id": "BG6L1",
+ "verdict": "go",
+ "exit_code": 0,
+ "checkpoint_sha256": "8a3f361525d81d520bb3453069716b5d0e5d28f79fe414cf20d8db401a8ef5d3",
+ "checks": {
+  "2": {
+   "status": "scored",
+   "flagged": false,
+   "reasons": [],
+   "risks": []
+  },
+  "1": {
+   "status": "scored",
+   "flagged": false,
+   "reasons": [],
+   "risks": [],
+   "nominal_success_rate": 0.984375,
+   "flagged_params": [],
+   "cliffs": {
+    "ground_friction": 0.2666666667,
+    "added_base_mass_kg": null,
+    "motor_strength_scale": null,
+    "action_latency_ms": null,
+    "observation_noise_scale": null
+   }
+  },
+  "5": {
+   "status": "scored",
+   "flagged": false,
+   "reasons": [],
+   "risks": [],
+   "parity": "passed",
+   "physx_success_rate": 1.0,
+   "newton_success_rate": 0.640625,
+   "newton_fall_free_rate": 0.984375,
+   "error_ratio": 1.4654951130391016
+  }
+ },
+ "risks": [],
+ "problems": [],
+ "inputs_sha256": {
+  "check2_report": "f5d502bf1b8912a5cc6f029f8d9bb65bfe02203e3b264f39e8e1e78c00be7d2c",
+  "sweep_raw": "56c64971825aea05862a4da0d5197fc7713099b123c79f62446853e4471d00d5",
+  "physx_raw": "afdeee157858f182d1412c816c03fa5d23c3dee087bee769881ad9eba9cfeb37",
+  "newton_raw": "2a08b514605c52113c8f3583a3ab9562d52238f9997edbf8ad7a603519e4cd71",
+  "thresholds": "c960fd8e7bfdbd8e42d60534c874bca93c6b1a99f12c961baa10709a1bf86a90",
+  "success": "08fba447ba9e001b355f087f4b12a5063ca4547e7c29c1eb98facc8745981148"
+ },
+ "report_only": {
+  "joint_sweep": {
+   "status": "scored",
+   "report_only": true,
+   "episodes": 2944,
+   "success_rate": 0.4857336956521739,
+   "all_realistic": {
+    "episodes": 504,
+    "success_rate": 0.8591269841269841,
+    "meaning": "every condition inside its plausible real range at once"
+   },
+   "any_beyond": {
+    "episodes": 2440,
+    "success_rate": 0.4086065573770492
+   },
+   "worst_pairs": [
+    {
+     "pair": [
+      "added_base_mass_kg",
+      "observation_noise_scale"
+     ],
+     "both_hard": 0.6941176470588235,
+     "a_hard_only": 0.8592592592592593,
+     "b_hard_only": 0.8943089430894309,
+     "neither": 0.9192546583850931,
+     "episodes": [
+      85,
+      135,
+      123,
+      161
+     ],
+     "expected_if_independent": 0.8359416326896002,
+     "interaction": -0.1418239856307767
+    },
+    {
+     "pair": [
+      "added_base_mass_kg",
+      "motor_strength_scale"
+     ],
+     "both_hard": 0.7171717171717171,
+     "a_hard_only": 0.859504132231405,
+     "b_hard_only": 0.8671875,
+     "neither": 0.9423076923076923,
+     "episodes": [
+      99,
+      121,
+      128,
+      156
+     ],
+     "expected_if_independent": 0.7909849890369371,
+     "interaction": -0.07381327186522002
+    },
+    {
+     "pair": [
+      "ground_friction",
+      "added_base_mass_kg"
+     ],
+     "both_hard": 0.7586206896551724,
+     "a_hard_only": 0.896774193548387,
+     "b_hard_only": 0.8365384615384616,
+     "neither": 0.9224806201550387,
+     "episodes": [
+      116,
+      155,
+      104,
+      129
+     ],
+     "expected_if_independent": 0.8132269533123423,
+     "interaction": -0.05460626365716992
+    }
+   ]
+  }
+ },
+ "details": {
+  "2": {
+   "metrics": {
+    "foot_slip_p95_mps": {
+     "value": 0.10507207363843918,
+     "threshold": 0.16123884916305542,
+     "flagged": false,
+     "margin": 0.05616677552461624
+    },
+    "ground_penetration_m": {
+     "value": 0.0027103498578071594,
+     "threshold": 0.005929444916546345,
+     "flagged": false,
+     "margin": 0.0032190950587391853
+    },
+    "contact_force_p99_bw": {
+     "value": 1.0274399518966675,
+     "threshold": 1.7179248332977295,
+     "flagged": false,
+     "margin": 0.690484881401062
+    },
+    "action_jitter_high_freq_power_share": {
+     "value": 0.010821898346524835,
+     "threshold": 0.016232847519787253,
+     "flagged": false,
+     "margin": 0.005410949173262418
+    },
+    "actuator_limit_step_share": {
+     "value": 0.002296875,
+     "threshold": 0.0034453124999999996,
+     "flagged": false,
+     "margin": 0.0011484374999999997
+    }
+   }
+  },
+  "1": {
+   "params": {
+    "ground_friction": {
+     "series": [
+      {
+       "index": 0,
+       "value": 0.8,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 1,
+       "value": 0.7333333333,
+       "success_rate": 0.96875,
+       "episodes": 64
+      },
+      {
+       "index": 2,
+       "value": 0.6666666667,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 3,
+       "value": 0.6,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 4,
+       "value": 0.5333333333,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 5,
+       "value": 0.4666666667,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 6,
+       "value": 0.4,
+       "success_rate": 0.9375,
+       "episodes": 64
+      },
+      {
+       "index": 7,
+       "value": 0.3333333333,
+       "success_rate": 0.875,
+       "episodes": 64
+      },
+      {
+       "index": 8,
+       "value": 0.2666666667,
+       "success_rate": 0.578125,
+       "episodes": 64
+      },
+      {
+       "index": 9,
+       "value": 0.2,
+       "success_rate": 0.234375,
+       "episodes": 64
+      }
+     ],
+     "cliff": 0.2666666667,
+     "plausible": [
+      0.4,
+      1.2
+     ],
+     "flagged": false,
+     "unit": "static coefficient",
+     "training_range": null
+    },
+    "added_base_mass_kg": {
+     "series": [
+      {
+       "index": 0,
+       "value": 0.0,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 1,
+       "value": 0.5,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 2,
+       "value": 1.0,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 3,
+       "value": 1.5,
+       "success_rate": 0.96875,
+       "episodes": 64
+      },
+      {
+       "index": 4,
+       "value": 2.0,
+       "success_rate": 0.953125,
+       "episodes": 64
+      },
+      {
+       "index": 5,
+       "value": 2.5,
+       "success_rate": 0.953125,
+       "episodes": 64
+      },
+      {
+       "index": 6,
+       "value": 3.0,
+       "success_rate": 0.921875,
+       "episodes": 64
+      },
+      {
+       "index": 7,
+       "value": 3.5,
+       "success_rate": 0.90625,
+       "episodes": 64
+      },
+      {
+       "index": 8,
+       "value": 4.0,
+       "success_rate": 0.90625,
+       "episodes": 64
+      },
+      {
+       "index": 9,
+       "value": 4.5,
+       "success_rate": 0.90625,
+       "episodes": 64
+      }
+     ],
+     "cliff": null,
+     "plausible": [
+      0.0,
+      3.0
+     ],
+     "flagged": false,
+     "unit": "kg",
+     "training_range": null
+    },
+    "motor_strength_scale": {
+     "series": [
+      {
+       "index": 0,
+       "value": 1.0,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 1,
+       "value": 0.975,
+       "success_rate": 0.96875,
+       "episodes": 64
+      },
+      {
+       "index": 2,
+       "value": 0.95,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 3,
+       "value": 0.925,
+       "success_rate": 0.96875,
+       "episodes": 64
+      },
+      {
+       "index": 4,
+       "value": 0.9,
+       "success_rate": 0.953125,
+       "episodes": 64
+      },
+      {
+       "index": 5,
+       "value": 0.875,
+       "success_rate": 0.921875,
+       "episodes": 64
+      },
+      {
+       "index": 6,
+       "value": 0.85,
+       "success_rate": 0.890625,
+       "episodes": 64
+      },
+      {
+       "index": 7,
+       "value": 0.825,
+       "success_rate": 0.890625,
+       "episodes": 64
+      },
+      {
+       "index": 8,
+       "value": 0.8,
+       "success_rate": 0.90625,
+       "episodes": 64
+      },
+      {
+       "index": 9,
+       "value": 0.775,
+       "success_rate": 0.859375,
+       "episodes": 64
+      }
+     ],
+     "cliff": null,
+     "plausible": [
+      0.85,
+      1.0
+     ],
+     "flagged": false,
+     "unit": "x nominal torque",
+     "training_range": null
+    },
+    "action_latency_ms": {
+     "series": [
+      {
+       "index": 0,
+       "value": 0.0,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 1,
+       "value": 5.0,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 2,
+       "value": 10.0,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 3,
+       "value": 15.0,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 4,
+       "value": 20.0,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 5,
+       "value": 25.0,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 6,
+       "value": 30.0,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 7,
+       "value": 35.0,
+       "success_rate": 0.96875,
+       "episodes": 64
+      },
+      {
+       "index": 8,
+       "value": 40.0,
+       "success_rate": 0.96875,
+       "episodes": 64
+      },
+      {
+       "index": 9,
+       "value": 45.0,
+       "success_rate": 0.953125,
+       "episodes": 64
+      }
+     ],
+     "cliff": null,
+     "plausible": [
+      0.0,
+      30.0
+     ],
+     "flagged": false,
+     "unit": "ms",
+     "training_range": null
+    },
+    "observation_noise_scale": {
+     "series": [
+      {
+       "index": 0,
+       "value": 1.0,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 1,
+       "value": 1.1666666667,
+       "success_rate": 0.96875,
+       "episodes": 64
+      },
+      {
+       "index": 2,
+       "value": 1.3333333333,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 3,
+       "value": 1.5,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 4,
+       "value": 1.6666666667,
+       "success_rate": 1.0,
+       "episodes": 64
+      },
+      {
+       "index": 5,
+       "value": 1.8333333333,
+       "success_rate": 0.96875,
+       "episodes": 64
+      },
+      {
+       "index": 6,
+       "value": 2.0,
+       "success_rate": 0.984375,
+       "episodes": 64
+      },
+      {
+       "index": 7,
+       "value": 2.1666666667,
+       "success_rate": 0.953125,
+       "episodes": 64
+      },
+      {
+       "index": 8,
+       "value": 2.3333333333,
+       "success_rate": 0.953125,
+       "episodes": 64
+      },
+      {
+       "index": 9,
+       "value": 2.5,
+       "success_rate": 0.90625,
+       "episodes": 64
+      }
+     ],
+     "cliff": null,
+     "plausible": [
+      1.0,
+      2.0
+     ],
+     "flagged": false,
+     "unit": "x task noise",
+     "training_range": null
+    }
+   },
+   "success_threshold_mps": 0.11326216416650246
+  },
+  "5": {
+   "metrics": {
+    "physx_success_rate": 1.0,
+    "newton_success_rate": 0.640625,
+    "newton_fall_free_rate": 0.984375,
+    "physx_mean_error_mps": 0.07160856844838201,
+    "newton_mean_error_mps": 0.10494200711282985,
+    "error_ratio": 1.4654951130391016,
+    "physx_falls": 0,
+    "newton_falls": 1
+   },
+   "rule": {
+    "newton_fall_free_min": 0.8,
+    "error_ratio_max": 2.0,
+    "plan_change": "C6"
+   },
+   "parity": "passed"
+  }
+ },
+ "provenance": {
+  "sim2gate_version": "0.1.0.dev0",
+  "check2": {
+   "physics_context": {
+    "physics_handles_decimation": false,
+    "overrides": [
+     "physics=isaacsim_physx"
+    ]
+   },
+   "control_steps": 1000,
+   "env_steps": 64000
+  },
+  "sweep": {
+   "task": "Sim2Gate-Blind-BG6L1",
+   "env_cfg_sha256": "f38195624ced6e397292f25e38e512f485219c746bbd0ed64c628de8363a7fba",
+   "command_set_sha256": "56222a90befd10592b31ac2a15155d1ffa8d5bb908cb9ee075df8bc8a0df2cea",
+   "seed": 42,
+   "overrides": [
+    "physics=isaacsim_physx",
+    "env.sim.use_newton_actuators=false",
+    "env.scene.robot.joint_ordering=physx",
+    "env.scene.robot.body_ordering=physx"
+   ]
+  },
+  "physx": {
+   "env_cfg_sha256": "4eba932e85b6288937f1dded325012d07e82566dc6e6e2ed71404abc46b631de",
+   "seed": 42
+  },
+  "newton": {
+   "env_cfg_sha256": "4eba932e85b6288937f1dded325012d07e82566dc6e6e2ed71404abc46b631de",
+   "seed": 42
+  },
+  "simulator_versions": {
+   "isaaclab": "17.0.2",
+   "isaaclab_physx": "6.0.0",
+   "isaaclab_newton": "5.4.1",
+   "newton": "1.5.2",
+   "mujoco-warp": "3.11.0",
+   "mujoco_warp": "3.11.0",
+   "warp-lang": "1.16.0",
+   "rsl-rl-lib": "5.4.1",
+   "sim2gate": "0.1.0.dev0"
+  }
+ },
+ "frozen": {
+  "thresholds_sha256": "1abb4fcc1b585769c3993b20a22644657efdf391a3eb3f2b054311759e9db739",
+  "success_sha256": "7708a731ded35468a352deb8511da40aa2f987b42dc6d947adfa6c140eef1dee"
+ },
+ "measurements": {
+  "check2": {
+   "path": "policies/BG6L1/check2.json",
+   "sha256": "e39dd07b36a8508192016dad4aa7b276a4d6fce3e983570faab23f5f40ee3c0a"
+  },
+  "sweep": {
+   "path": "policies/BG6L1/sweep.json",
+   "sha256": "edfef8fbcd3495d65b05a8098c1c02c3c3b9a69a5db945cbeb37854908528866"
+  },
+  "physx": {
+   "path": "policies/BG6L1/physx.json",
+   "sha256": "3d1aaf9bf8aa2e373fb157ba4129958246b0e73853653fabfe6108f89fd6b53a"
+  },
+  "newton": {
+   "path": "policies/BG6L1/newton.json",
+   "sha256": "0184d11be19b3f332d51a2a17c06dd5d7e034c7a839ce2071d2fe9f4200fdec5"
+  },
+  "joint": {
+   "path": "policies/BG6L1/joint.json",
+   "sha256": "15ce766183ea97bac4ff2bee7753427fb577141501e03d783ad30e5abcbf348a"
+  }
+ }
+}
