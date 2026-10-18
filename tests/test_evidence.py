@@ -134,3 +134,27 @@ def test_rejects_unknown_refit_term(tmp_path):
         runner = OnPolicyRunner(env, cfg(alg_for(0.0), 0.0, False), log_dir=None, device="cpu")
     with pytest.raises(ValueError):
         EvidenceRecorder(runner, str(tmp_path), terms=ToyTerms(env), refit_terms=("nope",), refit_iterations=(0,))
+
+
+def test_no_tensor_created_on_the_default_device(tmp_path, monkeypatch):
+    """GPU stand-in: the recorder's computations run with the default device set to "meta", so any tensor it makes
+    without naming a device lands on "meta" and mixing it with the (CPU) rollout raises. This is the bug that
+    crashed the first GPU run (Oct 18): helper tensors built on the CPU next to a CUDA covariance."""
+    for name in ("_before_update", "_after_update", "_dump_samples", "_capture_minibatch_grads"):
+        orig = getattr(EvidenceRecorder, name)
+
+        def wrapped(self, *a, _orig=orig, **k):
+            with torch.device("meta"):
+                return _orig(self, *a, **k)
+        monkeypatch.setattr(EvidenceRecorder, name, wrapped)
+    _, recs, _ = train(5, 1.0, tmp_path, refit=True)
+    assert len(recs) == ITERATIONS and not (tmp_path / "error.txt").exists()
+
+
+def test_errors_are_written_to_a_file(tmp_path, monkeypatch):
+    def boom(self):
+        raise RuntimeError("planted")
+    monkeypatch.setattr(EvidenceRecorder, "_before_update", boom)
+    with pytest.raises(RuntimeError):
+        train(6, 0.0, tmp_path)
+    assert "planted" in (tmp_path / "error.txt").read_text()

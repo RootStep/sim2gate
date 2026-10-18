@@ -90,3 +90,15 @@ def test_launcher_evidence_flags():
         L._evidence_kwargs(ns, [])
     ns.evidence = None
     assert L._evidence_kwargs(ns, []) is None
+
+
+def test_recorder_error_is_reported(tmp_path, monkeypatch):
+    """A failed run reports the recorder's error file in its problems."""
+    def runner(cmd, log):
+        d = os.path.join(str(tmp_path), "runs", "base_s1", "evidence")
+        os.makedirs(d, exist_ok=True)
+        open(os.path.join(d, "error.txt"), "w").write("iteration 0, update:\nTraceback ...\nRuntimeError: planted\n")
+        return 1, "boom"
+    monkeypatch.chdir(tmp_path)
+    rec = phase0a._train("base", 1, str(tmp_path), runner)
+    assert not rec["ok"] and any("RuntimeError: planted" in p for p in rec["problems"])

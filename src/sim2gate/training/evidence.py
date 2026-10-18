@@ -32,10 +32,12 @@ Read-only: every computation runs on copies or under torch.random.fork_rng and n
 tests/test_evidence.py checks that final parameters are bit-identical with and without the recorder. Feed-forward
 actor and critic only; no RND, no symmetry augmentation.
 """
+import contextlib
 import copy
 import importlib.metadata as metadata
 import json
 import os
+import traceback
 
 import numpy as np
 import torch
@@ -88,7 +90,7 @@ def _moments(cols):
 
 def _corr_from_cov(cov, i, w):
     """corr(column i, sum_j w_j column j) from a covariance matrix."""
-    w = w.double()
+    w = w.to(device=cov.device, dtype=torch.float64)
     var_i = cov[i, i]
     var_w = w @ cov @ w
     c = cov[i] @ w
@@ -177,7 +179,7 @@ class EvidenceRecorder:
 
         def process_env_step(obs, rewards, dones, extras):
             step = st.step
-            with torch.no_grad():
+            with self._errors("env step"), torch.no_grad():
                 t = self.terms.step_terms().detach().to(self._terms.dtype).to(self.device)
                 self._terms[step].copy_(t)
                 r = rewards.detach().reshape(-1).to(self._raw.dtype).to(self.device)
@@ -195,7 +197,7 @@ class EvidenceRecorder:
         orig_cr = alg.compute_returns
 
         def compute_returns(obs):
-            with torch.no_grad():
+            with self._errors("compute_returns"), torch.no_grad():
                 last_values = alg.critic(obs).detach().clone()
             p = dict(values=st.values.detach().clone(), dones=st.dones.detach().clone(), time_outs=self._to.clone(),
                      raw=self._raw.clone(), terms=self._terms.clone(), stored=st.rewards.detach().clone(),
@@ -213,7 +215,8 @@ class EvidenceRecorder:
         orig_update = alg.update
 
         def update(*a, **k):
-            pre = self._before_update() if self._pending is not None else None
+            with self._errors("update"):
+                pre = self._before_update() if self._pending is not None else None
             undo = self._capture_minibatch_grads(pre) if pre is not None and "dirs" in pre else None
             try:
                 out = orig_update(*a, **k)
@@ -221,10 +224,21 @@ class EvidenceRecorder:
                 if undo:
                     undo()
             if pre is not None:
-                self._after_update(pre, out)
+                with self._errors("after update"):
+                    self._after_update(pre, out)
             return out
         alg.update = update
         self._restore.append(lambda: setattr(alg, "update", orig_update))
+
+    @contextlib.contextmanager
+    def _errors(self, where):
+        """Write any exception to <out>/error.txt before it propagates: Isaac Sim's shutdown can swallow tracebacks."""
+        try:
+            yield
+        except Exception:
+            with open(os.path.join(self.out, "error.txt"), "a") as f:
+                f.write(f"iteration {self.iteration}, {where}:\n{traceback.format_exc()}\n")
+            raise
 
     # ---- computations -------------------------------------------------------------------------------------------
     def _sq(self, x):
@@ -314,6 +328,7 @@ class EvidenceRecorder:
                 K = len(self.names)
                 cols = torch.cat([A.reshape(-1, 1), Tk.reshape(-1, K), Vp.reshape(-1, 1)], dim=1)
                 mean, cov = _moments(cols)
+                eye = torch.eye(K + 2, dtype=torch.float64, device=cov.device)
                 ident = float((A.double() - (Tk.double().sum(-1) + Vp.double())).abs().max())
                 terms = p["terms"].double()
                 term_mean = terms.mean((0, 1))
@@ -330,12 +345,11 @@ class EvidenceRecorder:
                     "term_sum_residual": p["term_sum_residual"], "identity_residual": ident,
                     "trainer_residual": float((tr - trained.double()).abs().max() / tr.abs().max().clamp_min(1.0)),
                     "moments": {"mean": mean.tolist(), "cov": cov.tolist()},
-                    "corr_A_A_minus_term": [_corr_from_cov(cov, 0, torch.eye(K + 2, dtype=torch.float64)[0]
-                                                           - torch.eye(K + 2, dtype=torch.float64)[1 + k])
-                                            for k in range(K)],
+                    "corr_A_A_minus_term": [_corr_from_cov(cov, 0, eye[0] - eye[1 + k]) for k in range(K)],
                     "bsrs_what_if_rho": {f"{e:g}": _corr_from_cov(
                         _moments(torch.stack([A.reshape(-1), Tall.reshape(-1)], 1))[1], 0,
-                        torch.tensor([1.0 + e, -e], dtype=torch.float64)) for e in self.what_if_etas},
+                        torch.tensor([1.0 + e, -e], dtype=torch.float64, device=cov.device))
+                        for e in self.what_if_etas},
                     "timeouts": int(to.sum()), "terminations": int((d & ~to).sum()),
                 })
             pre = {"rec": rec, "A": A, "Tk": Tk, "Tall": Tall}

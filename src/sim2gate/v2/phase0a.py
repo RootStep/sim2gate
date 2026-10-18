@@ -257,6 +257,10 @@ def _train(arm, seed, work, runner, iterations=ITERATIONS, **kw):
     if crash:
         rec["train_shutdown_crash"] = crash
     problems = []
+    err = os.path.join(d, "evidence", "error.txt")
+    if os.path.exists(err):                     # the recorder's own traceback (Isaac Sim may not print it)
+        lines = [x for x in open(err).read().splitlines() if x.strip()]
+        problems.append("recorder error: " + " | ".join(lines[:1] + lines[-1:]))
     if ck is None or (rc != 0 and not crash):
         problems.append(f"training exited {rc}; {len(new)} new run folder(s)")
     else:
