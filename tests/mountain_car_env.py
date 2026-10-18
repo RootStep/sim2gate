@@ -26,6 +26,8 @@ class VecMountainCar(VecEnv):
         self.init_velocity = init_velocity   # addendum A: initial velocity uniform in [-0.07, 0.07]
         self.cfg = {"name": "VecMountainCar", "reward": reward, "max_episode_length": max_episode_length,
                     "init_velocity": init_velocity}
+        self.reward_terms = ("goal", "effort")
+        self.last_terms = torch.zeros(num_envs, 2, device=device)
         self.gen = torch.Generator(device=device).manual_seed(10_000 + seed)
         self.pos = torch.zeros(num_envs, device=device)
         self.vel = torch.zeros(num_envs, device=device)
@@ -62,6 +64,10 @@ class VecMountainCar(VecEnv):
             rew = -0.1 * a * a + 100.0 * terminated.float()
         else:
             rew = terminated.float()
+        # per-term step rewards (goal, effort), like Isaac Lab's reward manager; they add up to rew
+        goal = terminated.float() * (100.0 if self.reward_mode == "dense" else 1.0)
+        effort = (-0.1 * a * a) if self.reward_mode == "dense" else torch.zeros_like(a)
+        self.last_terms = torch.stack([goal, effort], dim=-1)
         self.episode_length_buf += 1
         time_outs = (self.episode_length_buf >= self.max_episode_length) & ~terminated
         dones = terminated | time_outs

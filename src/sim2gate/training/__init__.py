@@ -7,4 +7,7 @@ def __getattr__(name):
     if name == "BSRSPPO":
         from .bsrs_ppo import BSRSPPO
         return BSRSPPO
+    if name == "EvidenceRecorder":
+        from .evidence import EvidenceRecorder
+        return EvidenceRecorder
     raise AttributeError(name)

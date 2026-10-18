@@ -33,8 +33,11 @@ def _split(argv):
     return argv, []
 
 
-def install(eta=0.0, signals=None, what_if_eta=1.0, monitor=True, negative_control=False):
-    """Patch rsl_rl.runners.OnPolicyRunner. Returns a function that undoes the patch."""
+def install(eta=0.0, signals=None, what_if_eta=1.0, monitor=True, negative_control=False, evidence=None):
+    """Patch rsl_rl.runners.OnPolicyRunner. Returns a function that undoes the patch.
+
+    evidence: None, or keyword arguments for EvidenceRecorder (out_dir required) to attach the v2 phase 0A recorder
+    after the monitor."""
     version = metadata.version("rsl-rl-lib")
     if int(version.split(".")[0]) < 5:
         raise RuntimeError(f"rsl-rl-lib {version} found; Sim2Gate's training hooks need rsl-rl-lib 5.x (Isaac Lab 3.x)")
@@ -57,9 +60,33 @@ def install(eta=0.0, signals=None, what_if_eta=1.0, monitor=True, negative_contr
             os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
             self.sim2gate_monitor = TrainingMonitor(self, path, eta=what_if_eta)
             print(f"[sim2gate] training eta={eta}; signals -> {path}", file=sys.stderr)
+        if evidence:
+            from .evidence import EvidenceRecorder
+            self.sim2gate_evidence = EvidenceRecorder(self, **evidence)
+            print(f"[sim2gate] evidence -> {evidence['out_dir']}", file=sys.stderr)
 
     OnPolicyRunner.__init__ = __init__
     return lambda: setattr(OnPolicyRunner, "__init__", orig)
+
+
+def _ints(text):
+    return tuple(int(x) for x in text.split(",") if x.strip())
+
+
+def _evidence_kwargs(args, rest):
+    if not args.evidence:
+        return None
+    kw = {"out_dir": args.evidence, "sample_envs": args.evidence_sample_envs,
+          "refit_terms": tuple(t.strip() for t in args.evidence_refit_terms.split(",") if t.strip()),
+          "refit_iterations": _ints(args.evidence_refit_iterations),
+          "meta": {"launcher": {"eta": args.eta, "isaaclab_args": rest}}}
+    if args.evidence_deep:
+        kw["deep"] = _ints(args.evidence_deep)
+    if args.evidence_grad_save:
+        kw["grad_save"] = _ints(args.evidence_grad_save)
+    if bool(kw["refit_terms"]) != bool(kw["refit_iterations"]):
+        raise SystemExit("--evidence-refit-terms and --evidence-refit-iterations go together")
+    return kw
 
 
 def main(argv=None):
@@ -80,6 +107,17 @@ def main(argv=None):
                    help="acceptance testing only: replay the first PPO update stock, stock again and with Sim2Gate "
                         "attached, from the same state, and write the comparison (stock PPO, eta 0, no monitor "
                         "otherwise; use --max_iterations 1)")
+    p.add_argument("--evidence", default=None, metavar="DIR",
+                   help="v2 phase 0A: write the per-reward-term evidence record to DIR (see docs/v2/PHASE0A.md)")
+    p.add_argument("--evidence-deep", default=None, metavar="ITERS",
+                   help="comma-separated iterations for gradient directions and sample dumps (default: a fixed list)")
+    p.add_argument("--evidence-grad-save", default=None, metavar="ITERS",
+                   help="comma-separated deep iterations whose full gradient vectors are saved (default: a fixed list)")
+    p.add_argument("--evidence-sample-envs", type=int, default=256, help="environments in each sample dump")
+    p.add_argument("--evidence-refit-terms", default="", metavar="TERMS",
+                   help="comma-separated reward terms to refit the critic without (default: none)")
+    p.add_argument("--evidence-refit-iterations", default="", metavar="ITERS",
+                   help="comma-separated iterations at which to run the critic refits")
     args = p.parse_args(ours)
     if not args.isaaclab_script:
         # as Isaac Lab 3.0's train.py does: set before anything defines Warp kernels (halves cold kernel builds)
@@ -97,7 +135,7 @@ def main(argv=None):
         install_identity(args.update_identity)
     else:
         install(args.eta, args.signals, args.what_if_eta, monitor=not args.no_monitor,
-                negative_control=args.negative_control)
+                negative_control=args.negative_control, evidence=_evidence_kwargs(args, rest))
     if args.isaaclab_script:
         script = os.path.abspath(args.isaaclab_script)
         sys.path.insert(0, os.path.dirname(script))       # train.py imports its sibling cli_args.py
