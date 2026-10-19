@@ -59,3 +59,11 @@ are computed.
 
      Each passes at ≤ 1e-5. The offline null refit follows section 4.4, with seed 0.
 
+
+## Log
+
+- Oct 18, 2026, 23:06 ET: VJ shared a separately run exploratory analysis (`PHASE0B_INITIAL_REPORT.md`,
+  `bsrs_reference.csv`, `term_diagnostics.csv`; SHA-256 13fbc4f9…, d277b697…, 827ebf86…). It was not produced by
+  `sim2gate.v2.phase0b`. That code was committed at `12dfca1` (22:56 ET), before these files were received, and it is
+  not changed in response to them. The two analyses are to be compared after `sim2gate.v2.phase0b` has run on the
+  bundle.
