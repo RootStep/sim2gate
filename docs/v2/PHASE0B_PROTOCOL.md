@@ -1,8 +1,10 @@
-# v2 phase 0B: decision protocol (DRAFT, not frozen)
+# v2 phase 0B: decision protocol (FROZEN Oct 18, 2026)
 
-**Status:** draft by VJ and Claude, Oct 18, 2026, for Vihaan to change and fill in. It takes effect when Vihaan
-has filled the blanks and VJ has approved. Its SHA-256 is then recorded here before any of the analyses below are
-run on the phase 0A data.
+**Status:** frozen. The rules in section 4 were decided by VJ on Oct 18, 2026, from the options drafted with Claude.
+VJ approves v2 plan changes. The SHA-256 of this file is recorded in `PHASE0B_FREEZE.md`, committed before any of the
+analyses below were run on the phase 0A data. Vihaan makes the phase 0B decision under these rules. If he wants a
+rule changed, it is an amendment: logged, dated, approved by VJ, and made **before** he computes any update-level
+quantity.
 
 ## 1. The decision
 
@@ -134,7 +136,34 @@ from quantities defined in advance, not from the answer.
 Also fixed in advance: which iterations count (all deep iterations, or after a warm-up of ____), and how the two
 seeds are combined (pooled, with runs as the resampling unit).
 
-### 4.3 Two gaps in the data the rules must respect
+### 4.3 Decisions (VJ, Oct 18, 2026)
+
+- **T1:** option T1-a, the non-inferiority margin, with **δ = 0.1**. Spearman correlation of per-term ρ with the
+  measured update change must be no more than 0.1 below the BSRS reference, with the 95% interval of the difference
+  above −0.1. Runs are the resampling unit, and the interval comes from a bootstrap over runs with 10,000 resamples.
+  Per-term ρ must also beat each simple baseline in 4.2, with the 95% interval of the difference above 0. An
+  interval that is too wide to pass or fail is **inconclusive**.
+- **T2:** option T2-a, PPO's own noise as the yardstick, applied at each of the 10 refit points. The rule fails if
+  more than 2 of the 10 points fall below the yardstick. All 10 points are reported.
+- **Null refit:** added, offline, as context for Q3. It does not decide anything. See 4.4.
+- **Warm-up:** the decision uses **all deep iterations**. The same analysis without iterations 0–49 is also
+  reported, as a robustness check. If the two disagree on the answer, the result is reported as inconclusive.
+
+### 4.4 Offline null refit (context for Q3)
+
+For `base_s1` at the five refit iterations (50, 200, 500, 1000, 1999), use the saved critic (`models.pt`) and the
+256-environment sample. Run the recorder's refit procedure (3 rounds, 5 epochs, Adam lr 1e-3, 4 minibatches) three
+times:
+- with nothing removed (null);
+- without `feet_slide`;
+- without `action_rate_l2`.
+
+Report each variant's update direction cosine to the same-critic direction on the same sample. The sample holds no
+observation after the last step, so every variant bootstraps the final step with the recorded `last_values`. This
+keeps the comparison like for like within the offline refits. The offline refits are not compared with the online
+refits from the full rollout.
+
+### 4.5 Two gaps in the data the rules must respect
 
 - **The gradient check in Q1 has to use the sample.** The saved directions are over the whole rollout (4096
   environments); the sample dumps hold 256. A full-rollout direction cannot be reproduced from the sample, so
