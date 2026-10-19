@@ -94,7 +94,7 @@ and may not be claimed to mean.
 | Test | Proposed rule |
 |---|---|
 | Q0: BSRS reference | Confirm that ρ predicts gradient and update changes in the BSRS runs, using the original analysis method of V1.4 |
-| Q1: Mathematical identity | Relative numerical error ≤ 10⁻⁵ where applicable; independently reproduced gradient cosine ≥ 0.999999 (see 4.3: on the 256-environment sample) |
+| Q1: Mathematical identity | Relative numerical error ≤ 10⁻⁵ where applicable; independently reproduced gradient cosine ≥ 0.999999 (see 4.5: on the 256-environment sample) |
 | Q2: Ordinary reward terms | Compare per-term ρ with measured gradient and update changes, using Spearman correlation, against simpler diagnostic baselines named in advance (4.2) |
 | Q3: Critic refitting | Compare same-critic predictions with directions from refitted critics; report agreement at every available refit point |
 | Q4: Interpretation | Explicitly separate effects on PPO updates from effects on final robot behaviour |
