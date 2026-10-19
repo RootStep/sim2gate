@@ -41,7 +41,8 @@ from . import commands as command_sets
 from . import robustness
 
 PROFILE = "sim2gate-nominal-v1"
-REMOVED_EVENTS = ("add_base_mass", "base_com", "push_robot", "base_external_force_torque")
+REMOVED_EVENTS = ("add_base_mass", "add_payload", "base_com", "push_robot", "base_external_force_torque")
+# add_payload: P0 v5's training payload (sim2gate.v2.tasks); absent from v1 tasks, so v1 runs are unchanged
 NOMINAL_STATIC_FRICTION, NOMINAL_DYNAMIC_FRICTION = 0.8, 0.6
 MAX_LAG_STEPS = 20                       # delay buffer depth, physics steps (100 ms at 200 Hz)
 EXCLUDED_FROM_CFG_DIGEST = ("sim", "armature")   # physics settings: they may differ between engines (check 5)
@@ -181,8 +182,10 @@ class ConditionRecorder:
     """Applies the conditions on the first step, then records each environment's first episode."""
 
     def __init__(self, mode, out_path, command_set, command_source, play_args, episodes=robustness.EPISODES_PER_VALUE,
-                 api=None, motor_cls=None):
+                 api=None, motor_cls=None, envelope="v1"):
         self.api, self.motor_cls = api, motor_cls
+        self.envelope = envelope
+        robustness.params(envelope)                      # validates the name
         self.mode, self.out_path, self.play_args = mode, out_path, list(play_args or [])
         self.command_set, self.command_source = command_set, command_source
         self.episodes = episodes
@@ -191,7 +194,8 @@ class ConditionRecorder:
             self.groups = robustness.joint_conditions()
             self.env_group = [g["group"] for g in self.groups]
         else:
-            self.groups = robustness.conditions() if mode == "sweep" else robustness.conditions()[:1]
+            self.groups = (robustness.conditions(envelope) if mode == "sweep"
+                           else robustness.conditions(envelope)[:1])
             self.env_group = robustness.layout(self.groups, episodes)
         self.profile_record = None
         self.checkpoints = []
@@ -340,7 +344,8 @@ class ConditionRecorder:
             "physics": {"manager": getattr(phys, "__name__", str(phys)), "solver_cfg": _to_dict(cfg.sim.physics),
                         "use_newton_actuators": getattr(cfg.sim, "use_newton_actuators", None),
                         "versions": _versions()},
-            "grid": (robustness.grid_definition() if self.mode == "sweep"
+            "envelope": self.envelope,
+            "grid": (robustness.grid_definition(self.envelope) if self.mode == "sweep"
                      else robustness.joint_definition() if self.mode == "joint" else None),
             "groups": self.groups, "conditions": self.applied,
             "training_ranges": training_ranges_near(ck["path"]) if ck and ck.get("path") else None,
@@ -519,7 +524,17 @@ def training_ranges(env_yaml_text):
     delays = {k: [a.get("min_delay"), a.get("max_delay")] for k, a in acts.items()
               if isinstance(a, dict) and ("min_delay" in a or "max_delay" in a)}
     out["action_latency_ms"] = delays or "no delay in the actuator model"
-    out["motor_strength_scale"] = "not randomized" if not ev.get("actuator_gains") else ev.get("actuator_gains")
+    pay = (ev.get("add_payload") or {}).get("params") or {}
+    if pay:
+        out["added_base_mass_kg"] = {"stock_scale": out["added_base_mass_kg"],
+                                     "payload": {"operation": pay.get("operation"),
+                                                 "params": pay.get("mass_distribution_params"),
+                                                 "distribution": pay.get("distribution")}}
+    strengths = {k: [a.get("min_strength"), a.get("max_strength")] for k, a in acts.items()
+                 if isinstance(a, dict) and a.get("min_strength") is not None
+                 and a.get("min_strength") != a.get("max_strength")}
+    out["motor_strength_scale"] = (strengths if strengths else
+                                   "not randomized" if not ev.get("actuator_gains") else ev.get("actuator_gains"))
     pol = ((d.get("observations") or {}).get("policy") or {})
     out["observation_noise_scale"] = {"enable_corruption": pol.get("enable_corruption")}
     return out
@@ -591,7 +606,13 @@ def main(argv=None):
                         "conditions drawn together per episode (report only)")
     p.add_argument("--commands", required=True, help="fixed command set JSON, or 'mvp' for the MVP's Go2 set")
     p.add_argument("--out", required=True)
+    p.add_argument("--envelope", choices=sorted(robustness.ENVELOPES), default="v1",
+                   help="operating envelope swept by check 1 (v1: the MVP's, frozen; v2: the v2 plan's)")
+    p.add_argument("--repeat", type=int, default=1,
+                   help="episodes per condition = repeat x the command set's size (v2 nominal: 4, i.e. 256)")
     a = p.parse_args(ours)
+    if a.repeat < 1:
+        p.error("--repeat must be at least 1")
     if not any(x == f or x.startswith(f + "=") for x in rest for f in ("--checkpoint", "--load_run")):
         p.error("name the policy: pass --checkpoint <model.pt> after --")
     if any(x == "--num_envs" or x.startswith("--num_envs=") for x in rest):
@@ -600,7 +621,8 @@ def main(argv=None):
         from ..mvp.baselines import GO2_COMMANDS
         a.commands = GO2_COMMANDS
     doc = command_sets.load_command_set(a.commands)
-    rec = ConditionRecorder(a.mode, a.out, doc, os.path.abspath(a.commands), rest, episodes=len(doc["commands"]))
+    rec = ConditionRecorder(a.mode, a.out, doc, os.path.abspath(a.commands), rest,
+                            episodes=len(doc["commands"]) * a.repeat, envelope=a.envelope)
     if os.path.exists(a.out):
         os.remove(a.out)
     install(rec)

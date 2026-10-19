@@ -275,12 +275,13 @@ class FakeGym:
         return self.cls(cfg)
 
 
-def _play(tmp_path, mode="sweep", name="raw.json", ckpt=b"weights", play_args=None, physics="PhysxManager"):
+def _play(tmp_path, mode="sweep", name="raw.json", ckpt=b"weights", play_args=None, physics="PhysxManager",
+          envelope="v1"):
     """Isaac Lab's play flow in miniature: build the env from its config, load the checkpoint, step until done."""
     play_args = play_args or ["--task", "T", "--checkpoint", "m.pt", "physics=isaacsim_physx",
                               "env.sim.use_newton_actuators=false", *tr.ORDERING]
     rec = ic.ConditionRecorder(mode, str(tmp_path / name), CMDS, "cmds.json", play_args, episodes=EPS, api=API,
-                               motor_cls=Motor)
+                               motor_cls=Motor, envelope=envelope)
     cls = type("E", (CondEnv,), {})
     gym = FakeGym(cls)
     undo = ic.install(rec, wrapper_cls=Wrapper, runner_cls=te.FakeRunner, gym_module=gym)
@@ -638,3 +639,84 @@ def test_joint_report_refuses_other_runs(tmp_path):
     succ = rb.success_reference([("P0 s1", sweep)])
     rep = rb.joint_report(sweep, succ)
     assert rep["status"] == "invalid" and any("not a joint sweep" in r for r in rep["reasons"])
+
+
+# ---- v2 (phase 1): envelope v2, payload event, motor strength in training -------------------------------------------
+
+def test_v1_grid_is_unchanged_by_the_v2_envelope():
+    assert rb.grid_definition()["sha256"] == "65f05de8c3ca4edc1f79e1c4d9aec836b0c2ede7a02d00d0d07db09ccc584146"
+    assert rb.joint_definition()["sha256"] == "c43965753041330b88331e65a6beadd4cc361b8af9f4ead8f1cfb0619edfd5a6"
+    v2 = rb.grid_definition("v2")
+    assert v2["envelope"] == "v2" and v2["sha256"] != rb.grid_definition()["sha256"]
+    assert rb.values("added_base_mass_kg", "v2")[6] == 8.0 and rb.values("added_base_mass_kg", "v2")[-1] == 12.0
+    assert rb.values("motor_strength_scale", "v2")[6] == 0.8 and rb.values("ground_friction", "v2")[6] == 0.35
+    assert all(float(v / 5.0).is_integer() for v in rb.values("action_latency_ms", "v2"))   # whole physics steps
+    with pytest.raises(ValueError):
+        rb.params("v3")
+
+
+def test_v2_sweep_records_and_scores_the_v2_envelope(tmp_path):
+    raw, env = _play(tmp_path, envelope="v2")
+    assert raw["envelope"] == "v2" and raw["grid"]["sha256"] == rb.grid_definition("v2")["sha256"]
+    g = next(g for g in raw["groups"] if g["param"] == "added_base_mass_kg" and g["index"] == 9)
+    assert g["value"] == 12.0
+    assert raw["conditions"]["readback"]["added_base_mass_kg"][str(g["group"])] == pytest.approx([12.0] * 2,
+                                                                                                abs=1e-4)
+    succ = rb.success_reference([("P0", raw)])
+    res = rb.score(raw, succ)
+    assert res["status"] == "scored" and res["envelope"] == "v2"
+    assert res["params"]["added_base_mass_kg"]["plausible"] == [0.0, 8.0]
+    v1raw, _ = _play(tmp_path, name="v1.json")
+    assert rb.score(v1raw, succ)["envelope"] == "v1"
+    bad = dict(raw, grid=dict(raw["grid"], envelope="v1"))           # a v2 grid claiming to be v1 is refused
+    assert rb.score(bad, succ)["status"] == "invalid"
+
+
+def test_profile_removes_the_v2_payload_event():
+    cfg = _cfg(motor_cls=FakeDCMotor)
+    cfg.events.add_payload = types.SimpleNamespace(params={})
+    rec = ic.apply_profile(cfg, motor_cls=Motor)
+    assert cfg.events.add_payload is None and "add_payload" in rec["removed_events"]
+
+
+def test_training_ranges_report_payload_and_motor_strength():
+    yaml_text = """
+events:
+  physics_material: {params: {static_friction_range: [0.35, 1.2]}}
+  add_base_mass: {params: {operation: scale, mass_distribution_params: [0.8, 1.25], distribution: log_uniform}}
+  add_payload: {params: {operation: add, mass_distribution_params: [0.0, 8.0], distribution: uniform}}
+scene: {robot: {actuators: {base_legs: {min_delay: 0, max_delay: 6, min_strength: 0.8, max_strength: 1.0}}}}
+observations: {policy: {enable_corruption: true}}
+"""
+    pytest.importorskip("yaml")
+    out = ic.training_ranges(yaml_text)
+    assert out["added_base_mass_kg"]["payload"]["params"] == [0.0, 8.0]
+    assert out["motor_strength_scale"] == {"base_legs": [0.8, 1.0]}
+
+
+def test_training_motor_draws_strength_per_episode_on_the_ramp():
+    """P0 v5: each reset draws an output-torque scale in [ramped low, max]; full strength before the ramp; the
+    applied torque is scaled. Without a strength range nothing is drawn (P0 v4 unchanged, RNG untouched)."""
+    from sim2gate.mvp.actuators import motor_class
+    M = motor_class(FakeDCMotor, FakeDelayBuffer)
+    cfg = types.SimpleNamespace(min_delay=0, max_delay=0, delay_ramp_start_steps=100, delay_ramp_end_steps=400,
+                                min_strength=0.8, max_strength=1.0)
+    m = M(cfg, num_envs=512)
+    step = lambda k: [m.compute(_ca(512, torch.zeros(512, 2)), torch.zeros(512, 2), torch.zeros(512, 2))
+                      for _ in range(k)]
+    m.reset(None)
+    assert torch.all(m.sim2gate_strength == 1.0)
+    step(400)
+    m.reset(torch.arange(256))
+    s = m.sim2gate_strength.flatten()
+    assert float(s[:256].min()) >= 0.8 and float(s[:256].min()) < 0.81 and float(s[:256].max()) <= 1.0
+    assert torch.all(s[256:] == 1.0)                       # untouched environments keep their draw
+    out = m.compute(_ca(512, torch.full((512, 2), 0.1)), torch.zeros(512, 2), torch.zeros(512, 2)).joint_efforts
+    assert float(out[0, 0]) == pytest.approx(25.0 * 0.1 * float(s[0]), rel=1e-6)
+    torch.manual_seed(1)
+    v4 = M(types.SimpleNamespace(min_delay=0, max_delay=6), num_envs=8)
+    v4.reset(None)
+    after_v4 = torch.rand(1)
+    torch.manual_seed(1)
+    torch.randint(0, 7, (8,), dtype=torch.int)             # exactly the delay draw, nothing else
+    assert v4.sim2gate_strength is None and torch.equal(torch.rand(1), after_v4)

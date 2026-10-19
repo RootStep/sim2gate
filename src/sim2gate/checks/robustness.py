@@ -49,35 +49,58 @@ PARAMS = {
 }
 DYNAMIC_FRICTION_RATIO = 0.6 / 0.8
 
+# v2 operating envelope (v2 plan, "Layer 1: operating envelope"): payload to 8 kg (the Go2's rated payload), friction
+# down to 0.35, motor strength down to 0.8; latency and noise as v1. Same grid rule (10 values, plausible edge + 50%).
+PARAMS_V2 = {
+    "ground_friction": {"nominal": 0.8, "edge": 0.35, "plausible": [0.35, 1.2], "unit": "static coefficient",
+                        "fix": "randomize ground friction over 0.35-1.2 in training, then retrain"},
+    "added_base_mass_kg": {"nominal": 0.0, "edge": 8.0, "plausible": [0.0, 8.0], "unit": "kg",
+                           "fix": "randomize added payload over 0-8 kg in training, then retrain"},
+    "motor_strength_scale": {"nominal": 1.0, "edge": 0.8, "plausible": [0.8, 1.0], "unit": "x nominal torque",
+                             "fix": "randomize motor strength over 0.8-1.0 in training, then retrain"},
+    "action_latency_ms": dict(PARAMS["action_latency_ms"]),
+    "observation_noise_scale": dict(PARAMS["observation_noise_scale"]),
+}
+ENVELOPES = {"v1": PARAMS, "v2": PARAMS_V2}
 
-def values(name):
-    p = PARAMS[name]
+
+def params(envelope="v1"):
+    if envelope not in ENVELOPES:
+        raise ValueError(f"unknown envelope {envelope!r} (known: {sorted(ENVELOPES)})")
+    return ENVELOPES[envelope]
+
+
+def values(name, envelope="v1"):
+    p = params(envelope)[name]
     end = p["nominal"] + EXTEND * (p["edge"] - p["nominal"])
     return [round(p["nominal"] + (end - p["nominal"]) * i / (N_VALUES - 1), 10) for i in range(N_VALUES)]
 
 
-def nominal_condition():
-    return {k: p["nominal"] for k, p in PARAMS.items()}
+def nominal_condition(envelope="v1"):
+    return {k: p["nominal"] for k, p in params(envelope).items()}
 
 
-def conditions():
+def conditions(envelope="v1"):
     """The sweep's groups, in env order: group 0 is nominal (shared), then 9 values per parameter in PARAMS order.
     Each: {"group", "param" (None for nominal), "index" (0..9), "value", "condition": full parameter dict}."""
-    out = [{"group": 0, "param": None, "index": 0, "value": None, "condition": nominal_condition()}]
-    for name in PARAMS:
-        for i, v in enumerate(values(name)[1:], start=1):
-            c = nominal_condition()
+    out = [{"group": 0, "param": None, "index": 0, "value": None, "condition": nominal_condition(envelope)}]
+    for name in params(envelope):
+        for i, v in enumerate(values(name, envelope)[1:], start=1):
+            c = nominal_condition(envelope)
             c[name] = v
             out.append({"group": len(out), "param": name, "index": i, "value": v, "condition": c})
     return out
 
 
-def grid_definition():
+def grid_definition(envelope="v1"):
     d = {"version": GRID_VERSION, "n_values": N_VALUES, "extend": EXTEND, "episodes_per_value": EPISODES_PER_VALUE,
-         "cliff_success": CLIFF_SUCCESS, "params": {k: {**p, "values": values(k)} for k, p in PARAMS.items()},
+         "cliff_success": CLIFF_SUCCESS,
+         "params": {k: {**p, "values": values(k, envelope)} for k, p in params(envelope).items()},
          "dynamic_friction_ratio": DYNAMIC_FRICTION_RATIO,
          "reading": "last value = nominal + 1.5 x (edge - nominal); swept from nominal towards harder conditions; "
                     "one shared nominal group"}
+    if envelope != "v1":                      # v1's definition (and its hash) stays exactly as frozen
+        d["envelope"] = envelope
     d["sha256"] = hashlib.sha256(json.dumps(d, sort_keys=True).encode()).hexdigest()
     return d
 
@@ -176,8 +199,10 @@ def score(raw, success):
     or the policy does not reach 80% success at nominal ("policy not ready")."""
     reasons = check_compatible(raw, success)
     grid = raw.get("grid") or {}
-    if grid.get("sha256") != grid_definition()["sha256"]:
+    envelope = grid.get("envelope", "v1")
+    if envelope not in ENVELOPES or grid.get("sha256") != grid_definition(envelope)["sha256"]:
         reasons.append("the sweep grid differs from this version's grid definition")
+        envelope = "v1"
     thr = success["threshold_mps"]
     by_group = {}
     for e in raw["episodes"]:
@@ -191,7 +216,8 @@ def score(raw, success):
         reasons.append("no nominal episodes")
     elif nominal < CLIFF_SUCCESS:
         reasons.append(f"policy not ready: nominal success rate {nominal:.2f} is below {CLIFF_SUCCESS}")
-    for name, p in PARAMS.items():
+    out["envelope"] = envelope
+    for name, p in params(envelope).items():
         series = [{"index": 0, "value": p["nominal"], "success_rate": nominal, "episodes": len(by_group.get(0, []))}]
         for g in sorted((g for g in groups.values() if g["param"] == name), key=lambda g: g["index"]):
             series.append({"index": g["index"], "value": g["value"], "success_rate": rates.get(g["group"]),
