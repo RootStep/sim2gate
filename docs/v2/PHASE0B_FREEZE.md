@@ -14,3 +14,48 @@ are computed.
 ## Amendments
 
 - Oct 18, 2026, minutes after the freeze and before any analysis: a cross-reference in 4.1 corrected ("see 4.3" to "see 4.5"); the hash above is the corrected file's. First frozen hash was 500f1c9ec8ceb0cade371fbbb75ac66dff5897bc16d7069724226110fda982a3.
+- **Amendment 2, Oct 18, 2026, 22:48 ET, approved by VJ, before any update-level quantity was computed.**
+
+  **Who runs it.** VJ asked Claude to run the phase 0B analysis and report the results. It runs with Sim2Gate's
+  `sim2gate.v2.phase0b`, on the fingerprinted bundle (SHA-256 a8938401…). Vihaan reviews the results, and two items
+  stay his:
+  - Q1's derivation and the cross-implementation gradient check (his code against Sim2Gate's, on the 256-environment
+    sample);
+  - the Q4 statement.
+
+  Until he signs off, the answer is **provisional**.
+
+  **Operational details, fixed now:**
+
+  1. **Q0 (BSRS reference).** One pair per run, deep iteration and η ∈ {0.5, 1, 2}:
+     (`bsrs_what_if_rho[η]`, `direction_cos_trainer["bsrs:η"]`). Use the six PPO runs (base, no_slip,
+     no_action_rate), where the trainer's direction is g(Â). Q0 passes if Spearman ≥ 0.7 and the lower bound of the
+     95% bootstrap interval is > 0.5. In the two BSRS arms, (training-η ρ, `direction_cos_trainer["A"]`) is reported
+     as descriptive.
+  2. **Q2.** One pair per run, deep iteration and reward term: (`corr_A_A_minus_term[k]`,
+     `direction_cos_trainer["minus:k"]`). Use the same six PPO runs. The BSRS arms are excluded because there the
+     trainer's direction is not g(Â).
+  3. **T1.** S_k − S_ref is the difference in Spearman between Q2 and Q0, bootstrapped over runs with 10,000
+     resamples. It passes if the 95% lower bound is > −0.1. It fails if the upper bound is < −0.1. Otherwise it is
+     inconclusive.
+  4. **Baselines.** These are compared by **absolute** Spearman, |S_ρ| − |S_b|, because some baselines move
+     opposite to the update change:
+     - `term_abs_share[k]`;
+     - Var(T_k)/Var(A) from `moments`;
+     - β_k = Cov(T_k, A)/Var(A) from `moments`.
+
+     ρ beats a baseline if the 95% lower bound is > 0. ρ fails if any upper bound is < 0. Otherwise the baseline
+     comparison is inconclusive.
+  5. **T2.** At each of the 10 refit points (`base_s1`, terms `feet_slide` and `action_rate_l2`, iterations 50, 200,
+     500, 1000 and 1999), compare cos(`refit_minus:k`, `minus:k`) from the saved direction vectors with the
+     yardstick, the median of `minibatch_grad_cos_trainer` at that iteration.
+  6. **Warm-up check.** Repeat steps 1–4 without iterations 0–49. A different answer makes the result
+     inconclusive.
+  7. **Q1 numerics.** These are computed on the sample dumps of every run's deep iterations, with relative error
+     max|x − ref| / max|ref|:
+     - A recomputed against the trainer's advantages;
+     - the reward terms summed against the reward;
+     - the closed-form ρ_k against the directly computed corr(A, A − T_k).
+
+     Each passes at ≤ 1e-5. The offline null refit follows section 4.4, with seed 0.
+
