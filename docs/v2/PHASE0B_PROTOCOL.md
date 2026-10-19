@@ -85,21 +85,66 @@ optimization distortion. An ordinary term changes the objective itself. ρ_k can
 steers each update. It says nothing by itself about where training ends up. Vihaan to state in the memo what ρ_k may
 and may not be claimed to mean.
 
-## 4. Decision rules (Vihaan fills the blanks before any analysis)
+## 4. Decision rules
+
+### 4.1 Proposed rules (VJ and Vihaan, Oct 18, 2026)
+
+| Test | Proposed rule |
+|---|---|
+| Q0: BSRS reference | Confirm that ρ predicts gradient and update changes in the BSRS runs, using the original analysis method of V1.4 |
+| Q1: Mathematical identity | Relative numerical error ≤ 10⁻⁵ where applicable; independently reproduced gradient cosine ≥ 0.999999 (see 4.3: on the 256-environment sample) |
+| Q2: Ordinary reward terms | Compare per-term ρ with measured gradient and update changes, using Spearman correlation, against simpler diagnostic baselines named in advance (4.2) |
+| Q3: Critic refitting | Compare same-critic predictions with directions from refitted critics; report agreement at every available refit point |
+| Q4: Interpretation | Explicitly separate effects on PPO updates from effects on final robot behaviour |
+
+### 4.2 Two thresholds, each a separate decision fixed before any analysis
+
+Neither is to be chosen by looking at the phase 0A numbers. Both are written as rules, so their cut-offs come
+from quantities defined in advance, not from the answer.
+
+**T1. How much weaker per-term ρ may be than the BSRS reference (Q2 against Q0).** Options:
+
+- *T1-a, non-inferiority margin (recommended).* Per-term ρ passes if its Spearman correlation with the measured
+  update change is at most δ below the BSRS reference, with the 95% interval of the difference above −δ. δ = ____
+  (suggested 0.1). Resample **runs, not iterations** (iterations within a run are correlated); with 10 runs the
+  interval is wide, and a wide interval is reported as inconclusive, not as a pass.
+- *T1-b, absolute floor plus baseline.* Spearman ≥ ____ (suggested 0.7) **and** ρ beats every simple baseline in 4.2
+  by a margin whose 95% interval excludes zero.
+- Simple baselines, named now: the term's share of reward magnitude (`term_abs_share`), Var(T_k)/Var(A) from
+  `moments`, and β_k alone. If ρ does not beat these, it adds nothing a standard diagnostic doesn't.
+
+**T2. How much critic-refit disagreement is acceptable (Q3).** Options:
+
+- *T2-a, PPO's own noise as the yardstick (recommended).* The refit is acceptable at a refit point if
+  cos(g_refit_minus_k, g_minus_k) is at least the median cosine between PPO's per-minibatch gradients and the
+  full-rollout trainer direction at that iteration (`minibatch_grad_cos_trainer`). In words: removing the term with
+  a refitted critic changes the direction less than PPO's own minibatch sampling does. The cut-off is fixed by rule
+  now and read from a different quantity, so it is not tuned to the answer.
+- *T2-b, fixed floor.* cos ≥ ____ at ≥ ____ of the 10 refit points (2 terms × 5 iterations).
+- Either way all 10 points are reported, and with one run (`base_s1`) Q3 is a check, not a statistical test.
 
 | Answer | Condition |
 |---|---|
-| **(a) Extends as it stands** | Q0 holds (criterion: ______), Q1 holds, Q2's ρ_k fit is within ______ of the Q0 reference, and Q3's refit agreement is at least ______ at ______ of the refit points |
-| **(b) Needs a new derivation** | Q0 and Q2 hold but Q3 fails, or Q2 holds only with a different functional form (described: ______) |
-| **(c) Stays with shaping terms** | Q2 fails: ρ_k does not track the update change within ______ |
-| **Q0 fails** | ρ's own Go2 link is not confirmed; report it, with V1.4 implications, and treat as (c) for v2 |
+| **(a) Extends as it stands** | Q0, Q1 pass; Q2 passes T1; Q3 passes T2 |
+| **(b) Needs a new derivation** | Q0, Q1, Q2 pass but Q3 fails T2; or Q2 holds only with a different functional form |
+| **(c) Stays with shaping terms** | Q2 fails T1 |
+| **Q0 fails** | ρ's own Go2 link is not confirmed: report it, with V1.4 implications, and treat as (c) for v2 |
+| **Inconclusive** | Intervals too wide to pass or fail: report as inconclusive; v2 proceeds with approach B, and C stays an open question |
 
-Also fixed in advance:
+Also fixed in advance: which iterations count (all deep iterations, or after a warm-up of ____), and how the two
+seeds are combined (pooled, with runs as the resampling unit).
 
-- which statistic measures "fit" (for example rank correlation, or residual of the closed form);
-- which iterations count (all deep iterations, or after a warm-up);
-- how the two seeds are combined;
-- what counts as inconclusive, and what happens then.
+### 4.3 Two gaps in the data the rules must respect
+
+- **The gradient check in Q1 has to use the sample.** The saved directions are over the whole rollout (4096
+  environments); the sample dumps hold 256. A full-rollout direction cannot be reproduced from the sample, so
+  "independently reproduced gradient cosine ≥ 0.999999" means: two implementations (Vihaan's and Sim2Gate's)
+  computing g on the same 256-environment sample from the same `models.pt` agree to that cosine. Comparing a
+  sample direction with the full-rollout one measures sampling, not correctness.
+- **There is no "null" refit.** Phase 0A refitted the critic without each term, but not with nothing removed, so the
+  refit's own drift is not measured. T2-a avoids needing it. If a null refit is wanted, it can be run offline on the
+  256-environment samples and saved models at the five refit iterations (null, minus `feet_slide`, minus
+  `action_rate_l2`, like for like), with no GPU. That must be decided now, before Q3 is looked at.
 
 ## 5. Where each quantity is in the bundle
 
