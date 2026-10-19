@@ -57,3 +57,10 @@ Arm means against base (2 seeds each, so these are descriptive only):
   v2 Layer 2 study is about.
 - **BSRS at η = 2 nearly doubled foot slip** (0.16–0.20 vs 0.10) without changing jitter. At η = 0.5 nothing
   changed. With 2 seeds this is an observation to look at in the per-term record, not a finding.
+
+## What phase 0A does not show
+
+Phase 0A did not establish that the original ρ formula predicts the effects of removing ordinary reward terms. It
+recorded the data needed to test that, and showed that removing two terms changes the finished robots as expected.
+Whether ρ, an extension of it, or neither explains those changes is the phase 0B decision, made by Vihaan from the
+recorded data. No ρ result for ordinary reward terms should be quoted until then.

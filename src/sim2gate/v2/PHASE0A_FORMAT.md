@@ -76,7 +76,7 @@ code, checkpoint hash and outcome summary.
 | `identity_residual` | max \|A − (Σ_k T_k + V-part)\| (float32 recursion; should be ≲ 1e-4) |
 | `trainer_residual` | max \|trainer's A (or A' under BSRS) − ours\| / max(1, max \|trainer's\|) |
 | `moments.mean`, `moments.cov` | Mean vector and covariance matrix (float64, ddof 1) of the columns `[A, T_1 … T_K, V-part]` over all T·N samples. Column order is `meta.moments_columns`. Any correlation, variance ratio or regression among A, T_k, A − T_k, A − Σ_{k∈S} T_k or (1+η)A − ηT follows from these |
-| `corr_A_A_minus_term` | Per term: corr(A, A − T_k), the "ρ-like" quantity for removing term k |
+| `corr_A_A_minus_term` | Per term: corr(A, A − T_k). This is an analogue of ρ for removing term k, recorded for convenience; it is not ρ, and whether it (or any extension of ρ) means anything for ordinary terms is the phase 0B question |
 | `bsrs_what_if_rho` | `{"0.5", "1", "2"}`: corr(A, (1+η)A − ηT). At the training η of a BSRS arm, this is that run's actual ρ |
 | `timeouts`, `terminations` | Counts in the rollout |
 | `kl_subset`, `clip_fraction_subset` | Mean KL(old ‖ new) and the share of \|ratio − 1\| > clip, after the update, on the first 256 environments' samples |
