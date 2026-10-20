@@ -66,9 +66,7 @@ that is small overall but concentrated on specific features (foot contacts) can 
 correlation suggests. This is an observation for Vihaan's derivation, not a conclusion.
 
 **c. The T2 yardstick turned out to be uninformative.** PPO's per-minibatch gradients have a median cosine of about 0
-(between −0.02 and 0.03) with the full-rollout direction, so T2 could only fail for a cosine near zero. Why the
-minibatch cosines are so low is not yet understood. It could be a real property of these updates or a measurement
-issue in the recorder; this is open. The offline null refit is more informative. Refitting the critic **without
+(between −0.02 and 0.03) with the full-rollout direction, so T2 could only fail for a cosine near zero. Resolved Oct 20: this is a real property of PPO's updates, not a recording error. The recorded first-minibatch gradient equals the clipped-surrogate gradient computed directly (cosine 1.000000; now a test in tests/test_evidence.py). On a toy task with 512 environments, the first minibatch steps align with the full-rollout direction (cosines 0.68–0.97). After a few Adam steps the policy has moved, and the later steps scatter around zero or turn negative, so a median over all 20 steps sits near zero. The yardstick should have used only the first step of each update, which measures sampling noise alone. That is a design flaw in T2-a, which Claude proposed. It is reported here, not rescored. The offline null refit is more informative. Refitting the critic **without
 removing anything** moves the direction about as much as refitting without a term:
 
 | Iteration | null | − feet_slide | − action_rate_l2 |
