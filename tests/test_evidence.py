@@ -158,3 +158,44 @@ def test_errors_are_written_to_a_file(tmp_path, monkeypatch):
     with pytest.raises(RuntimeError):
         train(6, 0.0, tmp_path)
     assert "planted" in (tmp_path / "error.txt").read_text()
+
+
+def test_first_minibatch_gradient_is_the_surrogate_gradient(tmp_path):
+    """The recorded per-minibatch gradient is exactly what PPO's optimizer receives: the first step's equals the
+    clipped-surrogate gradient on that minibatch at the pre-update actor (ratio 1). Added Oct 20 after phase 0B's
+    near-zero median minibatch cosines on the Go2, to rule out a recording error."""
+    import copy as _copy
+    torch.manual_seed(0)
+    env = VecMountainCar(num_envs=64, reward="dense", max_episode_length=64, seed=0, init_velocity=True)
+    cap = {}
+    with contextlib.redirect_stdout(io.StringIO()):
+        runner = OnPolicyRunner(env, cfg(alg_for(0.0), 0.0, False), log_dir=None, device="cpu")
+        rec = EvidenceRecorder(runner, str(tmp_path), terms=ToyTerms(env), deep=[0], grad_save=[0], sample_envs=64)
+        alg, orig_rp, orig_upd = runner.alg, torch.randperm, runner.alg.update
+
+        def rp(n, *a, **k):
+            p = orig_rp(n, *a, **k)
+            cap.setdefault("perm", p.clone())
+            return p
+
+        def upd(*a, **k):
+            st = alg.storage
+            cap.update(actor=_copy.deepcopy(alg.actor), obs=st.observations.flatten(0, 1).clone(),
+                       act=st.actions.flatten(0, 1).clone(), adv=st.advantages.flatten(0, 1).clone().reshape(-1))
+            torch.randperm = rp
+            try:
+                return orig_upd(*a, **k)
+            finally:
+                torch.randperm = orig_rp
+        alg.update = upd
+        runner.learn(1, init_at_random_ep_len=True)
+    rec.close()
+    z = np.load(tmp_path / "deep" / "it00000_directions.npz")
+    mg0 = torch.from_numpy(z["minibatch_loss_grads"][0]).double()
+    ix = cap["perm"][:cap["adv"].numel() // alg.num_mini_batches]
+    a = cap["actor"]
+    a.distribution.update(a.mlp(a.get_latent(cap["obs"][ix])))
+    logp = a.get_output_log_prob(cap["act"][ix])
+    loss = -(cap["adv"][ix] * torch.exp(logp - logp.detach())).mean()
+    g = torch.cat([x.reshape(-1) for x in torch.autograd.grad(loss, [q for q in a.parameters() if q.requires_grad])])
+    assert float(g.double() @ mg0 / (g.double().norm() * mg0.norm())) > 1 - 1e-6
