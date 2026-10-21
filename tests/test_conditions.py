@@ -720,3 +720,25 @@ def test_training_motor_draws_strength_per_episode_on_the_ramp():
     torch.manual_seed(1)
     torch.randint(0, 7, (8,), dtype=torch.int)             # exactly the delay draw, nothing else
     assert v4.sim2gate_strength is None and torch.equal(torch.rand(1), after_v4)
+
+
+def test_training_ranges_read_isaac_lab_tuples():
+    """Isaac Lab dumps tuples with a !!python/tuple tag; the v2 smoke test (Oct 21) found ranges read as None."""
+    pytest.importorskip("yaml")
+    text = """events:
+  add_base_mass:
+    params:
+      mass_distribution_params: !!python/tuple
+      - 0.8
+      - 1.25
+      operation: scale
+  add_payload:
+    params:
+      mass_distribution_params: !!python/tuple
+      - 0.0
+      - 8.0
+      operation: add
+"""
+    r = ic.training_ranges(text)
+    assert r["added_base_mass_kg"]["payload"]["params"] == [0.0, 8.0]
+    assert r["added_base_mass_kg"]["stock_scale"]["params"] == [0.8, 1.25]

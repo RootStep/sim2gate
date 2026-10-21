@@ -508,6 +508,9 @@ def training_ranges(env_yaml_text):
 
     class _L(yaml.SafeLoader):
         pass
+    # Isaac Lab's dump_yaml writes tuples as !!python/tuple: read those as lists (they hold every range we report);
+    # any other python-specific tag is ignored (None)
+    _L.add_constructor("tag:yaml.org,2002:python/tuple", lambda loader, node: loader.construct_sequence(node))
     _L.add_multi_constructor("", lambda loader, suffix, node: None)
     try:
         d = yaml.load(env_yaml_text, Loader=_L) or {}

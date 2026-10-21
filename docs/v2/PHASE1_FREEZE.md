@@ -12,4 +12,9 @@ below with date, reason and VJ's approval.
 
 ## Amendments
 
-None.
+- **Oct 21, 2026, smoke test at 914132f.** Every measurement ran; the sweep was on the v2 envelope; the profile
+  removed the payload; motor strength 0.8–1.0 was recorded. The one failed check was a reporting bug: Isaac Lab saves
+  tuples as `!!python/tuple`, which the report's YAML reader turned into blanks, so the payload range read as None
+  (v1 reports had the same blank for the stock mass range). Fixed for later runs (tuples read as lists, with a test).
+  The payload range is confirmed directly from the smoke run's `params/env.yaml`. Neither the pilot rule nor training
+  depends on this report field, so the pilot runs at 914132f. Approved by VJ.
