@@ -92,8 +92,8 @@ are examples, not evidence of a general rule.
    kept falling). Seed 2's break-out happened during that rise; seed 1's noise rose too, without a break-out.
 
 **For the product.** A "learns to survive but not to move" warning, raised at under 10% of training, is a concrete
-candidate for Sim2Gate's training diagnostics. Here it would have saved about 1.5 GPU hours and the measurement
-time. It is one example: before claiming it, it needs a preregistered test on new runs, including runs that recover
+candidate for Sim2Gate's training diagnostics. Here it would have saved about an hour of GPU time across the two
+robots. It is one example: before claiming it, it needs a preregistered test on new runs, including runs that recover
 and runs that are slow but fine, to measure false alarms.
 
 ## Lessons for us and for anyone training robots this way
