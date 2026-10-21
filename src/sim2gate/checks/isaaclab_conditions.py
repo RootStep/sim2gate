@@ -532,7 +532,9 @@ def training_ranges(env_yaml_text):
         out["added_base_mass_kg"] = {"stock_scale": out["added_base_mass_kg"],
                                      "payload": {"operation": pay.get("operation"),
                                                  "params": pay.get("mass_distribution_params"),
-                                                 "distribution": pay.get("distribution")}}
+                                                 "distribution": pay.get("distribution"),
+                                                 "mode": (ev.get("add_payload") or {}).get("mode"),
+                                                 "ramp_env_steps": pay.get("ramp_env_steps")}}
     strengths = {k: [a.get("min_strength"), a.get("max_strength")] for k, a in acts.items()
                  if isinstance(a, dict) and a.get("min_strength") is not None
                  and a.get("min_strength") != a.get("max_strength")}

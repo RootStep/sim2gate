@@ -18,3 +18,11 @@ below with date, reason and VJ's approval.
   (v1 reports had the same blank for the stock mass range). Fixed for later runs (tuples read as lists, with a test).
   The payload range is confirmed directly from the smoke run's `params/env.yaml`. Neither the pilot rule nor training
   depends on this report field, so the pilot runs at 914132f. Approved by VJ.
+- **Oct 21, 2026, P0 v5 pilot at 914132f: PILOT FAIL.** Seed 1: nominal success 0.016 (0 falls; it stood still,
+  speed-tracking reward 0.23 vs P0 v4's 1.36). Seed 2: 0.805 (0 falls). Neither qualified, so neither got check 1,
+  check 2 or Newton. P0 v5 is not frozen. Why, and the lessons: `evidence/phase1/pilot_v5/README.md`.
+- **Oct 21, 2026, revision P0 v5b (approved by VJ),** the first candidate in protocol section 3: the payload is drawn
+  per episode, uniform 0 to an upper bound that is 0 kg before round 500 and 8 kg from round 800 (the delay's ramp);
+  play mode uses the full 0–8 kg. Everything else, the pilot rule, the seeds and the success threshold are unchanged.
+  Task `Sim2Gate-Velocity-Flat-Go2-P0-v5b`; robots `p0v5b_s{seed}`; new work folders. The smoke test also checks that
+  the payload is recorded as per episode on that ramp.

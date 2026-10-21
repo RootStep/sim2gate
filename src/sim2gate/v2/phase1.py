@@ -1,7 +1,8 @@
 """v2 phase 1: the clean robots (docs/v2/PHASE1_PROTOCOL.md, frozen before any phase 1 training).
 
-    pilot   P0 v5 seeds 1-2: train, qualify, measure, and apply the frozen pilot rule. P0 v5 is frozen only if the
-            pilot passes; otherwise the recipe is revised as a new version and piloted again.
+    pilot   seeds 1-2 of the current P0 (TASK: P0 v5b since Oct 21, 2026; P0 v5's pilot failed): train, qualify,
+            measure, and apply the frozen pilot rule. The recipe is frozen only if the pilot passes; otherwise it is
+            revised as a new version and piloted again.
     clean   the 20 calibration robots, seeds 101-120 (replacement seeds 121-125 if a robot fails qualification),
             trained with the full training record (EvidenceRecorder) and measured for Layer 1's limits.
     bundle  one .tgz of everything (records, logs, measurements, checkpoints) with a SHA-256 manifest.
@@ -10,8 +11,8 @@ Every robot is measured the same way: nominal PhysX 256 episodes (qualification)
 envelope, check 2, and nominal Newton 256 episodes (check 5). Nothing is blinded: these robots are all clean.
 
 Inside the Isaac Lab container, from the Isaac Lab-Arena folder:
-    python -m sim2gate.v2.phase1 smoke  --work v2_runs/phase1_smoke     # ~20 min: every new piece once
-    python -m sim2gate.v2.phase1 pilot  --work v2_runs/phase1_pilot
+    python -m sim2gate.v2.phase1 smoke  --work v2_runs/phase1_smoke_v5b     # ~20 min: every new piece once
+    python -m sim2gate.v2.phase1 pilot  --work v2_runs/phase1_pilot_v5b
     python -m sim2gate.v2.phase1 clean  --work v2_runs/phase1_clean
     python -m sim2gate.v2.phase1 bundle --work v2_runs/phase1_clean --out phase1-clean.tgz
 """
@@ -24,7 +25,15 @@ import os
 import sys
 import tarfile
 
-from .tasks import CALLBACK, P0_TASK_V5, P0_V5_ITERATIONS
+from .tasks import CALLBACK, P0_TASK_CURRENT, P0_V5_ITERATIONS, P0_V5B_PAYLOAD_RAMP_ROUNDS, ROUND_ENV_STEPS, VARIANTS
+
+TASK = P0_TASK_CURRENT                   # P0 v5b; P0 v5's pilot (Oct 21, 2026) failed, see PHASE1_FREEZE.md
+LABEL = f"P0 v{VARIANTS[TASK]['version']}"
+PREFIX = f"p0v{VARIANTS[TASK]['version']}"
+
+
+def robot_name(seed):
+    return f"{PREFIX}_s{seed}"
 
 PILOT_SEEDS = (1, 2)
 CLEAN_SEEDS = tuple(range(101, 121))
@@ -46,7 +55,7 @@ def train_command(seed, work, name, evidence=True, iterations=P0_V5_ITERATIONS):
                             "--signals", os.path.join(d, "monitor.jsonl")]
     if evidence:
         cmd += ["--evidence", os.path.join(d, "evidence")]
-    return cmd + ["--", "--task", P0_TASK_V5, "--seed", str(seed), "--max_iterations", str(iterations)] \
+    return cmd + ["--", "--task", TASK, "--seed", str(seed), "--max_iterations", str(iterations)] \
         + CALLBACK + [transfer.PHYSX]
 
 
@@ -56,7 +65,7 @@ def measure_commands(ckpt, out_dir):
     from ..mvp.blinded import CHECK2
     from ..training.smoke_go2 import isaac_python
     py = isaac_python()
-    task = ["--task", P0_TASK_V5]
+    task = ["--task", TASK]
     fixed = list(transfer.FIXED_OVERRIDES) + list(transfer.ORDERING)
     o = {m: os.path.join(out_dir, f"{m}.json") for m in MEASUREMENTS}
 
@@ -143,7 +152,7 @@ def train_and_measure(work, name, seed, runner, evidence, measure=MEASUREMENTS, 
     if os.path.exists(d):
         os.replace(d, d + f".incomplete-{datetime.datetime.now():%Y%m%d%H%M%S}")
     os.makedirs(d)
-    rec = {"name": name, "seed": seed, "task": P0_TASK_V5, "started": _now(), "problems": []}
+    rec = {"name": name, "seed": seed, "task": TASK, "started": _now(), "problems": []}
     before = _run_dirs()
     rc, text = runner(train_command(seed, work, name, evidence, iterations), os.path.join(d, "train.log"))
     new = sorted(_run_dirs() - before)
@@ -198,6 +207,10 @@ def smoke_verdict(rec):
                                                                                 dict) else None
         if not pay or list(pay.get("params") or []) != [0.0, 8.0]:
             problems.append(f"training payload not recorded as 0-8 kg: {tr.get('added_base_mass_kg')}")
+        elif VARIANTS[TASK]["version"] == "5b":
+            ramp = [r * ROUND_ENV_STEPS for r in P0_V5B_PAYLOAD_RAMP_ROUNDS]
+            if pay.get("mode") != "reset" or list(pay.get("ramp_env_steps") or []) != ramp:
+                problems.append(f"training payload not per episode on the ramp {ramp}: {pay}")
         ms = tr.get("motor_strength_scale")
         if not (isinstance(ms, dict) and any(list(v) == [0.8, 1.0] for v in ms.values())):
             problems.append(f"training motor strength not recorded as 0.8-1.0: {ms}")
@@ -255,7 +268,7 @@ def pilot(work, runner):
     os.makedirs(work, exist_ok=True)
     state = load_state(work)
     for seed in PILOT_SEEDS:
-        name = f"p0v5_s{seed}"
+        name = robot_name(seed)
         if (state["robots"].get(name) or {}).get("finished") and not state["robots"][name].get("problems"):
             continue
         _say(f"pilot: {name} (training, then measuring)")
@@ -271,7 +284,7 @@ def pilot(work, runner):
         _say(f"{name}: check 1 {json.dumps(s.get('check1'))}")
         _say(f"{name}: check 2 {json.dumps(s.get('check2_metrics'))}")
         _say(f"{name}: newton {json.dumps(s.get('newton'))}")
-    _say("PILOT PASS: P0 v5 can be frozen" if v["pass"] else "PILOT FAIL: " + " | ".join(v["reasons"]))
+    _say(f"PILOT PASS: {LABEL} can be frozen" if v["pass"] else "PILOT FAIL: " + " | ".join(v["reasons"]))
     return 0 if v["pass"] else 1
 
 
@@ -281,7 +294,7 @@ def clean(work, runner, pilot_work=None):
     if pilot_work:
         ps = load_state(pilot_work)
         if not (ps.get("pilot_verdict") or {}).get("pass"):
-            raise SystemExit(f"the pilot in {pilot_work} has not passed; P0 v5 is not frozen")
+            raise SystemExit(f"the pilot in {pilot_work} has not passed; {LABEL} is not frozen")
     os.makedirs(work, exist_ok=True)
     state = load_state(work)
     state.setdefault("plan", {"seeds": list(CLEAN_SEEDS), "replacements": list(REPLACEMENT_SEEDS),
@@ -291,7 +304,7 @@ def clean(work, runner, pilot_work=None):
     qualified = []
     while queue:
         seed = queue.pop(0)
-        name = f"p0v5_s{seed}"
+        name = robot_name(seed)
         r = state["robots"].get(name)
         if not (r and r.get("finished") and not r.get("problems")):
             _say(f"clean robot {name} ({len(qualified) + 1} of {len(CLEAN_SEEDS)} needed)")
