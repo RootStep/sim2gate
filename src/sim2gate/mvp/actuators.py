@@ -14,7 +14,8 @@ range.
 
 Motor strength (P0 v5): with min_strength < max_strength, each reset also draws an output-torque scale per
 environment, uniform between the ramped lower bound and max_strength (full strength before the ramp starts, the full
-range after it ends), and the applied torque is multiplied by it, as check 1's motor-strength sweep does. With the
+range after it ends), and the applied torque is multiplied by it, as check 1's motor-strength sweep does. The
+computed (demanded) torque is multiplied too, so a weaker motor is not counted as torque-clipped by check 2. With the
 defaults (1.0, 1.0) nothing is drawn and the motor behaves exactly as in P0 v3/v4.
 
 Built on first use, so this module imports without Isaac Lab.
@@ -111,6 +112,10 @@ def motor_class(DCMotor, DelayBuffer):
             control_action.joint_efforts = e.compute(control_action.joint_efforts)
             out = super().compute(control_action, joint_pos, joint_vel)
             if self.sim2gate_strength is not None:    # as check 1's swept motor: scale the applied torque
+                # the demand is scaled too, so check 2's "torque clipped" (demand != produced) means the DC motor's
+                # limit was hit, not that the strength is below 1. Measurement only: the torque applied is unchanged
+                # (fixed Oct 21, 2026, after the P0 v5b pilot's check 2 counted every step as clipped)
+                self.computed_effort = self.computed_effort * self.sim2gate_strength
                 self.applied_effort = self.applied_effort * self.sim2gate_strength
                 out.joint_efforts = self.applied_effort
             return out

@@ -113,6 +113,31 @@ def test_motor_strength_scales_the_produced_torque():
     assert torch.equal(m.applied_effort, out)
 
 
+def _clipped_share(m, n, target):
+    """check 2's "torque clipped" rule (sim2gate.checks.exploits.ExploitMeter, copied) on one motor step."""
+    m.compute(_ca(n, torch.full((n, 2), target)), torch.zeros(n, 2), torch.zeros(n, 2))
+    c, a = m.computed_effort, m.applied_effort
+    return ((c - a).abs() > 1e-6 * c.abs().clamp_min(1.0)).float().mean(dim=1)
+
+
+@pytest.mark.parametrize("training", [False, True])
+def test_weaker_motor_is_not_counted_as_torque_clipped(training):
+    """Oct 21, 2026: the P0 v5b pilot's check 2 reported torque clipped on every step and joint, because the strength
+    scaled only the produced torque. A weaker motor that is within its limit is not clipped; one past it is."""
+    if training:
+        from sim2gate.mvp.actuators import motor_class
+        m = motor_class(FakeDCMotor, FakeDelayBuffer)(types.SimpleNamespace(
+            min_delay=0, max_delay=0, min_strength=0.8, max_strength=1.0), num_envs=2)
+        m.reset(None)
+        m.sim2gate_strength = torch.tensor([[1.0], [0.85]])
+    else:
+        m = Motor(None, num_envs=2)
+        m.sim2gate_set(strength=torch.tensor([1.0, 0.85]))
+    assert torch.equal(_clipped_share(m, 2, 0.1), torch.zeros(2))            # 2.5 N m demanded: within the limit
+    assert torch.equal(_clipped_share(m, 2, 2.0), torch.ones(2))             # 50 N m demanded: clipped at 20
+    assert m.applied_effort[1, 0] == pytest.approx(17.0)                     # the torque applied is unchanged
+
+
 def _cfg(motor_cls=FakeDCMotor):
     ev = types.SimpleNamespace(
         add_base_mass=object(), base_com=object(), push_robot=None, base_external_force_torque=object(),

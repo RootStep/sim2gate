@@ -87,6 +87,9 @@ def swept_motor_class(DCMotor=None, DelayBuffer=None):
             control_action.joint_velocities = v.compute(control_action.joint_velocities)
             control_action.joint_efforts = e.compute(control_action.joint_efforts)
             out = super().compute(control_action, joint_pos, joint_vel)
+            # a weaker motor: both the demand and the produced torque are scaled, so "clipped" (demand != produced)
+            # still means the DC motor's limit was hit, not that the strength is below 1 (fixed Oct 21, 2026)
+            self.computed_effort = self.computed_effort * self.sim2gate_strength
             self.applied_effort = self.applied_effort * self.sim2gate_strength
             out.joint_efforts = self.applied_effort
             return out

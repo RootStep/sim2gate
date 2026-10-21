@@ -26,3 +26,12 @@ below with date, reason and VJ's approval.
   play mode uses the full 0–8 kg. Everything else, the pilot rule, the seeds and the success threshold are unchanged.
   Task `Sim2Gate-Velocity-Flat-Go2-P0-v5b`; robots `p0v5b_s{seed}`; new work folders. The smoke test also checks that
   the payload is recorded as per episode on that ramp.
+- **Oct 21, 2026, P0 v5b pilot at 960246b: PILOT PASS** (both seeds qualified, no check 1 flag inside the v2
+  envelope). Full numbers to be recorded from the pilot log.
+- **Oct 21, 2026, check 2 measurement fix (before any clean robot).** The pilot's check 2 reported torque clipped
+  on every step and every joint (`actuator_torque_clipped_step_share` 1.0). Cause: in play mode the robot carries
+  its training motor strength (0.8–1.0), and the strength scaled only the produced torque, so "demanded ≠ produced"
+  was true whenever the strength was below 1. Both motors (training and check 1's swept motor) now scale the demand
+  too, so "clipped" again means the DC motor's limit was hit. This changes a measurement only: the torque applied,
+  training and the pilot rule are unchanged, and P0 v4 robots (strength fixed at 1) are unaffected. The pilot
+  robots' check 2 actuator values are not used; the clean robots are measured with the fix.
