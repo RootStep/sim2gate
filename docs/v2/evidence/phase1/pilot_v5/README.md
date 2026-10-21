@@ -30,7 +30,7 @@ From seed 1's training log, compared with P0 v4 at the end of training:
 | Speed-tracking reward | 1.36 | **0.23** |
 | Mean total reward | 29.66 | 9.46 |
 
-Seed 2's training log has not been compared yet.
+Seed 2's curves are in the next section: it was stuck too, for most of the run.
 
 ## Why it failed (our best explanation, not proven)
 
@@ -38,17 +38,18 @@ Seed 2's training log has not been compared yet.
    training robots got one random payload, 0 to 8 kg, at the very start and carried it for all 2000 rounds. Some
    robots were learning to walk with up to 8 kg on their back from round 0. The Go2 itself weighs about 15 kg.
 2. **Standing still is a safe trap.** Early on, a robot that tries to walk under a heavy load falls or pays large
-   torque and jerkiness penalties. A robot that stands still pays almost nothing. Seed 1 settled into standing.
-   Seed 2 mostly escaped the trap, but not fully.
+   torque and jerkiness penalties. A robot that stands still pays almost nothing. Both seeds settled into
+   standing by about round 170. Seed 1 never left; seed 2 broke out late (see the curves below).
 3. **We were inconsistent.** P0 v5 already phased the motor-weakness condition in gently, on the same schedule as the
    command delay: none before round 500, the full range by round 800. The delay ramp was itself v1's fix (C7) for the
    same kind of problem. The payload, the hardest new condition, was the one we did not phase in.
 
 4. **Same recipe, different luck.** Seed 2 trained under exactly the same conditions as seed 1: the same 0–8 kg
    payload range from round 0, the same friction and motor-strength ranges, the same code. Only the random seed
-   differed (the starting network, and which training robot got which payload). One robot stood still and the other
-   walked in 80% of episodes. So the payload does not make walking impossible to learn; starting with it makes
-   learning fragile, and whether a given run falls into the standing trap is down to chance.
+   differed (the starting network, and which training robot got which payload). Both fell into the standing trap at
+   the same time. Seed 2 happened to climb out late, around round 1000–1400, and was still improving when training
+   ended; seed 1 did not. So the payload does not make walking impossible to learn; starting with it makes learning
+   fragile, and how soon (or whether) a run gets out of the trap is down to chance.
 
 Both robots were measured **without** a payload (the nominal test removes it). Seed 1 stands still even with no load
 on its back, so it never learned to walk at all; this is not a robot that walks but cannot carry 8 kg.
@@ -56,6 +57,44 @@ on its back, so it never learned to walk at all; this is not a robot that walks 
 What we did not test: we did not run P0 v5 with more rounds or with fewer conditions, so we cannot rule out other
 contributions, such as friction down to 0.35 together with weak motors. With two seeds we also cannot say how often
 P0 v5 falls into the trap, only that it can.
+
+## What the training curves show (exploratory, added Oct 21)
+
+Computed after the fact from both seeds' training curves and two P0 v4 runs (Oct 15) for reference
+(`curves_analysis.py`, output in `curves_output.txt`; input fingerprint `a4993632…`). Two failures and two references
+are examples, not evidence of a general rule.
+
+| | P0 v4 (2 runs) | P0 v5 seed 1 | P0 v5 seed 2 |
+|---|---|---|---|
+| Speed-tracking reward, round 100 / 200 / 1000 / 2000 | 0.38 / 0.89 / 1.35 / 1.38 | 0.32 / 0.32 / 0.27 / 0.31 | 0.33 / 0.33 / 0.39 / 1.30 |
+| Speed error first below 0.5 m/s | round 164–178 | never | round 1422 |
+| Tracking below half of P0 v4's from | — | round 170 | round 171 |
+
+1. **The two seeds were indistinguishable for about 1000 rounds.** Both stopped improving their forward-speed
+   tracking at about round 100, while P0 v4 kept climbing. Seed 2 was not "partly walking" all along: it was stuck
+   like seed 1, broke out late, and reached P0 v4's tracking only at round 1760. Its 80.5% is most likely a robot
+   that ran out of rounds, which fits the protocol's next candidate fix (more rounds) as well.
+2. **What "standing" looked like in the training numbers.** In rounds 50–100 the P0 v5 robots paid about twice
+   P0 v4's torque penalty (carrying the payload). After that they kept still: their penalties for joint
+   acceleration, jerky actions and body rocking were about half of P0 v4's, and they stopped falling sooner. They
+   did learn to turn on the spot (turning reward the same as P0 v4's); they did not learn to move forward.
+3. **The warning was visible after about 3 minutes of a 33-minute training run.** By round 170 both seeds' tracking
+   reward was below half of P0 v4's at the same round. Even without a reference run, the pattern was clear: long
+   episodes (no falls) while the speed error stayed near the commanded speed (0.75 m/s), with almost no
+   improvement.
+4. **Payload is the cause, not the other conditions.** Before round 500, P0 v5 differed from P0 v4 only in the
+   payload and the lowest friction (0.35 instead of 0.4): motor weakness and delay were still off. The trap formed by
+   round 170. P0 v5b kept the same friction and passed (92.6% and 95.7%).
+5. **Sim2Gate's existing training monitor did not see it.** Its signals (ρ, sign flips, zero tails, reward shares)
+   looked normal and the same for both seeds. They were built for reward-shaping problems, not for this. A simple
+   "is it learning the task at all" check would have caught it.
+6. **An observation, not a conclusion:** after about round 500 both seeds' exploration noise rose again (P0 v4's
+   kept falling). Seed 2's break-out happened during that rise; seed 1's noise rose too, without a break-out.
+
+**For the product.** A "learns to survive but not to move" warning, raised at under 10% of training, is a concrete
+candidate for Sim2Gate's training diagnostics. Here it would have saved about 1.5 GPU hours and the measurement
+time. It is one example: before claiming it, it needs a preregistered test on new runs, including runs that recover
+and runs that are slow but fine, to measure false alarms.
 
 ## Lessons for us and for anyone training robots this way
 
@@ -69,9 +108,8 @@ P0 v5 falls into the trap, only that it can.
   one lucky seed, which is why the pilot needs both seeds to qualify and the 20 clean robots allow replacements.
 - **"Startup" randomization is one draw per robot for the whole run.** It is not per episode. For a condition that
   should vary, use a per-episode ("reset") draw.
-- **Watch the training curves early.** Seed 1's speed-tracking reward was far below P0 v4's long before round 2000.
-  Comparing it with the previous recipe at a few checkpoints (for example rounds 300, 800 and 1200) would have shown
-  the problem an hour earlier. A future driver could check this automatically.
+- **Watch the training curves early.** Both seeds' speed-tracking reward fell below half of P0 v4's by round 170,
+  about 3 minutes into a 33-minute run. A driver could check this automatically and stop a stuck run early.
 - **The pilot did its job.** Two robots (about 2 hours of GPU) found the problem before 20 robots (about 19 hours)
   were trained on a broken recipe.
 
