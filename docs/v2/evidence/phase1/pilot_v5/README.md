@@ -80,8 +80,8 @@ are examples, not evidence of a general rule.
    did learn to turn on the spot (turning reward the same as P0 v4's); they did not learn to move forward.
 3. **The warning was visible after about 3 minutes of a 33-minute training run.** By round 170 both seeds' tracking
    reward was below half of P0 v4's at the same round. Even without a reference run, the pattern was clear: long
-   episodes (no falls) while the speed error stayed near the commanded speed (0.75 m/s), with almost no
-   improvement.
+   episodes (few falls) while the speed error stayed at about 0.75 m/s, barely better than at the start of training
+   (0.80).
 4. **Payload is the cause, not the other conditions.** Before round 500, P0 v5 differed from P0 v4 only in the
    payload and the lowest friction (0.35 instead of 0.4): motor weakness and delay were still off. The trap formed by
    round 170. P0 v5b kept the same friction and passed (92.6% and 95.7%).
