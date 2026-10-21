@@ -3,6 +3,10 @@
 **Result: PILOT FAIL.** Neither robot qualified, so P0 v5 is not frozen. P0 v5b (the payload phased in) replaces it,
 approved by VJ on Oct 21. This note records why, so the same mistake is not repeated.
 
+**Outcome (same day): the P0 v5b pilot passed.** With only the payload's timing changed, the same two seeds went from
+1.6% and 80.5% to **92.6% and 95.7%**, with no check 1 flag inside the v2 envelope. This supports the explanation
+below, though two seeds cannot show how often the old recipe would have failed.
+
 ## What was run
 
 - Recipe: P0 v5 (`Sim2Gate-Velocity-Flat-Go2-P0-v5`, code `914132f`). That is P0 v4 plus the full v2 envelope in

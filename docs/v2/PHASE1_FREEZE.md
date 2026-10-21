@@ -26,8 +26,16 @@ below with date, reason and VJ's approval.
   play mode uses the full 0–8 kg. Everything else, the pilot rule, the seeds and the success threshold are unchanged.
   Task `Sim2Gate-Velocity-Flat-Go2-P0-v5b`; robots `p0v5b_s{seed}`; new work folders. The smoke test also checks that
   the payload is recorded as per episode on that ramp.
-- **Oct 21, 2026, P0 v5b pilot at 960246b: PILOT PASS** (both seeds qualified, no check 1 flag inside the v2
-  envelope). Full numbers to be recorded from the pilot log.
+- **Oct 21, 2026, P0 v5b pilot at 960246b: PILOT PASS.** P0 v5b is frozen as is (protocol section 3).
+
+  | Robot | Nominal success (falls) | Check 1 v2 cliffs (none inside the envelope) | Newton success (falls) |
+  |---|---|---|---|
+  | p0v5b_s1 | 0.926 (0 of 256) | friction 0.275, noise 2.17x; none for payload to 12 kg, strength to 0.7, latency to 45 ms | 0.578 (0) |
+  | p0v5b_s2 | 0.957 (0 of 256) | the same | 0.449 (0) |
+
+  Checkpoints: s1 `7641f026…`, s2 `70f16daa…`. Newton success is in line with v1's clean P0 v4 robots (0.39–0.63,
+  `docs/mvp-plan/calibration/p0v4/observations.md`); check 5's rule uses Newton falls and the tracking-error ratio,
+  not this rate.
 - **Oct 21, 2026, check 2 measurement fix (before any clean robot).** The pilot's check 2 reported torque clipped
   on every step and every joint (`actuator_torque_clipped_step_share` 1.0). Cause: in play mode the robot carries
   its training motor strength (0.8–1.0), and the strength scaled only the produced torque, so "demanded ≠ produced"
