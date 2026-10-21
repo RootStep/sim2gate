@@ -40,9 +40,18 @@ Seed 2's training log has not been compared yet.
    command delay: none before round 500, the full range by round 800. The delay ramp was itself v1's fix (C7) for the
    same kind of problem. The payload, the hardest new condition, was the one we did not phase in.
 
+4. **Same recipe, different luck.** Seed 2 trained under exactly the same conditions as seed 1: the same 0–8 kg
+   payload range from round 0, the same friction and motor-strength ranges, the same code. Only the random seed
+   differed (the starting network, and which training robot got which payload). One robot stood still and the other
+   walked in 80% of episodes. So the payload does not make walking impossible to learn; starting with it makes
+   learning fragile, and whether a given run falls into the standing trap is down to chance.
+
+Both robots were measured **without** a payload (the nominal test removes it). Seed 1 stands still even with no load
+on its back, so it never learned to walk at all; this is not a robot that walks but cannot carry 8 kg.
+
 What we did not test: we did not run P0 v5 with more rounds or with fewer conditions, so we cannot rule out other
-contributions, such as friction down to 0.35 together with weak motors. Seed 2's near miss also shows the result
-varies by seed.
+contributions, such as friction down to 0.35 together with weak motors. With two seeds we also cannot say how often
+P0 v5 falls into the trap, only that it can.
 
 ## Lessons for us and for anyone training robots this way
 
@@ -52,6 +61,8 @@ varies by seed.
 - **Zero falls is not a sign of health.** A robot that stands still never falls. Always check whether it does the task
   (here, the tracking error), not only whether it stays up. This is also a direct example of what Sim2Gate is for:
   a policy can look safe and still be useless.
+- **One seed is not enough to judge a recipe.** The same recipe gave 1.6% and 80.5%. A fragile recipe can pass on
+  one lucky seed, which is why the pilot needs both seeds to qualify and the 20 clean robots allow replacements.
 - **"Startup" randomization is one draw per robot for the whole run.** It is not per episode. For a condition that
   should vary, use a per-episode ("reset") draw.
 - **Watch the training curves early.** Seed 1's speed-tracking reward was far below P0 v4's long before round 2000.
