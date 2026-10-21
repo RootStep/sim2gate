@@ -6,6 +6,7 @@
     clean   the 20 calibration robots, seeds 101-120 (replacement seeds 121-125 if a robot fails qualification),
             trained with the full training record (EvidenceRecorder) and measured for Layer 1's limits.
     bundle  one .tgz of everything (records, logs, measurements, checkpoints) with a SHA-256 manifest.
+    curves  a small .tgz of the training curves only (logs, TensorBoard events, configs), for offline comparison.
 
 Every robot is measured the same way: nominal PhysX 256 episodes (qualification), check 1 swept over the v2
 envelope, check 2, and nominal Newton 256 episodes (check 5). Nothing is blinded: these robots are all clean.
@@ -20,6 +21,7 @@ import argparse
 import datetime
 import glob
 import hashlib
+import io
 import json
 import os
 import sys
@@ -361,16 +363,53 @@ def bundle(work, out):
     return 0
 
 
+def curves(work, out, reference_glob="logs/rsl_rl/*p0_v4*/*", reference_runs=2):
+    """A small archive of every robot's training curves (train.log, monitor.jsonl, the TensorBoard event files and the
+    saved configs), plus up to `reference_runs` P0 v4 runs' event files, for comparing robots offline. Checkpoints stay
+    where they are. Added Oct 21, 2026 to compare the P0 v5 pilot's two seeds (same recipe, opposite outcomes)."""
+    state = load_state(work)
+    files = []
+    for name, r in sorted(state["robots"].items()):
+        d = os.path.join(work, "robots", name)
+        for f in ("train.log", "monitor.jsonl"):
+            if os.path.exists(os.path.join(d, f)):
+                files.append((os.path.join(d, f), os.path.join(name, f)))
+        rd = r.get("run_dir")
+        if rd and os.path.isdir(rd):
+            found = glob.glob(os.path.join(rd, "events.out.tfevents*")) + glob.glob(os.path.join(rd, "params", "*"))
+            for p in sorted(found):
+                files.append((p, os.path.join(name, "run", os.path.relpath(p, rd))))
+            n = len(glob.glob(os.path.join(rd, "model_*.pt")))
+            _say(f"{name}: run folder {rd}, {n} checkpoints (left in place)")
+        else:
+            _say(f"{name}: run folder not found ({rd})")
+    for rd in sorted(glob.glob(reference_glob))[:reference_runs]:
+        for p in sorted(glob.glob(os.path.join(rd, "events.out.tfevents*"))):
+            files.append((p, os.path.join("p0v4_reference", os.path.basename(rd), os.path.basename(p))))
+        _say(f"P0 v4 reference: {rd}")
+    manifest = {"created": _now(), "work": work, "files": {arc: sha256(p) for p, arc in files}}
+    base = os.path.splitext(os.path.basename(out))[0].replace(".tar", "")
+    with tarfile.open(out, "w:gz") as t:
+        for p, arc in files:
+            t.add(p, arcname=os.path.join(base, arc))
+        data = json.dumps(manifest, indent=1).encode()
+        info = tarfile.TarInfo(os.path.join(base, "MANIFEST.json"))
+        info.size = len(data)
+        t.addfile(info, io.BytesIO(data))
+    _say(f"curves {out}: {len(files)} files, {os.path.getsize(out) / 1e6:.1f} MB, sha256 {sha256(out)}")
+    return 0
+
+
 def main(argv=None):
     from ..mvp.testset import quiet_run
     p = argparse.ArgumentParser(prog="python -m sim2gate.v2.phase1", description=__doc__.splitlines()[0])
     sub = p.add_subparsers(dest="cmd", required=True)
-    for c in ("smoke", "pilot", "clean", "bundle"):
+    for c in ("smoke", "pilot", "clean", "bundle", "curves"):
         s = sub.add_parser(c)
         s.add_argument("--work", required=True)
         if c == "clean":
             s.add_argument("--pilot", default=None, help="the pilot's work folder: refuse to start unless it passed")
-        if c == "bundle":
+        if c in ("bundle", "curves"):
             s.add_argument("--out", required=True)
     a = p.parse_args(argv)
     if a.cmd == "smoke":
@@ -379,6 +418,8 @@ def main(argv=None):
         return pilot(a.work, quiet_run)
     if a.cmd == "clean":
         return clean(a.work, quiet_run, a.pilot)
+    if a.cmd == "curves":
+        return curves(a.work, a.out)
     return bundle(a.work, a.out)
 
 

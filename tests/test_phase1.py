@@ -168,3 +168,34 @@ def test_smoke_verdict(tmp_path):
     raw["training_ranges"]["motor_strength_scale"] = "not randomized"
     (d / "sweep.json").write_text(json.dumps(raw))
     assert not phase1.smoke_verdict(rec)["pass"]
+
+
+def test_curves(tmp_path, monkeypatch):
+    """The curves archive: each robot's logs, event files and configs, plus P0 v4 reference events; no checkpoints."""
+    monkeypatch.chdir(tmp_path)
+    work = tmp_path / "pilot"
+    robots = {}
+    for name in ("p0v5_s1", "p0v5_s2"):
+        d = work / "robots" / name
+        d.mkdir(parents=True)
+        (d / "train.log").write_text("log")
+        (d / "monitor.jsonl").write_text("{}")
+        rd = tmp_path / "logs" / "rsl_rl" / "sim2gate_go2_flat_p0_v5" / name
+        (rd / "params").mkdir(parents=True)
+        (rd / "events.out.tfevents.1").write_text("ev")
+        (rd / "params" / "env.yaml").write_text("x: 1")
+        (rd / "model_1999.pt").write_text("ckpt")
+        robots[name] = {"run_dir": str(rd)}
+    ref = tmp_path / "logs" / "rsl_rl" / "sim2gate_go2_flat_p0_v4" / "run1"
+    ref.mkdir(parents=True)
+    (ref / "events.out.tfevents.9").write_text("ev")
+    (work / "state.json").write_text(json.dumps({"robots": robots}))
+    out = str(tmp_path / "p0v5-training-curves.tgz")
+    assert phase1.main(["curves", "--work", str(work), "--out", out]) == 0
+    with tarfile.open(out) as t:
+        names = set(t.getnames())
+    b = "p0v5-training-curves"
+    assert {f"{b}/p0v5_s1/train.log", f"{b}/p0v5_s2/monitor.jsonl", f"{b}/p0v5_s1/run/events.out.tfevents.1",
+            f"{b}/p0v5_s2/run/params/env.yaml", f"{b}/p0v4_reference/run1/events.out.tfevents.9",
+            f"{b}/MANIFEST.json"} <= names
+    assert not any(n.endswith(".pt") for n in names)
