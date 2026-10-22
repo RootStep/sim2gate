@@ -1,9 +1,23 @@
-# v2 phase 2: protocol (DRAFT for VJ's approval; Vihaan reviews the starred items; not frozen)
+# v2 phase 2: protocol (DRAFT, revision 2; not frozen)
 
-Phase 2 is the cause study (v2 plan, "Layer 2"). It asks whether looking inside the training run tells us **why** a
-robot has a flaw better than looking at the finished robot's behaviour (criterion C2), and whether ρ adds to standard
-training diagnostics (C3). This file is frozen, with its SHA-256 recorded, before any phase 2 study robot is trained.
-The arm pilots in section 3 run under this draft and are reported, but their results cannot change sections 4–7.
+Phase 2 is the cause study (v2 plan, "Layer 2"). It tests two things on robots with planted interventions:
+
+- whether training-side signals classify the planted intervention better than the finished robot's behaviour (C2);
+- whether ρ adds to ordinary training diagnostics (C3).
+
+The output is a **classification of the planted intervention**, not proof of a unique cause. Each planted change is a
+hypothesis about what it does, and the pilots check it.
+
+Revision 2 takes in VJ's review of Oct 22 (decision 1 approved in principle, with safeguards).
+
+**Two freezes.**
+
+| Part | Sections | Frozen when |
+|---|---|---|
+| A | 2–3: arms, candidate settings, pilot rules, leak audit | Before any pilot robot is trained |
+| B | 4–8: study robots, inputs, ρ, rules, blinding, scoring | After the pilots and the leak audit, after Vihaan's two sign-offs, and before any study robot |
+
+Each part's SHA-256 is recorded in `PHASE2_FREEZE.md` when it is frozen.
 
 ## 1. Preconditions
 
@@ -11,158 +25,256 @@ The arm pilots in section 3 run under this draft and are reported, but their res
 |---|---|
 | Phase 1: 20 clean P0 v5b robots with full training records | Done Oct 22 |
 | Layer 1 limits (success threshold 0.1187 m/s; combined check 2 limit) | Done Oct 22 |
-| C1: Vihaan confirms the Oct 9 RSL-RL acceptance gate | **Pending** |
-| Phase 0B: Vihaan's sign-off on Q1 (the per-term ρ derivation) and Q4 | **Pending**. C is computed with the closed form verified in phase 0B unless he says otherwise |
-| C3 kept, with no extra compute (VJ, Oct 22) | Decided |
+| C1: Vihaan confirms the Oct 9 RSL-RL acceptance gate | **Pending**, needed for part B |
+| Phase 0B: Vihaan's sign-off on Q1 (per-term ρ) and Q4 | **Pending**, needed for part B |
+| C3 kept, with no extra compute | Decided by VJ, Oct 22 |
 
-## 2. Arms ★
+## 2. Arms (part A) ★
 
-All arms start from P0 v5b (2,000 rounds, everything as phase 1) and change one thing each.
+All arms start from P0 v5b (2,000 rounds, everything as phase 1) and change one thing.
 
-**Proposed change to the plan (decision D1): every arm keeps the same set of reward terms.** In the plan, two reward
-arms remove a term and R-hop adds one. A removed term is logged as zero, and its ρ is exactly 1. An added term appears
-in only one arm. Any training-side signal would then name the arm outright, which is the leakage the plan forbids, and
-C2 and C3 would be won trivially. So:
+**Same reward terms everywhere (decision D1, approved in principle).** Every arm has the same reward-term names, in the
+same order, logged in the same format:
 
 - reward arms **weaken** a term instead of removing it;
-- the body-height term is present in **every** arm, at a small base weight;
+- the body-height term is present in every arm, at a small base weight;
 - arms differ only in reward weights or physics.
 
-| Arm | Change from P0 v5b | Cause | Expected symptom | Pilot ladder (section 3) |
+No arm sets a weight to zero, so no zero-weight case arises.
+
+| Arm | Change from P0 v5b | Planted cause (hypothesis) | Intended symptom | Candidate settings, tried in order |
 |---|---|---|---|---|
-| Control | None: phase 1 seeds 101–105 (decision D2) | none | none | — |
+| Control | None: phase 1 seeds 101–105 | none | none | — |
 | R-slip | Foot-slip penalty (`feet_slide`) weight × k | Reward | Foot slip | k = 0.1, then 0.03 |
-| Φ-slip | Low-friction training: static friction 0.2–0.5 (dynamic × 0.75); slip penalty kept | Physics | Foot slip, possibly | as stated; fallback: high-friction-only training, 1.0–1.2 |
+| Φ-slip | Training ground friction changed; slip penalty kept | Physics | Foot slip | low only (static 0.2–0.5), then high only (static 1.0–1.2); dynamic = 0.75 × static |
 | R-jitter | Action-rate penalty (`action_rate_l2`) weight × k | Reward | Jitter | k = 0.1, then 0.03 |
-| Φ-jitter | No command delay in training (as v1's P2); motor strength and payload unchanged | Physics | Jitter, and fragility to delay | as stated |
-| R-hop | Body-height reward weight raised from its base value | Reward | Hopping instead of walking | weight × 10, then × 30 of the base |
+| Φ-jitter | No command delay in training (as v1's P2) | Physics | Jitter | the single setting |
+| R-hop | Body-height reward weight × m of its base weight | Reward | Abnormal hopping (section 3) | m = 10, then 30 |
 
-The body-height term rewards the base being higher than its nominal standing height. Its base weight is small enough
-that the control recipe's behaviour is unchanged; the pilot confirms this on one robot.
+The body-height term rewards the base being above its nominal standing height. The base weight is chosen so the
+control recipe is unaffected; the control pilot checks this.
 
-## 3. Arm pilots (readiness gate "validate the experimental arms")
+## 3. Pilots and leak audit (part A)
 
-- **What is run:** each arm's first ladder step, on 2 pilot seeds (201–212). The control recipe with the base
-  body-height weight runs on 1 seed.
-- **Measured:** nominal PhysX success over 256 episodes, and check 2.
-- **Symptom thresholds:**
-  - slip: foot slip p95 above the clean maximum of 0.1124 m/s;
-  - jitter: the jitter share above the clean maximum of 0.00935;
-  - hop: flight share (section 4) above the control's maximum.
-- **An arm passes its pilot** when both seeds show its symptom and both qualify (at least 85% success over 256
-  episodes, v2 threshold).
-- **If a step fails,** the next ladder step is tried on 2 new seeds. If every step fails, the arm is dropped and the
-  report says so. Dropping one arm is not a reason to change another.
-- **Control check:** the base body-height weight passes if the control pilot qualifies and its flight share is within
-  the clean robots' range.
-- **Cost:** about 45 minutes per pilot robot. One pass is about 11 robots, about 8 GPU hours; failed steps add more.
-  This is not in the plan's 24 hours for phase 2 (decision D3).
-- **Results:** the pilot results fix each arm's step. Pilot robots are development robots: never study robots, never
-  test robots.
+**Seeds.** Pilot robots use seeds 201–240, assigned in order. They are development robots, excluded from all scoring,
+and are never study robots or test robots.
 
-## 4. Study robots
+**Measured.** Pilots are judged on their own measurements only:
 
-- **Seeds:** each flawed arm trains 5 seeds, 301–325 assigned in order.
-  - Training uses the full training record (EvidenceRecorder, defaults as phase 1).
-  - Measurement is as in phase 1: nominal PhysX (256 episodes), check 1 on the v2 envelope, check 2, and Newton.
-- **Qualification:** a study robot that does not qualify (85% over 256 episodes) is replaced by the next spare seed
-  (326–335). It stays in the record. More than 2 replacements in one arm stops the run for a decision.
-- **New measured quantity, flight share** (decision D5): the share of control steps in check 2's run with no foot in
-  contact, taken from the same contact signal. It is reported for every robot. The 5 control robots are re-measured
-  with check 2 so they have it. Their other check 2 values stay as recorded.
-- **GPU estimate:** 25 robots × about 55 minutes is about 23 hours, as the plan says. Replacements and the control
-  re-measure add about 1–3 hours.
+- nominal PhysX success over 256 episodes (v2 threshold);
+- check 2;
+- the hop measures below.
 
-## 5. Blinding and leakage ★
+**Intended symptoms.** Each threshold is fixed now, from data that exists today.
 
-- **Random IDs.** The driver gives every study robot (including the 5 controls) a random ID. The ID-to-arm key is
-  encrypted to Vihaan's public key, as in v1. The plain key never exists on the instance or in the repository after
-  encryption.
-- **Measured signals only.** Feature extraction reads only:
-  - the robot's measurement files;
-  - its TensorBoard event file (training curves);
-  - the recorder's `updates.jsonl`.
-- **Never read:** run folder names, task names, saved configs (`env.yaml`, `agent.yaml`), seeds, or reward weights.
-  A test enforces this: the extractor is given files with the names stripped.
-- **Same term set.** Every arm logs the same reward-term names (section 2), so the term list itself identifies no arm.
-- **Sealing.** The feature tables are written under random IDs and hashed before the key is released.
-- **Order of release:**
-  1. The frozen analysis code and the feature-table hashes are committed.
-  2. Vihaan releases the key.
-  3. The analysis runs once.
-
-## 6. Approaches and rules, fixed now ★
-
-**Features.** Each approach gets one feature vector per robot. Every feature is z-scored using only the training fold.
-
-| Approach | Features |
+| Symptom | Present when |
 |---|---|
-| A, behaviour only | Final measurements: nominal success (v2 threshold); check 2's four scored metrics, contact force and flight share; check 1 cliff index for each of the five conditions (0–9, 10 = no cliff); check 5 fall-free share and error ratio |
-| B, standard training diagnostics | For each reward term, its per-step reward (TensorBoard `Episode_Reward/<term>`). Plus action std, value loss and learning rate from the training logs, and KL and clip fraction from the recorder. Each signal is averaged over three windows of training: rounds 0–399, 400–999 and 1000–1999 |
-| C, B plus ρ | B's features plus, for each reward term, ρ_k (the phase 0B closed form, from the recorder's per-update moments), averaged over the same three windows |
+| Slip | Foot slip p95 above 0.1124 m/s, the maximum of the 20 clean robots |
+| Jitter | Jitter share above 0.00935, the clean maximum |
+| Abnormal hopping | **All three:** (1) flight share at low commanded speed above the control pilot's value; (2) base vertical-speed RMS above the control pilot's value; (3) the robot still qualifies |
 
-**Question 1, attribution.**
+The hop measures:
 
-- **Task:** name each robot's arm, one of the six labels.
-- **Rule:** nearest centroid in the z-scored feature space, with Euclidean distance and equal weight per feature.
-- **Validation:** leave one seed index out. For fold *i*, fit on the other 4 seeds of every arm and predict that arm's
-  *i*-th robot. 30 robots, 30 predictions.
-- **Score:** accuracy. The "reward vs physics" accuracy is also reported.
+- **Flight share at low commanded speed:** the share of control steps with no foot in contact, over the commands of
+  the fixed set whose speed is at most 0.5 m/s. At low speed a normal walking gait has no flight phase, so running
+  gaits do not count.
+- **Base vertical-speed RMS:** measured over the same steps.
+
+**Stopping rules.**
+
+- An arm's setting passes when both pilot seeds show the intended symptom and both qualify (at least 85% over 256
+  episodes).
+- If it fails, the next candidate is tried on 2 new seeds.
+- If all candidates fail, the arm is dropped. Its hypothesis is reported as not supported, and no other arm changes
+  because of it.
+- The control pilot (1 seed, base body-height weight) must qualify and stay inside the clean robots' check 2 range. If
+  it does not, the base weight is halved once and the control pilot re-run. If it fails again, R-hop is dropped.
+- Every pilot is reported, including the failures.
+
+**Leak audit.** Run on the pilot robots before part B is frozen. It passes only if all of these hold:
+
+1. Every pilot's exported training record has identical reward-term names, order and format (an automated check).
+2. No primary-input feature (section 5) is constant within every arm while differing between arms. Any such feature
+   would be a configuration value, not a measurement. Any found is removed and reported.
+3. A "trivial-clue" classifier is run (nearest centroid, as in section 7) on the per-term ratio of weighted to
+   unweighted reward, which recovers the weights. Its accuracy is reported. This shows how much the weighted inputs
+   would leak, and why they are kept out of the primary set.
+
+**Pilot cost.** About 45 minutes per robot. One pass is 11 robots, about 8 GPU hours; each failed candidate adds about
+1.5 hours. This is outside the plan's 24 hours for phase 2.
+
+## 4. Study robots (part B)
+
+- **Seeds and recipe.** Each kept arm trains 5 robots on seeds 301–325, with the full training record
+  (EvidenceRecorder, as phase 1).
+- **Every robot is fully measured, qualified or not:**
+  - nominal PhysX over 256 episodes;
+  - check 1 on the v2 envelope;
+  - check 2 with the hop measures;
+  - Newton.
+- **Failures are kept.** A robot that does not qualify is replaced by the next spare seed (326–345), and still stays in
+  the record and in the secondary analysis.
+- **Analysis sets.**
+  - Primary: the first 5 qualified robots of each arm, by seed order.
+  - Secondary: every trained robot.
+  - Failures to qualify are reported per arm as an outcome of the intervention.
+- **Stop rule.** More than 3 failures in one arm stops the run for a decision.
+- **Controls.** The 5 control robots (101–105) were not used to develop any attribution rule; the rules in section 7
+  are fixed without data. They are re-measured under phase 2's measurement code, so that every robot's behaviour
+  features come from the same code version. A measurement is reused only where its code is unchanged, which is checked
+  by version hash. Their phase 1 training records (TensorBoard and recorder) give B and C what they need.
+- **GPU estimate.**
+  - 25 study robots: about 23 hours.
+  - Re-measuring the controls: about 2 hours.
+  - Full measurement of failed robots: about 0.4 hours each.
+
+## 5. Inputs and leakage (part B) ★
+
+**Primary input set.** It contains only measured quantities:
+
+- the behaviour measurements (A);
+- for B and C, the **unweighted** per-term reward components: each term's own value per step, before its weight. The
+  export step computes them while it still has the configuration, and only the unweighted values leave that step.
+
+**Excluded from primary inputs:** weighted contributions, reward weights, run folder names, task names, saved configs,
+seeds and file names.
+
+**Secondary experiment, reported separately.** B_w and C_w are B and C plus the weighted contributions. They test
+diagnosis with reward-design clues available. They are never pooled with the primary result.
+
+**Export.** One frozen exporter turns each robot's records into a feature table under a random ID. It is tested on
+synthetic data to confirm:
+
+- unweighted components do not change when a weight is rescaled while behaviour is held fixed;
+- no excluded field reaches the output.
+
+## 6. What ρ means here (part B) ★
+
+C uses the per-term quantity from phase 0B: ρ_k = corr(A, A − T_k).
+
+- **A:** the trainer's unnormalised GAE advantages for the rollout, from the total reward and the critic in use at
+  that update.
+- **T_k:** term k's reward tail, the same GAE recursion applied to term k's weighted rewards with zero values, so that
+  A − T_k is the advantage with term k removed and the critic held fixed.
+- **Computation:** from the recorder's per-update covariance of [A, T_1…T_K, V-part], with the closed form verified
+  numerically in phase 0B.
+- **Normalisation:** correlation is unchanged by RSL-RL's per-rollout advantage normalisation (subtract the mean,
+  divide by a positive scale), so ρ_k is computed on unnormalised values.
+- **Status:** this is **an extension beyond V1.4**, which concerns bootstrapped reward shaping. Phase 0B gave a
+  provisional answer under its frozen rules, with recorded limits:
+  - a variance ratio ranked terms almost as well;
+  - ρ did not track the foot-slip term within runs.
+
+  Part B is not frozen until Vihaan signs off the derivation (Q1).
+- **ρ for a weakened term:** it measures how much the term still steers the update, which is the diagnostic idea. The
+  term is never zero, so ρ_k = 1 by construction does not arise.
+- **Undefined values:** ρ_k is undefined for an update when Var(A) or Var(A − T_k) is below 10⁻¹² × Var(A) of the same
+  update. Undefined updates are left out of the window average. If more than half of a window's updates are undefined,
+  that feature is missing (section 7).
+- **What C contains:** C is B plus ρ_k only. It does not include β_k, R_k, the variance ratio or any other phase 0B
+  quantity. A comparison that adds those would be named separately.
+- **ρ carries magnitude information that B's primary inputs exclude.** T_k is built from the *weighted* term, so ρ_k
+  partly reflects how strongly a term is weighted. A C-over-B gain could therefore come from that magnitude rather
+  than from ρ's specific form. Section 8 controls for this with B-var: B plus Var(T_k)/Var(A) per term per window. B-var
+  uses the same weighted information and was the baseline that nearly matched ρ in phase 0B.
+
+## 7. Approaches, rules and cross-validation (part B) ★
+
+**Windows.** Rounds 0–399, 400–999 and 1000–1999. Window 1 is the first 20% of training.
+
+| Approach | Features per robot |
+|---|---|
+| A, behaviour only | Nominal success (v2 threshold); check 2's four scored metrics, contact force, flight share at low speed and vertical-speed RMS; check 1 cliff index for each of the five conditions (0–9; 10 = no cliff); check 5 fall-free share and error ratio |
+| B, ordinary training diagnostics | For each reward term, the unweighted component averaged per window; action std, value loss and learning rate per window (training logs); KL and clip fraction per window (recorder) |
+| C, B plus ρ | Exactly B's features, plus ρ_k per term per window |
+| B-var (comparison for C3's interpretation) | B plus Var(T_k)/Var(A) per term per window: the same number of extra features as C, from the same weighted information |
+| C-placebo (reported only) | B plus the same number of standard-normal noise features (seed 0) |
+
+**B and C are identical except for ρ.** Same features, preprocessing, model and settings, and no tuning for either.
+C-placebo shows how much of any C-over-B gain comes from having more features alone.
+
+**Folds.** The unit is the independently trained robot. Fold *i* (1–5) holds each arm's *i*-th robot, and fold 1 also
+holds control robot 101. Episodes and log rows are never split across folds.
+
+**Preprocessing (training folds only).**
+
+1. Z-score each feature with the mean and standard deviation of the training folds.
+2. A feature with zero standard deviation in the training folds is dropped for that fold.
+3. A missing value is set to the training-fold mean (0 after z-scoring) and counted.
+4. A feature missing for more than 20% of robots is dropped for every approach, and reported.
+
+**Question 1, classification of the planted intervention.**
+
+- **Rule:** nearest centroid, Euclidean distance, equal feature weights.
+- **Ties:** go to the first label in the order Control, R-slip, Φ-slip, R-jitter, Φ-jitter, R-hop.
+- **Score:** accuracy over all robots of the primary set, with the reward-vs-physics accuracy also reported.
 
 **Question 2, early warning.**
 
-- **Task:** using only rounds 0–399 (the first 20%), predict each robot's final symptom size, separately for:
-  - foot slip p95;
-  - jitter share;
-  - flight share.
-- **Rule:** ridge regression with penalty 1.0 on the z-scored window-1 features of B, or of C, with the same folds.
-- **Score:** Spearman rank correlation between predicted and measured values over all 30 robots, averaged over the three
-  symptoms.
-- **No question 2 for A:** A has no training-time data.
+- **Inputs:** window 1 features only.
+- **Rule:** ridge regression, penalty 1.0, predicting the log of each final symptom measure separately: foot slip p95,
+  jitter share, and flight share at low speed.
+- **Score:** Spearman correlation between predicted and measured values over all primary robots, averaged over the
+  three.
+- **A is excluded:** it has no training-time data.
+
+## 8. Blinding, labels and scoring (part B) ★
+
+- **Random IDs.** The driver gives every study robot and every control a random ID.
+- **The key.** The ID-to-arm key is encrypted to Vihaan's public key, as in v1. The plain key is not kept on the
+  instance or in the repository.
+- **Feature tables.** The exporter writes them under random IDs. Their SHA-256 hashes and the frozen scoring code are
+  committed.
+- **Sealed scoring, stage 1 (Vihaan, on his computer).** He runs the frozen scoring program with the key. For each fold
+  it uses only the four training folds' labels and never reads the test fold's labels. It writes predictions per
+  robot ID for every approach. He sends the predictions file and its SHA-256.
+- **Stage 2 (after the predictions hash is recorded).** Vihaan releases the key. Stage 2 checks the hashes and computes
+  the scores.
+- **Who stays blind.** VJ and Claude see no labels until the predictions are committed.
 
 **Criteria (as the frozen plan).**
 
 | Criterion | Passes if |
 |---|---|
-| C2 | B's or C's attribution accuracy is at least 20 points above A's |
-| C3 | C's attribution accuracy is at least 10 points above B's; or C's early-warning Spearman is above B's, with the 95% bootstrap interval of the difference above zero |
+| C2 | B's or C's accuracy is at least 20 points above A's |
+| C3 | C's accuracy is at least 10 points above B's; or C's early-warning Spearman is above B's, with the 95% bootstrap interval of the difference above zero |
 
-The bootstrap uses 10,000 resamples of the 30 robots, stratified by arm, with seed 0.
+The bootstrap uses 10,000 resamples of robots, stratified by arm, with seed 0.
+
+**Interpreting C3.** C3 is scored exactly as the plan says, C against B. The gain is attributed to **ρ specifically**
+only if C also beats B-var under the same rule. If C beats B but not B-var, the report says the gain comes from the
+size of each term's influence, which a simple variance ratio also captures, and not from ρ.
 
 **Reported, not scored:**
 
 - confusion matrices;
-- per-symptom early-warning results;
-- results without the Φ-jitter arm. Its change only starts at round 500, so window 1 cannot see it.
+- per-symptom early warning;
+- C-placebo and C against B-var;
+- B_w and C_w;
+- the secondary analysis set;
+- results without Φ-jitter. Its change only starts at round 500, so window 1 cannot see it.
 
-**Inconclusive results.** If an arm is dropped in the pilots, the scores are computed on the remaining arms. The report
-states the reduced design. If two or more flawed arms are dropped, C2 and C3 are reported as not tested.
-
-## 7. What phase 2 delivers, and its limits
-
-**Delivers:**
-
-- C2 and C3 results under these rules;
-- the confusion matrices;
-- every robot's measurements and training record in one bundle with a SHA-256 manifest.
-
-**Limits** (as in the plan):
-
-- 5 seeds per arm show only large differences.
-- The planted causes are cleaner than real training runs.
-- The attribution rules are ours. A better rule for B could narrow C's lead.
-
-The flawed robots also serve phase 3, fix verification, which has its own protocol.
+**Arms dropped in the pilots.** Scores are computed on the remaining arms, and the reduced design is stated. If two or
+more flawed arms are dropped, C2 and C3 are reported as not tested.
 
 ## Decisions for VJ (★ = Vihaan reviews too)
 
-- **D1 ★** Same reward-term set in every arm: reward arms weaken a term instead of removing it, and the body-height
-  term is in every arm. This changes the plan's arm definitions to close a leakage path.
-- **D2.** Control arm = phase 1 seeds 101–105, chosen by seed order and not by results.
-- **D3.** Arm pilots as in section 3: 2 seeds per ladder step, symptom thresholds from Layer 1. About 8 extra GPU
-  hours, more if steps fail.
-- **D4 ★** Features, windows and fixed rules as in section 6: nearest centroid, ridge with penalty 1.0, leave one seed
-  index out.
-- **D5.** New flight-share metric for R-hop. The 5 controls are re-measured on check 2.
-- **D6 ★** Blinding as in section 5. Vihaan holds the key; analysis runs once after the key is released.
-- **D7.** Replacement rule: spare seeds 326–335; more than 2 replacements in one arm stops the run.
+- **D1 ★** Approved in principle. The safeguards are in sections 2, 3 and 5:
+  - same terms, order and format;
+  - unweighted components as the primary input;
+  - weighted contributions only in a separate experiment;
+  - a leak audit before part B is frozen.
+- **D2.** Controls are seeds 101–105. They were not used for rule development, and they are re-measured under phase
+  2's code.
+- **D3.** Pilots run under part A: candidate settings, symptom thresholds and stopping rules fixed before the first
+  pilot; separate seeds; every pilot reported.
+- **D4 ★** Rules as in section 7: features, scaling, model, ties, missing data, robot-level folds and training-fold-only
+  preprocessing.
+- **D5.** Abnormal hopping needs flight share at low commanded speed, vertical motion and continued qualification
+  together.
+- **D6 ★** Sealed two-stage scoring. Vihaan runs stage 1 with training-fold labels only; VJ and Claude stay blind until
+  the predictions are committed.
+- **D7.** Every robot is fully measured and kept; failures are reported per arm; there is a secondary analysis on all
+  robots.
+- **D8 ★** ρ_k is defined as in section 6 and labelled an extension beyond V1.4; C differs from B only by ρ_k. A gain
+  is credited to ρ only if C also beats B-var, which carries the same weighted-magnitude information.
