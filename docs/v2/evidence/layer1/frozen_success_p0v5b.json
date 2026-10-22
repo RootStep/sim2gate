@@ -1,0 +1,176 @@
+{
+ "command_set_sha256": "56222a90befd10592b31ac2a15155d1ffa8d5bb908cb9ee075df8bc8a0df2cea",
+ "episode_steps": 1000,
+ "factor": 1.5,
+ "profile": "sim2gate-nominal-v1",
+ "protocol": "docs/v2/LAYER1_LIMITS_PROTOCOL.md",
+ "protocol_sha256": "3b72a48590c337160832c1862926e5bdd7b9984d38f5ff4d90ca964671498a18",
+ "reference_error_mps": 0.07913405974252809,
+ "reference_rule": "mean over robots of each robot's mean error over nominal episodes without a fall (each robot counts equally; fallen episodes left out and counted)",
+ "robots": 20,
+ "rule": "episode success: no fall and mean tracking error <= 1.5 x reference",
+ "sources": [
+  {
+   "checkpoint_sha256": "14e03fab96f671e5b45c43ffefe947ea11754c6a07634d232c58b67745befe62",
+   "falls": 1,
+   "label": "p0v5b_s101",
+   "mean_error_mps": 0.0806264930248256,
+   "nominal_episodes": 256,
+   "used_episodes": 255
+  },
+  {
+   "checkpoint_sha256": "dcd188cbf70d0c9c0a94cd1dd2165e714c977c9db67382563900f96358e0989b",
+   "falls": 0,
+   "label": "p0v5b_s102",
+   "mean_error_mps": 0.08446864731539648,
+   "nominal_episodes": 256,
+   "used_episodes": 256
+  },
+  {
+   "checkpoint_sha256": "612ea5b6f092e44b338fa74d88b2d9c8befb3481e0202c9026295edc7d941343",
+   "falls": 0,
+   "label": "p0v5b_s103",
+   "mean_error_mps": 0.07819675002476077,
+   "nominal_episodes": 256,
+   "used_episodes": 256
+  },
+  {
+   "checkpoint_sha256": "7c3061069ae3571e8b11c1719db4a578f24844e156745c66968a2c34d7ea2215",
+   "falls": 0,
+   "label": "p0v5b_s104",
+   "mean_error_mps": 0.07362592538130226,
+   "nominal_episodes": 256,
+   "used_episodes": 256
+  },
+  {
+   "checkpoint_sha256": "4891931732af39e55fee00cd9ea7aa5c99b664969837b3fccadd4d19f579e46e",
+   "falls": 0,
+   "label": "p0v5b_s105",
+   "mean_error_mps": 0.07695250050953763,
+   "nominal_episodes": 256,
+   "used_episodes": 256
+  },
+  {
+   "checkpoint_sha256": "d371877538484ffeb7aa157a7d3988b9d330324c829e4a9434ded52d426cac8c",
+   "falls": 0,
+   "label": "p0v5b_s107",
+   "mean_error_mps": 0.07542448390155278,
+   "nominal_episodes": 256,
+   "used_episodes": 256
+  },
+  {
+   "checkpoint_sha256": "5eb41198d2a0ab8572cbe6a3b9e715ff4456f5153cb30c4c5b71dc3b61f5875f",
+   "falls": 1,
+   "label": "p0v5b_s108",
+   "mean_error_mps": 0.07989549470141018,
+   "nominal_episodes": 256,
+   "used_episodes": 255
+  },
+  {
+   "checkpoint_sha256": "3aa27e227c08e90abb24a43021cf50f798939601857fe62e1a14226cfe27889f",
+   "falls": 0,
+   "label": "p0v5b_s109",
+   "mean_error_mps": 0.07232242913437113,
+   "nominal_episodes": 256,
+   "used_episodes": 256
+  },
+  {
+   "checkpoint_sha256": "e94d30f21ad1aaf95576d5ac1a59b08c7bdaee125897ebfb3ad4b166baea984d",
+   "falls": 0,
+   "label": "p0v5b_s110",
+   "mean_error_mps": 0.0816186371656168,
+   "nominal_episodes": 256,
+   "used_episodes": 256
+  },
+  {
+   "checkpoint_sha256": "b8fdea2878abfffd73a1605bc259ff2f45e38b00a0cc641119fc60f540e19327",
+   "falls": 0,
+   "label": "p0v5b_s111",
+   "mean_error_mps": 0.07894781940437662,
+   "nominal_episodes": 256,
+   "used_episodes": 256
+  },
+  {
+   "checkpoint_sha256": "a9b285e0b5ced309b79f36fbd532ff93d79cd88e231cc47fd93deb548c603a89",
+   "falls": 0,
+   "label": "p0v5b_s113",
+   "mean_error_mps": 0.08239632515873174,
+   "nominal_episodes": 256,
+   "used_episodes": 256
+  },
+  {
+   "checkpoint_sha256": "3100813929cf2e680943acb8789ae8b02b4cbf85e4ddb3d522b844abda1211b6",
+   "falls": 1,
+   "label": "p0v5b_s114",
+   "mean_error_mps": 0.0774847560575567,
+   "nominal_episodes": 256,
+   "used_episodes": 255
+  },
+  {
+   "checkpoint_sha256": "d9a30ab12bce840a257e6957d4ae1b724cf897c10fc43000437e2a476d947aa9",
+   "falls": 0,
+   "label": "p0v5b_s115",
+   "mean_error_mps": 0.07681949593821821,
+   "nominal_episodes": 256,
+   "used_episodes": 256
+  },
+  {
+   "checkpoint_sha256": "b8b29f0edfdfbe48e1643663c93aab06aba832c012a6917fef7f97695e4b6767",
+   "falls": 0,
+   "label": "p0v5b_s116",
+   "mean_error_mps": 0.08099623520317008,
+   "nominal_episodes": 256,
+   "used_episodes": 256
+  },
+  {
+   "checkpoint_sha256": "100373d8e18badf51f0a0d15d4d410cb4ea83578100f18f4e55964285a29a44e",
+   "falls": 0,
+   "label": "p0v5b_s117",
+   "mean_error_mps": 0.08179033693164274,
+   "nominal_episodes": 256,
+   "used_episodes": 256
+  },
+  {
+   "checkpoint_sha256": "dd87778d215fe542a25cf0bef46fe67c7643194911ccf4717c987031a34a948e",
+   "falls": 0,
+   "label": "p0v5b_s118",
+   "mean_error_mps": 0.07618092768804798,
+   "nominal_episodes": 256,
+   "used_episodes": 256
+  },
+  {
+   "checkpoint_sha256": "5861d33eff71a4c66ca5fd808931ae1490809452f84d7f6737a145df27f44b26",
+   "falls": 0,
+   "label": "p0v5b_s119",
+   "mean_error_mps": 0.07966918183107191,
+   "nominal_episodes": 256,
+   "used_episodes": 256
+  },
+  {
+   "checkpoint_sha256": "2fd320c5883442cf7d8996ddb6226206e588dddc715ff06f4c62a0602d5e1d0c",
+   "falls": 0,
+   "label": "p0v5b_s120",
+   "mean_error_mps": 0.0765828800186781,
+   "nominal_episodes": 256,
+   "used_episodes": 256
+  },
+  {
+   "checkpoint_sha256": "a5b3de386334d54811b9b42e2c48aa9ecd1f1d6c877e85684c28ca097d2927b1",
+   "falls": 0,
+   "label": "p0v5b_s121",
+   "mean_error_mps": 0.08278184350256577,
+   "nominal_episodes": 256,
+   "used_episodes": 256
+  },
+  {
+   "checkpoint_sha256": "55873ab02a2bdf152bbbdffffe40538bc6e5d6550a2a3707c3da452dbd7d97ce",
+   "falls": 0,
+   "label": "p0v5b_s122",
+   "mean_error_mps": 0.08590003195772823,
+   "nominal_episodes": 256,
+   "used_episodes": 256
+  }
+ ],
+ "threshold_mps": 0.11870108961379214,
+ "version": 3
+}

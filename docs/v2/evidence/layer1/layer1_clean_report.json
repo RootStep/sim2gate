@@ -1,0 +1,1253 @@
+{
+ "check1_new_threshold_flags": 0,
+ "check2_limit": 1.0540540540540542,
+ "counts": {
+  "any_no_go": {
+   "flagged": 1,
+   "interval95": [
+    0.008881448800795402,
+    0.23613119344674205
+   ],
+   "of": 20,
+   "robots": [
+    "p0v5b_s122"
+   ]
+  },
+  "check1_recorded": {
+   "flagged": 1,
+   "interval95": [
+    0.008881448800795402,
+    0.23613119344674205
+   ],
+   "of": 20
+  },
+  "check2_leave_one_out": {
+   "flagged": 0,
+   "interval95": [
+    0.0,
+    0.16112515805281938
+   ],
+   "of": 20
+  },
+  "check5": {
+   "flagged": 0,
+   "interval95": [
+    0.0,
+    0.16112515805281938
+   ],
+   "of": 20
+  }
+ },
+ "protocol": "docs/v2/LAYER1_LIMITS_PROTOCOL.md",
+ "protocol_sha256": "3b72a48590c337160832c1862926e5bdd7b9984d38f5ff4d90ca964671498a18",
+ "robots": {
+  "p0v5b_s101": {
+   "check1_new_threshold": {
+    "flagged": false,
+    "flagged_params": [],
+    "status": "scored"
+   },
+   "check1_recorded": {
+    "cliffs": {
+     "action_latency_ms": null,
+     "added_base_mass_kg": null,
+     "ground_friction": 0.275,
+     "motor_strength_scale": null,
+     "observation_noise_scale": 2.5
+    },
+    "flagged": false,
+    "flagged_params": []
+   },
+   "check2": {
+    "clean_score": {
+     "driving_metric": "action_jitter_high_freq_power_share",
+     "floors_used": [],
+     "ratios": {
+      "action_jitter_high_freq_power_share": 0.9889317797132616,
+      "actuator_limit_step_share": 0.7435897435897435,
+      "foot_slip_p95_mps": 0.9382067433217358,
+      "ground_penetration_m": 0.6626117705902674
+     },
+     "score": 0.9889317797132616
+    },
+    "leave_one_out": {
+     "driving_metric": "action_jitter_high_freq_power_share",
+     "flagged": false,
+     "limit_from_others": 1.0540540540540542,
+     "score": 0.9889317797132616
+    },
+    "reported_only": {
+     "contact_force_p99_bw": 0.8329196572303772
+    }
+   },
+   "check5": {
+    "flagged": false,
+    "metrics": {
+     "error_ratio": 1.3951731470586028,
+     "newton_fall_free_rate": 1.0,
+     "newton_falls": 0,
+     "newton_mean_error_mps": 0.11585690969714904,
+     "newton_success_rate": 0.61328125,
+     "physx_falls": 1,
+     "physx_mean_error_mps": 0.08304124111147516,
+     "physx_success_rate": 0.9609375
+    },
+    "reasons": [],
+    "status": "scored"
+   },
+   "no_go": {
+    "check1": false,
+    "check2": false,
+    "check5": false
+   }
+  },
+  "p0v5b_s102": {
+   "check1_new_threshold": {
+    "flagged": false,
+    "flagged_params": [],
+    "status": "scored"
+   },
+   "check1_recorded": {
+    "cliffs": {
+     "action_latency_ms": null,
+     "added_base_mass_kg": null,
+     "ground_friction": 0.275,
+     "motor_strength_scale": null,
+     "observation_noise_scale": 2.1666666667
+    },
+    "flagged": false,
+    "flagged_params": []
+   },
+   "check2": {
+    "clean_score": {
+     "driving_metric": "foot_slip_p95_mps",
+     "floors_used": [],
+     "ratios": {
+      "action_jitter_high_freq_power_share": 0.8902572080784791,
+      "actuator_limit_step_share": 0.7136752136752137,
+      "foot_slip_p95_mps": 0.9435491557756769,
+      "ground_penetration_m": 0.5481151329802453
+     },
+     "score": 0.9435491557756769
+    },
+    "leave_one_out": {
+     "driving_metric": "foot_slip_p95_mps",
+     "flagged": false,
+     "limit_from_others": 1.0540540540540542,
+     "score": 0.9435491557756769
+    },
+    "reported_only": {
+     "contact_force_p99_bw": 0.821113109588623
+    }
+   },
+   "check5": {
+    "flagged": false,
+    "metrics": {
+     "error_ratio": 1.4328299582197495,
+     "newton_fall_free_rate": 1.0,
+     "newton_falls": 0,
+     "newton_mean_error_mps": 0.12102920840379829,
+     "newton_success_rate": 0.5625,
+     "physx_falls": 0,
+     "physx_mean_error_mps": 0.08446864731539648,
+     "physx_success_rate": 0.9453125
+    },
+    "reasons": [],
+    "status": "scored"
+   },
+   "no_go": {
+    "check1": false,
+    "check2": false,
+    "check5": false
+   }
+  },
+  "p0v5b_s103": {
+   "check1_new_threshold": {
+    "flagged": false,
+    "flagged_params": [],
+    "status": "scored"
+   },
+   "check1_recorded": {
+    "cliffs": {
+     "action_latency_ms": 45.0,
+     "added_base_mass_kg": null,
+     "ground_friction": 0.2,
+     "motor_strength_scale": null,
+     "observation_noise_scale": null
+    },
+    "flagged": false,
+    "flagged_params": []
+   },
+   "check2": {
+    "clean_score": {
+     "driving_metric": "foot_slip_p95_mps",
+     "floors_used": [],
+     "ratios": {
+      "action_jitter_high_freq_power_share": 0.8939456299233796,
+      "actuator_limit_step_share": 0.7478632478632478,
+      "foot_slip_p95_mps": 0.9146909548388209,
+      "ground_penetration_m": 0.548896652869529
+     },
+     "score": 0.9146909548388209
+    },
+    "leave_one_out": {
+     "driving_metric": "foot_slip_p95_mps",
+     "flagged": false,
+     "limit_from_others": 1.0540540540540542,
+     "score": 0.9146909548388209
+    },
+    "reported_only": {
+     "contact_force_p99_bw": 0.8151904940605164
+    }
+   },
+   "check5": {
+    "flagged": false,
+    "metrics": {
+     "error_ratio": 1.3332595931368405,
+     "newton_fall_free_rate": 1.0,
+     "newton_falls": 0,
+     "newton_mean_error_mps": 0.10425656712263577,
+     "newton_success_rate": 0.74609375,
+     "physx_falls": 0,
+     "physx_mean_error_mps": 0.07819675002476077,
+     "physx_success_rate": 0.96875
+    },
+    "reasons": [],
+    "status": "scored"
+   },
+   "no_go": {
+    "check1": false,
+    "check2": false,
+    "check5": false
+   }
+  },
+  "p0v5b_s104": {
+   "check1_new_threshold": {
+    "flagged": false,
+    "flagged_params": [],
+    "status": "scored"
+   },
+   "check1_recorded": {
+    "cliffs": {
+     "action_latency_ms": null,
+     "added_base_mass_kg": null,
+     "ground_friction": 0.275,
+     "motor_strength_scale": null,
+     "observation_noise_scale": 2.5
+    },
+    "flagged": false,
+    "flagged_params": []
+   },
+   "check2": {
+    "clean_score": {
+     "driving_metric": "foot_slip_p95_mps",
+     "floors_used": [],
+     "ratios": {
+      "action_jitter_high_freq_power_share": 0.8426756341427186,
+      "actuator_limit_step_share": 0.6752136752136751,
+      "foot_slip_p95_mps": 0.913443293830365,
+      "ground_penetration_m": 0.7037154780146534
+     },
+     "score": 0.913443293830365
+    },
+    "leave_one_out": {
+     "driving_metric": "foot_slip_p95_mps",
+     "flagged": false,
+     "limit_from_others": 1.0540540540540542,
+     "score": 0.913443293830365
+    },
+    "reported_only": {
+     "contact_force_p99_bw": 0.844987154006958
+    }
+   },
+   "check5": {
+    "flagged": false,
+    "metrics": {
+     "error_ratio": 1.5234368929127853,
+     "newton_fall_free_rate": 1.0,
+     "newton_falls": 0,
+     "newton_mean_error_mps": 0.11216445100071969,
+     "newton_success_rate": 0.68359375,
+     "physx_falls": 0,
+     "physx_mean_error_mps": 0.07362592538130226,
+     "physx_success_rate": 0.98828125
+    },
+    "reasons": [],
+    "status": "scored"
+   },
+   "no_go": {
+    "check1": false,
+    "check2": false,
+    "check5": false
+   }
+  },
+  "p0v5b_s105": {
+   "check1_new_threshold": {
+    "flagged": false,
+    "flagged_params": [],
+    "status": "scored"
+   },
+   "check1_recorded": {
+    "cliffs": {
+     "action_latency_ms": 45.0,
+     "added_base_mass_kg": null,
+     "ground_friction": 0.2,
+     "motor_strength_scale": null,
+     "observation_noise_scale": null
+    },
+    "flagged": false,
+    "flagged_params": []
+   },
+   "check2": {
+    "clean_score": {
+     "driving_metric": "foot_slip_p95_mps",
+     "floors_used": [],
+     "ratios": {
+      "action_jitter_high_freq_power_share": 0.8275447477421057,
+      "actuator_limit_step_share": 0.7307692307692308,
+      "foot_slip_p95_mps": 0.9046985310834825,
+      "ground_penetration_m": 0.5531332854354364
+     },
+     "score": 0.9046985310834825
+    },
+    "leave_one_out": {
+     "driving_metric": "foot_slip_p95_mps",
+     "flagged": false,
+     "limit_from_others": 1.0540540540540542,
+     "score": 0.9046985310834825
+    },
+    "reported_only": {
+     "contact_force_p99_bw": 0.8493896722793579
+    }
+   },
+   "check5": {
+    "flagged": false,
+    "metrics": {
+     "error_ratio": 1.349879319753515,
+     "newton_fall_free_rate": 1.0,
+     "newton_falls": 0,
+     "newton_mean_error_mps": 0.10387658904114667,
+     "newton_success_rate": 0.734375,
+     "physx_falls": 0,
+     "physx_mean_error_mps": 0.07695250050953763,
+     "physx_success_rate": 0.9609375
+    },
+    "reasons": [],
+    "status": "scored"
+   },
+   "no_go": {
+    "check1": false,
+    "check2": false,
+    "check5": false
+   }
+  },
+  "p0v5b_s107": {
+   "check1_new_threshold": {
+    "flagged": false,
+    "flagged_params": [],
+    "status": "scored"
+   },
+   "check1_recorded": {
+    "cliffs": {
+     "action_latency_ms": null,
+     "added_base_mass_kg": null,
+     "ground_friction": 0.2,
+     "motor_strength_scale": null,
+     "observation_noise_scale": null
+    },
+    "flagged": false,
+    "flagged_params": []
+   },
+   "check2": {
+    "clean_score": {
+     "driving_metric": "action_jitter_high_freq_power_share",
+     "floors_used": [],
+     "ratios": {
+      "action_jitter_high_freq_power_share": 1.0111920968804822,
+      "actuator_limit_step_share": 0.752136752136752,
+      "foot_slip_p95_mps": 0.9675043399354263,
+      "ground_penetration_m": 0.7194926425863168
+     },
+     "score": 1.0111920968804822
+    },
+    "leave_one_out": {
+     "driving_metric": "action_jitter_high_freq_power_share",
+     "flagged": false,
+     "limit_from_others": 1.0540540540540542,
+     "score": 1.0111920968804822
+    },
+    "reported_only": {
+     "contact_force_p99_bw": 0.8236255049705505
+    }
+   },
+   "check5": {
+    "flagged": false,
+    "metrics": {
+     "error_ratio": 1.3309005315267681,
+     "newton_fall_free_rate": 1.0,
+     "newton_falls": 0,
+     "newton_mean_error_mps": 0.10038248571470876,
+     "newton_success_rate": 0.72265625,
+     "physx_falls": 0,
+     "physx_mean_error_mps": 0.07542448390155278,
+     "physx_success_rate": 0.98828125
+    },
+    "reasons": [],
+    "status": "scored"
+   },
+   "no_go": {
+    "check1": false,
+    "check2": false,
+    "check5": false
+   }
+  },
+  "p0v5b_s108": {
+   "check1_new_threshold": {
+    "flagged": false,
+    "flagged_params": [],
+    "status": "scored"
+   },
+   "check1_recorded": {
+    "cliffs": {
+     "action_latency_ms": null,
+     "added_base_mass_kg": null,
+     "ground_friction": 0.275,
+     "motor_strength_scale": null,
+     "observation_noise_scale": 2.5
+    },
+    "flagged": false,
+    "flagged_params": []
+   },
+   "check2": {
+    "clean_score": {
+     "driving_metric": "foot_slip_p95_mps",
+     "floors_used": [],
+     "ratios": {
+      "action_jitter_high_freq_power_share": 0.8660425099809624,
+      "actuator_limit_step_share": 0.7478632478632478,
+      "foot_slip_p95_mps": 0.9533294711940308,
+      "ground_penetration_m": 0.7133316166387969
+     },
+     "score": 0.9533294711940308
+    },
+    "leave_one_out": {
+     "driving_metric": "foot_slip_p95_mps",
+     "flagged": false,
+     "limit_from_others": 1.0540540540540542,
+     "score": 0.9533294711940308
+    },
+    "reported_only": {
+     "contact_force_p99_bw": 0.8097001910209656
+    }
+   },
+   "check5": {
+    "flagged": false,
+    "metrics": {
+     "error_ratio": 1.3955608032344502,
+     "newton_fall_free_rate": 1.0,
+     "newton_falls": 0,
+     "newton_mean_error_mps": 0.11173769512084698,
+     "newton_success_rate": 0.65625,
+     "physx_falls": 1,
+     "physx_mean_error_mps": 0.08006651867971343,
+     "physx_success_rate": 0.95703125
+    },
+    "reasons": [],
+    "status": "scored"
+   },
+   "no_go": {
+    "check1": false,
+    "check2": false,
+    "check5": false
+   }
+  },
+  "p0v5b_s109": {
+   "check1_new_threshold": {
+    "flagged": false,
+    "flagged_params": [],
+    "status": "scored"
+   },
+   "check1_recorded": {
+    "cliffs": {
+     "action_latency_ms": null,
+     "added_base_mass_kg": null,
+     "ground_friction": 0.2,
+     "motor_strength_scale": null,
+     "observation_noise_scale": null
+    },
+    "flagged": false,
+    "flagged_params": []
+   },
+   "check2": {
+    "clean_score": {
+     "driving_metric": "action_jitter_high_freq_power_share",
+     "floors_used": [],
+     "ratios": {
+      "action_jitter_high_freq_power_share": 0.9833324820304685,
+      "actuator_limit_step_share": 0.8162393162393162,
+      "foot_slip_p95_mps": 0.9412356503738741,
+      "ground_penetration_m": 0.6408282945169624
+     },
+     "score": 0.9833324820304685
+    },
+    "leave_one_out": {
+     "driving_metric": "action_jitter_high_freq_power_share",
+     "flagged": false,
+     "limit_from_others": 1.0540540540540542,
+     "score": 0.9833324820304685
+    },
+    "reported_only": {
+     "contact_force_p99_bw": 0.8527098298072815
+    }
+   },
+   "check5": {
+    "flagged": false,
+    "metrics": {
+     "error_ratio": 1.4397064030523798,
+     "newton_fall_free_rate": 0.99609375,
+     "newton_falls": 1,
+     "newton_mean_error_mps": 0.1041230643090561,
+     "newton_success_rate": 0.734375,
+     "physx_falls": 0,
+     "physx_mean_error_mps": 0.07232242913437113,
+     "physx_success_rate": 0.984375
+    },
+    "reasons": [],
+    "status": "scored"
+   },
+   "no_go": {
+    "check1": false,
+    "check2": false,
+    "check5": false
+   }
+  },
+  "p0v5b_s110": {
+   "check1_new_threshold": {
+    "flagged": false,
+    "flagged_params": [],
+    "status": "scored"
+   },
+   "check1_recorded": {
+    "cliffs": {
+     "action_latency_ms": 45.0,
+     "added_base_mass_kg": null,
+     "ground_friction": 0.275,
+     "motor_strength_scale": null,
+     "observation_noise_scale": 2.1666666667
+    },
+    "flagged": false,
+    "flagged_params": []
+   },
+   "check2": {
+    "clean_score": {
+     "driving_metric": "foot_slip_p95_mps",
+     "floors_used": [],
+     "ratios": {
+      "action_jitter_high_freq_power_share": 0.7700755317911294,
+      "actuator_limit_step_share": 0.6581196581196581,
+      "foot_slip_p95_mps": 0.8814006176329637,
+      "ground_penetration_m": 0.7197957133501611
+     },
+     "score": 0.8814006176329637
+    },
+    "leave_one_out": {
+     "driving_metric": "foot_slip_p95_mps",
+     "flagged": false,
+     "limit_from_others": 1.0540540540540542,
+     "score": 0.8814006176329637
+    },
+    "reported_only": {
+     "contact_force_p99_bw": 0.8013208508491516
+    }
+   },
+   "check5": {
+    "flagged": false,
+    "metrics": {
+     "error_ratio": 1.5099756471038028,
+     "newton_fall_free_rate": 1.0,
+     "newton_falls": 0,
+     "newton_mean_error_mps": 0.12324215446988274,
+     "newton_success_rate": 0.453125,
+     "physx_falls": 0,
+     "physx_mean_error_mps": 0.0816186371656168,
+     "physx_success_rate": 0.9453125
+    },
+    "reasons": [],
+    "status": "scored"
+   },
+   "no_go": {
+    "check1": false,
+    "check2": false,
+    "check5": false
+   }
+  },
+  "p0v5b_s111": {
+   "check1_new_threshold": {
+    "flagged": false,
+    "flagged_params": [],
+    "status": "scored"
+   },
+   "check1_recorded": {
+    "cliffs": {
+     "action_latency_ms": 45.0,
+     "added_base_mass_kg": null,
+     "ground_friction": 0.275,
+     "motor_strength_scale": null,
+     "observation_noise_scale": 2.1666666667
+    },
+    "flagged": false,
+    "flagged_params": []
+   },
+   "check2": {
+    "clean_score": {
+     "driving_metric": "foot_slip_p95_mps",
+     "floors_used": [],
+     "ratios": {
+      "action_jitter_high_freq_power_share": 0.7275394284814768,
+      "actuator_limit_step_share": 0.6282051282051281,
+      "foot_slip_p95_mps": 0.9143517140673564,
+      "ground_penetration_m": 0.4734717709717551
+     },
+     "score": 0.9143517140673564
+    },
+    "leave_one_out": {
+     "driving_metric": "foot_slip_p95_mps",
+     "flagged": false,
+     "limit_from_others": 1.0540540540540542,
+     "score": 0.9143517140673564
+    },
+    "reported_only": {
+     "contact_force_p99_bw": 0.8064004182815552
+    }
+   },
+   "check5": {
+    "flagged": false,
+    "metrics": {
+     "error_ratio": 1.5166864187702374,
+     "newton_fall_free_rate": 1.0,
+     "newton_falls": 0,
+     "newton_mean_error_mps": 0.11973908548214342,
+     "newton_success_rate": 0.5546875,
+     "physx_falls": 0,
+     "physx_mean_error_mps": 0.07894781940437662,
+     "physx_success_rate": 0.9609375
+    },
+    "reasons": [],
+    "status": "scored"
+   },
+   "no_go": {
+    "check1": false,
+    "check2": false,
+    "check5": false
+   }
+  },
+  "p0v5b_s113": {
+   "check1_new_threshold": {
+    "flagged": false,
+    "flagged_params": [],
+    "status": "scored"
+   },
+   "check1_recorded": {
+    "cliffs": {
+     "action_latency_ms": null,
+     "added_base_mass_kg": null,
+     "ground_friction": 0.275,
+     "motor_strength_scale": null,
+     "observation_noise_scale": 2.5
+    },
+    "flagged": false,
+    "flagged_params": []
+   },
+   "check2": {
+    "clean_score": {
+     "driving_metric": "action_jitter_high_freq_power_share",
+     "floors_used": [],
+     "ratios": {
+      "action_jitter_high_freq_power_share": 0.9531372808637091,
+      "actuator_limit_step_share": 0.9487179487179487,
+      "foot_slip_p95_mps": 0.9193271790983142,
+      "ground_penetration_m": 0.592733295608441
+     },
+     "score": 0.9531372808637091
+    },
+    "leave_one_out": {
+     "driving_metric": "action_jitter_high_freq_power_share",
+     "flagged": false,
+     "limit_from_others": 1.225130890052356,
+     "score": 0.9531372808637091
+    },
+    "reported_only": {
+     "contact_force_p99_bw": 0.8749943375587463
+    }
+   },
+   "check5": {
+    "flagged": false,
+    "metrics": {
+     "error_ratio": 1.3276896819002926,
+     "newton_fall_free_rate": 1.0,
+     "newton_falls": 0,
+     "newton_mean_error_mps": 0.10939675073974962,
+     "newton_success_rate": 0.62890625,
+     "physx_falls": 0,
+     "physx_mean_error_mps": 0.08239632515873174,
+     "physx_success_rate": 0.92578125
+    },
+    "reasons": [],
+    "status": "scored"
+   },
+   "no_go": {
+    "check1": false,
+    "check2": false,
+    "check5": false
+   }
+  },
+  "p0v5b_s114": {
+   "check1_new_threshold": {
+    "flagged": false,
+    "flagged_params": [],
+    "status": "scored"
+   },
+   "check1_recorded": {
+    "cliffs": {
+     "action_latency_ms": 45.0,
+     "added_base_mass_kg": null,
+     "ground_friction": 0.2,
+     "motor_strength_scale": null,
+     "observation_noise_scale": null
+    },
+    "flagged": false,
+    "flagged_params": []
+   },
+   "check2": {
+    "clean_score": {
+     "driving_metric": "foot_slip_p95_mps",
+     "floors_used": [],
+     "ratios": {
+      "action_jitter_high_freq_power_share": 0.9339409350051404,
+      "actuator_limit_step_share": 0.6581196581196581,
+      "foot_slip_p95_mps": 0.9449442320783369,
+      "ground_penetration_m": 0.739653736353868
+     },
+     "score": 0.9449442320783369
+    },
+    "leave_one_out": {
+     "driving_metric": "foot_slip_p95_mps",
+     "flagged": false,
+     "limit_from_others": 1.0540540540540542,
+     "score": 0.9449442320783369
+    },
+    "reported_only": {
+     "contact_force_p99_bw": 0.8620309233665466
+    }
+   },
+   "check5": {
+    "flagged": false,
+    "metrics": {
+     "error_ratio": 1.431131049050736,
+     "newton_fall_free_rate": 1.0,
+     "newton_falls": 0,
+     "newton_mean_error_mps": 0.110962550305842,
+     "newton_success_rate": 0.6796875,
+     "physx_falls": 1,
+     "physx_mean_error_mps": 0.07753486333724857,
+     "physx_success_rate": 0.95703125
+    },
+    "reasons": [],
+    "status": "scored"
+   },
+   "no_go": {
+    "check1": false,
+    "check2": false,
+    "check5": false
+   }
+  },
+  "p0v5b_s115": {
+   "check1_new_threshold": {
+    "flagged": false,
+    "flagged_params": [],
+    "status": "scored"
+   },
+   "check1_recorded": {
+    "cliffs": {
+     "action_latency_ms": null,
+     "added_base_mass_kg": null,
+     "ground_friction": 0.275,
+     "motor_strength_scale": null,
+     "observation_noise_scale": 2.5
+    },
+    "flagged": false,
+    "flagged_params": []
+   },
+   "check2": {
+    "clean_score": {
+     "driving_metric": "foot_slip_p95_mps",
+     "floors_used": [],
+     "ratios": {
+      "action_jitter_high_freq_power_share": 0.8099708622093499,
+      "actuator_limit_step_share": 0.6452991452991452,
+      "foot_slip_p95_mps": 1.0335870948824297,
+      "ground_penetration_m": 0.9779399453624875
+     },
+     "score": 1.0335870948824297
+    },
+    "leave_one_out": {
+     "driving_metric": "foot_slip_p95_mps",
+     "flagged": false,
+     "limit_from_others": 1.1764902422923553,
+     "score": 1.0335870948824297
+    },
+    "reported_only": {
+     "contact_force_p99_bw": 0.8475329875946045
+    }
+   },
+   "check5": {
+    "flagged": false,
+    "metrics": {
+     "error_ratio": 1.4482552450856623,
+     "newton_fall_free_rate": 1.0,
+     "newton_falls": 0,
+     "newton_mean_error_mps": 0.11125423791736125,
+     "newton_success_rate": 0.6875,
+     "physx_falls": 0,
+     "physx_mean_error_mps": 0.07681949593821821,
+     "physx_success_rate": 0.9921875
+    },
+    "reasons": [],
+    "status": "scored"
+   },
+   "no_go": {
+    "check1": false,
+    "check2": false,
+    "check5": false
+   }
+  },
+  "p0v5b_s116": {
+   "check1_new_threshold": {
+    "flagged": false,
+    "flagged_params": [],
+    "status": "scored"
+   },
+   "check1_recorded": {
+    "cliffs": {
+     "action_latency_ms": 45.0,
+     "added_base_mass_kg": null,
+     "ground_friction": 0.275,
+     "motor_strength_scale": null,
+     "observation_noise_scale": 2.5
+    },
+    "flagged": false,
+    "flagged_params": []
+   },
+   "check2": {
+    "clean_score": {
+     "driving_metric": "foot_slip_p95_mps",
+     "floors_used": [],
+     "ratios": {
+      "action_jitter_high_freq_power_share": 0.9035123131256279,
+      "actuator_limit_step_share": 0.7008547008547008,
+      "foot_slip_p95_mps": 0.9365122628446512,
+      "ground_penetration_m": 0.6329272608973014
+     },
+     "score": 0.9365122628446512
+    },
+    "leave_one_out": {
+     "driving_metric": "foot_slip_p95_mps",
+     "flagged": false,
+     "limit_from_others": 1.0540540540540542,
+     "score": 0.9365122628446512
+    },
+    "reported_only": {
+     "contact_force_p99_bw": 0.8533486127853394
+    }
+   },
+   "check5": {
+    "flagged": false,
+    "metrics": {
+     "error_ratio": 1.4121051404576352,
+     "newton_fall_free_rate": 1.0,
+     "newton_falls": 0,
+     "newton_mean_error_mps": 0.11437520008811214,
+     "newton_success_rate": 0.59765625,
+     "physx_falls": 0,
+     "physx_mean_error_mps": 0.08099623520317008,
+     "physx_success_rate": 0.96484375
+    },
+    "reasons": [],
+    "status": "scored"
+   },
+   "no_go": {
+    "check1": false,
+    "check2": false,
+    "check5": false
+   }
+  },
+  "p0v5b_s117": {
+   "check1_new_threshold": {
+    "flagged": false,
+    "flagged_params": [],
+    "status": "scored"
+   },
+   "check1_recorded": {
+    "cliffs": {
+     "action_latency_ms": 40.0,
+     "added_base_mass_kg": null,
+     "ground_friction": 0.275,
+     "motor_strength_scale": null,
+     "observation_noise_scale": 2.3333333333
+    },
+    "flagged": false,
+    "flagged_params": []
+   },
+   "check2": {
+    "clean_score": {
+     "driving_metric": "foot_slip_p95_mps",
+     "floors_used": [],
+     "ratios": {
+      "action_jitter_high_freq_power_share": 0.7463436584942201,
+      "actuator_limit_step_share": 0.7264957264957265,
+      "foot_slip_p95_mps": 0.9457690683737853,
+      "ground_penetration_m": 0.5630842854629883
+     },
+     "score": 0.9457690683737853
+    },
+    "leave_one_out": {
+     "driving_metric": "foot_slip_p95_mps",
+     "flagged": false,
+     "limit_from_others": 1.0540540540540542,
+     "score": 0.9457690683737853
+    },
+    "reported_only": {
+     "contact_force_p99_bw": 0.8227618336677551
+    }
+   },
+   "check5": {
+    "flagged": false,
+    "metrics": {
+     "error_ratio": 1.4782205585811894,
+     "newton_fall_free_rate": 1.0,
+     "newton_falls": 0,
+     "newton_mean_error_mps": 0.12090415754563662,
+     "newton_success_rate": 0.56640625,
+     "physx_falls": 0,
+     "physx_mean_error_mps": 0.08179033693164274,
+     "physx_success_rate": 0.96484375
+    },
+    "reasons": [],
+    "status": "scored"
+   },
+   "no_go": {
+    "check1": false,
+    "check2": false,
+    "check5": false
+   }
+  },
+  "p0v5b_s118": {
+   "check1_new_threshold": {
+    "flagged": false,
+    "flagged_params": [],
+    "status": "scored"
+   },
+   "check1_recorded": {
+    "cliffs": {
+     "action_latency_ms": 45.0,
+     "added_base_mass_kg": null,
+     "ground_friction": 0.275,
+     "motor_strength_scale": null,
+     "observation_noise_scale": null
+    },
+    "flagged": false,
+    "flagged_params": []
+   },
+   "check2": {
+    "clean_score": {
+     "driving_metric": "foot_slip_p95_mps",
+     "floors_used": [],
+     "ratios": {
+      "action_jitter_high_freq_power_share": 0.8235710820757793,
+      "actuator_limit_step_share": 0.7222222222222222,
+      "foot_slip_p95_mps": 0.9167107564777555,
+      "ground_penetration_m": 0.8499858001809947
+     },
+     "score": 0.9167107564777555
+    },
+    "leave_one_out": {
+     "driving_metric": "foot_slip_p95_mps",
+     "flagged": false,
+     "limit_from_others": 1.0540540540540542,
+     "score": 0.9167107564777555
+    },
+    "reported_only": {
+     "contact_force_p99_bw": 0.830691933631897
+    }
+   },
+   "check5": {
+    "flagged": false,
+    "metrics": {
+     "error_ratio": 1.5193680767478424,
+     "newton_fall_free_rate": 1.0,
+     "newton_falls": 0,
+     "newton_mean_error_mps": 0.11574686958625591,
+     "newton_success_rate": 0.625,
+     "physx_falls": 0,
+     "physx_mean_error_mps": 0.07618092768804798,
+     "physx_success_rate": 0.98828125
+    },
+    "reasons": [],
+    "status": "scored"
+   },
+   "no_go": {
+    "check1": false,
+    "check2": false,
+    "check5": false
+   }
+  },
+  "p0v5b_s119": {
+   "check1_new_threshold": {
+    "flagged": false,
+    "flagged_params": [],
+    "status": "scored"
+   },
+   "check1_recorded": {
+    "cliffs": {
+     "action_latency_ms": null,
+     "added_base_mass_kg": null,
+     "ground_friction": 0.275,
+     "motor_strength_scale": null,
+     "observation_noise_scale": 2.3333333333
+    },
+    "flagged": false,
+    "flagged_params": []
+   },
+   "check2": {
+    "clean_score": {
+     "driving_metric": "foot_slip_p95_mps",
+     "floors_used": [],
+     "ratios": {
+      "action_jitter_high_freq_power_share": 0.7424080222586964,
+      "actuator_limit_step_share": 0.6324786324786325,
+      "foot_slip_p95_mps": 0.94250379309362,
+      "ground_penetration_m": 0.6179936079620717
+     },
+     "score": 0.94250379309362
+    },
+    "leave_one_out": {
+     "driving_metric": "foot_slip_p95_mps",
+     "flagged": false,
+     "limit_from_others": 1.0540540540540542,
+     "score": 0.94250379309362
+    },
+    "reported_only": {
+     "contact_force_p99_bw": 0.8089877963066101
+    }
+   },
+   "check5": {
+    "flagged": false,
+    "metrics": {
+     "error_ratio": 1.614258628975503,
+     "newton_fall_free_rate": 1.0,
+     "newton_falls": 0,
+     "newton_mean_error_mps": 0.1286066642342262,
+     "newton_success_rate": 0.4296875,
+     "physx_falls": 0,
+     "physx_mean_error_mps": 0.07966918183107191,
+     "physx_success_rate": 0.984375
+    },
+    "reasons": [],
+    "status": "scored"
+   },
+   "no_go": {
+    "check1": false,
+    "check2": false,
+    "check5": false
+   }
+  },
+  "p0v5b_s120": {
+   "check1_new_threshold": {
+    "flagged": false,
+    "flagged_params": [],
+    "status": "scored"
+   },
+   "check1_recorded": {
+    "cliffs": {
+     "action_latency_ms": 45.0,
+     "added_base_mass_kg": null,
+     "ground_friction": 0.2,
+     "motor_strength_scale": null,
+     "observation_noise_scale": null
+    },
+    "flagged": false,
+    "flagged_params": []
+   },
+   "check2": {
+    "clean_score": {
+     "driving_metric": "foot_slip_p95_mps",
+     "floors_used": [],
+     "ratios": {
+      "action_jitter_high_freq_power_share": 0.6608819827068988,
+      "actuator_limit_step_share": 0.6324786324786325,
+      "foot_slip_p95_mps": 0.9274211669537862,
+      "ground_penetration_m": 0.8447329268370221
+     },
+     "score": 0.9274211669537862
+    },
+    "leave_one_out": {
+     "driving_metric": "foot_slip_p95_mps",
+     "flagged": false,
+     "limit_from_others": 1.0540540540540542,
+     "score": 0.9274211669537862
+    },
+    "reported_only": {
+     "contact_force_p99_bw": 0.8294772505760193
+    }
+   },
+   "check5": {
+    "flagged": false,
+    "metrics": {
+     "error_ratio": 1.4903529188551092,
+     "newton_fall_free_rate": 1.0,
+     "newton_falls": 0,
+     "newton_mean_error_mps": 0.11413551877016753,
+     "newton_success_rate": 0.62890625,
+     "physx_falls": 0,
+     "physx_mean_error_mps": 0.0765828800186781,
+     "physx_success_rate": 0.9453125
+    },
+    "reasons": [],
+    "status": "scored"
+   },
+   "no_go": {
+    "check1": false,
+    "check2": false,
+    "check5": false
+   }
+  },
+  "p0v5b_s121": {
+   "check1_new_threshold": {
+    "flagged": false,
+    "flagged_params": [],
+    "status": "scored"
+   },
+   "check1_recorded": {
+    "cliffs": {
+     "action_latency_ms": 45.0,
+     "added_base_mass_kg": null,
+     "ground_friction": 0.275,
+     "motor_strength_scale": null,
+     "observation_noise_scale": 2.3333333333
+    },
+    "flagged": false,
+    "flagged_params": []
+   },
+   "check2": {
+    "clean_score": {
+     "driving_metric": "ground_penetration_m",
+     "floors_used": [],
+     "ratios": {
+      "action_jitter_high_freq_power_share": 0.9439847731653689,
+      "actuator_limit_step_share": 0.7008547008547008,
+      "foot_slip_p95_mps": 0.9172180268224249,
+      "ground_penetration_m": 1.0225576782522527
+     },
+     "score": 1.0225576782522527
+    },
+    "leave_one_out": {
+     "driving_metric": "ground_penetration_m",
+     "flagged": false,
+     "limit_from_others": 1.1505368032668857,
+     "score": 1.0225576782522527
+    },
+    "reported_only": {
+     "contact_force_p99_bw": 0.8560994863510132
+    }
+   },
+   "check5": {
+    "flagged": false,
+    "metrics": {
+     "error_ratio": 1.3164433182100572,
+     "newton_fall_free_rate": 1.0,
+     "newton_falls": 0,
+     "newton_mean_error_mps": 0.10897760474806335,
+     "newton_success_rate": 0.6875,
+     "physx_falls": 0,
+     "physx_mean_error_mps": 0.08278184350256577,
+     "physx_success_rate": 0.984375
+    },
+    "reasons": [],
+    "status": "scored"
+   },
+   "no_go": {
+    "check1": false,
+    "check2": false,
+    "check5": false
+   }
+  },
+  "p0v5b_s122": {
+   "check1_new_threshold": {
+    "flagged": false,
+    "flagged_params": [],
+    "status": "scored"
+   },
+   "check1_recorded": {
+    "cliffs": {
+     "action_latency_ms": 45.0,
+     "added_base_mass_kg": null,
+     "ground_friction": 0.275,
+     "motor_strength_scale": null,
+     "observation_noise_scale": 1.6666666667
+    },
+    "flagged": true,
+    "flagged_params": [
+     "observation_noise_scale"
+    ]
+   },
+   "check2": {
+    "clean_score": {
+     "driving_metric": "actuator_limit_step_share",
+     "floors_used": [],
+     "ratios": {
+      "action_jitter_high_freq_power_share": 0.8336359526739978,
+      "actuator_limit_step_share": 1.0540540540540542,
+      "foot_slip_p95_mps": 0.9419810786106638,
+      "ground_penetration_m": 0.6745989610818991
+     },
+     "score": 1.0540540540540542
+    },
+    "leave_one_out": {
+     "driving_metric": "actuator_limit_step_share",
+     "flagged": false,
+     "limit_from_others": 1.162303664921466,
+     "score": 1.0540540540540542
+    },
+    "reported_only": {
+     "contact_force_p99_bw": 0.8772261142730713
+    }
+   },
+   "check5": {
+    "flagged": false,
+    "metrics": {
+     "error_ratio": 1.433439668349429,
+     "newton_fall_free_rate": 1.0,
+     "newton_falls": 0,
+     "newton_mean_error_mps": 0.12313251332069132,
+     "newton_success_rate": 0.5546875,
+     "physx_falls": 0,
+     "physx_mean_error_mps": 0.08590003195772823,
+     "physx_success_rate": 0.91796875
+    },
+    "reasons": [],
+    "status": "scored"
+   },
+   "no_go": {
+    "check1": true,
+    "check2": false,
+    "check5": false
+   }
+  }
+ },
+ "stop_rule": {
+  "no_go": 1,
+  "stop": false,
+  "stop_if_more_than": 3
+ },
+ "success_threshold_mps": 0.11870108961379214
+}

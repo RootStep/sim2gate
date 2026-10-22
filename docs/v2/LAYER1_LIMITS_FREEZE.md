@@ -14,3 +14,7 @@ approval; none may change a limit after the analysis has run.
 
 - Oct 22, 2026: also approved, keep criterion C3 (ρ against standard diagnostics) in phase 2. It is computed from the
   same training records, with no extra robots or GPU time.
+- Oct 22, 2026: computed once (commit `5d1696a`) from `phase1-clean-measurements.tgz` (`9e1be170…`).
+  - Results: success threshold 0.1187 m/s, combined check 2 limit 1.0541.
+  - Clean robots with a no-go: 1 of 20; the stop rule was not triggered.
+  - Details: `evidence/layer1/README.md`.

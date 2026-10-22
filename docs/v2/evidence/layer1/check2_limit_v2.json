@@ -1,0 +1,552 @@
+{
+ "clean_maxima": {
+  "action_jitter_high_freq_power_share": 0.009352703334497024,
+  "actuator_limit_step_share": 0.00365625,
+  "foot_slip_p95_mps": 0.11240415275096893,
+  "ground_penetration_m": 0.0035154595971107483
+ },
+ "clean_scores": {
+  "p0v5b_s101": {
+   "driving_metric": "action_jitter_high_freq_power_share",
+   "floors_used": [],
+   "ratios": {
+    "action_jitter_high_freq_power_share": 0.9889317797132616,
+    "actuator_limit_step_share": 0.7435897435897435,
+    "foot_slip_p95_mps": 0.9382067433217358,
+    "ground_penetration_m": 0.6626117705902674
+   },
+   "score": 0.9889317797132616
+  },
+  "p0v5b_s102": {
+   "driving_metric": "foot_slip_p95_mps",
+   "floors_used": [],
+   "ratios": {
+    "action_jitter_high_freq_power_share": 0.8902572080784791,
+    "actuator_limit_step_share": 0.7136752136752137,
+    "foot_slip_p95_mps": 0.9435491557756769,
+    "ground_penetration_m": 0.5481151329802453
+   },
+   "score": 0.9435491557756769
+  },
+  "p0v5b_s103": {
+   "driving_metric": "foot_slip_p95_mps",
+   "floors_used": [],
+   "ratios": {
+    "action_jitter_high_freq_power_share": 0.8939456299233796,
+    "actuator_limit_step_share": 0.7478632478632478,
+    "foot_slip_p95_mps": 0.9146909548388209,
+    "ground_penetration_m": 0.548896652869529
+   },
+   "score": 0.9146909548388209
+  },
+  "p0v5b_s104": {
+   "driving_metric": "foot_slip_p95_mps",
+   "floors_used": [],
+   "ratios": {
+    "action_jitter_high_freq_power_share": 0.8426756341427186,
+    "actuator_limit_step_share": 0.6752136752136751,
+    "foot_slip_p95_mps": 0.913443293830365,
+    "ground_penetration_m": 0.7037154780146534
+   },
+   "score": 0.913443293830365
+  },
+  "p0v5b_s105": {
+   "driving_metric": "foot_slip_p95_mps",
+   "floors_used": [],
+   "ratios": {
+    "action_jitter_high_freq_power_share": 0.8275447477421057,
+    "actuator_limit_step_share": 0.7307692307692308,
+    "foot_slip_p95_mps": 0.9046985310834825,
+    "ground_penetration_m": 0.5531332854354364
+   },
+   "score": 0.9046985310834825
+  },
+  "p0v5b_s107": {
+   "driving_metric": "action_jitter_high_freq_power_share",
+   "floors_used": [],
+   "ratios": {
+    "action_jitter_high_freq_power_share": 1.0111920968804822,
+    "actuator_limit_step_share": 0.752136752136752,
+    "foot_slip_p95_mps": 0.9675043399354263,
+    "ground_penetration_m": 0.7194926425863168
+   },
+   "score": 1.0111920968804822
+  },
+  "p0v5b_s108": {
+   "driving_metric": "foot_slip_p95_mps",
+   "floors_used": [],
+   "ratios": {
+    "action_jitter_high_freq_power_share": 0.8660425099809624,
+    "actuator_limit_step_share": 0.7478632478632478,
+    "foot_slip_p95_mps": 0.9533294711940308,
+    "ground_penetration_m": 0.7133316166387969
+   },
+   "score": 0.9533294711940308
+  },
+  "p0v5b_s109": {
+   "driving_metric": "action_jitter_high_freq_power_share",
+   "floors_used": [],
+   "ratios": {
+    "action_jitter_high_freq_power_share": 0.9833324820304685,
+    "actuator_limit_step_share": 0.8162393162393162,
+    "foot_slip_p95_mps": 0.9412356503738741,
+    "ground_penetration_m": 0.6408282945169624
+   },
+   "score": 0.9833324820304685
+  },
+  "p0v5b_s110": {
+   "driving_metric": "foot_slip_p95_mps",
+   "floors_used": [],
+   "ratios": {
+    "action_jitter_high_freq_power_share": 0.7700755317911294,
+    "actuator_limit_step_share": 0.6581196581196581,
+    "foot_slip_p95_mps": 0.8814006176329637,
+    "ground_penetration_m": 0.7197957133501611
+   },
+   "score": 0.8814006176329637
+  },
+  "p0v5b_s111": {
+   "driving_metric": "foot_slip_p95_mps",
+   "floors_used": [],
+   "ratios": {
+    "action_jitter_high_freq_power_share": 0.7275394284814768,
+    "actuator_limit_step_share": 0.6282051282051281,
+    "foot_slip_p95_mps": 0.9143517140673564,
+    "ground_penetration_m": 0.4734717709717551
+   },
+   "score": 0.9143517140673564
+  },
+  "p0v5b_s113": {
+   "driving_metric": "action_jitter_high_freq_power_share",
+   "floors_used": [],
+   "ratios": {
+    "action_jitter_high_freq_power_share": 0.9531372808637091,
+    "actuator_limit_step_share": 0.9487179487179487,
+    "foot_slip_p95_mps": 0.9193271790983142,
+    "ground_penetration_m": 0.592733295608441
+   },
+   "score": 0.9531372808637091
+  },
+  "p0v5b_s114": {
+   "driving_metric": "foot_slip_p95_mps",
+   "floors_used": [],
+   "ratios": {
+    "action_jitter_high_freq_power_share": 0.9339409350051404,
+    "actuator_limit_step_share": 0.6581196581196581,
+    "foot_slip_p95_mps": 0.9449442320783369,
+    "ground_penetration_m": 0.739653736353868
+   },
+   "score": 0.9449442320783369
+  },
+  "p0v5b_s115": {
+   "driving_metric": "foot_slip_p95_mps",
+   "floors_used": [],
+   "ratios": {
+    "action_jitter_high_freq_power_share": 0.8099708622093499,
+    "actuator_limit_step_share": 0.6452991452991452,
+    "foot_slip_p95_mps": 1.0335870948824297,
+    "ground_penetration_m": 0.9779399453624875
+   },
+   "score": 1.0335870948824297
+  },
+  "p0v5b_s116": {
+   "driving_metric": "foot_slip_p95_mps",
+   "floors_used": [],
+   "ratios": {
+    "action_jitter_high_freq_power_share": 0.9035123131256279,
+    "actuator_limit_step_share": 0.7008547008547008,
+    "foot_slip_p95_mps": 0.9365122628446512,
+    "ground_penetration_m": 0.6329272608973014
+   },
+   "score": 0.9365122628446512
+  },
+  "p0v5b_s117": {
+   "driving_metric": "foot_slip_p95_mps",
+   "floors_used": [],
+   "ratios": {
+    "action_jitter_high_freq_power_share": 0.7463436584942201,
+    "actuator_limit_step_share": 0.7264957264957265,
+    "foot_slip_p95_mps": 0.9457690683737853,
+    "ground_penetration_m": 0.5630842854629883
+   },
+   "score": 0.9457690683737853
+  },
+  "p0v5b_s118": {
+   "driving_metric": "foot_slip_p95_mps",
+   "floors_used": [],
+   "ratios": {
+    "action_jitter_high_freq_power_share": 0.8235710820757793,
+    "actuator_limit_step_share": 0.7222222222222222,
+    "foot_slip_p95_mps": 0.9167107564777555,
+    "ground_penetration_m": 0.8499858001809947
+   },
+   "score": 0.9167107564777555
+  },
+  "p0v5b_s119": {
+   "driving_metric": "foot_slip_p95_mps",
+   "floors_used": [],
+   "ratios": {
+    "action_jitter_high_freq_power_share": 0.7424080222586964,
+    "actuator_limit_step_share": 0.6324786324786325,
+    "foot_slip_p95_mps": 0.94250379309362,
+    "ground_penetration_m": 0.6179936079620717
+   },
+   "score": 0.94250379309362
+  },
+  "p0v5b_s120": {
+   "driving_metric": "foot_slip_p95_mps",
+   "floors_used": [],
+   "ratios": {
+    "action_jitter_high_freq_power_share": 0.6608819827068988,
+    "actuator_limit_step_share": 0.6324786324786325,
+    "foot_slip_p95_mps": 0.9274211669537862,
+    "ground_penetration_m": 0.8447329268370221
+   },
+   "score": 0.9274211669537862
+  },
+  "p0v5b_s121": {
+   "driving_metric": "ground_penetration_m",
+   "floors_used": [],
+   "ratios": {
+    "action_jitter_high_freq_power_share": 0.9439847731653689,
+    "actuator_limit_step_share": 0.7008547008547008,
+    "foot_slip_p95_mps": 0.9172180268224249,
+    "ground_penetration_m": 1.0225576782522527
+   },
+   "score": 1.0225576782522527
+  },
+  "p0v5b_s122": {
+   "driving_metric": "actuator_limit_step_share",
+   "floors_used": [],
+   "ratios": {
+    "action_jitter_high_freq_power_share": 0.8336359526739978,
+    "actuator_limit_step_share": 1.0540540540540542,
+    "foot_slip_p95_mps": 0.9419810786106638,
+    "ground_penetration_m": 0.6745989610818991
+   },
+   "score": 1.0540540540540542
+  }
+ },
+ "clean_values": {
+  "p0v5b_s101": {
+   "action_jitter_high_freq_power_share": 0.009249185553714298,
+   "actuator_limit_step_share": 0.00271875,
+   "foot_slip_p95_mps": 0.1054583340883255,
+   "ground_penetration_m": 0.002329384908080101
+  },
+  "p0v5b_s102": {
+   "action_jitter_high_freq_power_share": 0.008326311558555602,
+   "actuator_limit_step_share": 0.002609375,
+   "foot_slip_p95_mps": 0.10605884343385696,
+   "ground_penetration_m": 0.0019268766045570374
+  },
+  "p0v5b_s103": {
+   "action_jitter_high_freq_power_share": 0.008360808273843435,
+   "actuator_limit_step_share": 0.002734375,
+   "foot_slip_p95_mps": 0.10281506180763245,
+   "ground_penetration_m": 0.001929624006152153
+  },
+  "p0v5b_s104": {
+   "action_jitter_high_freq_power_share": 0.007881295213345999,
+   "actuator_limit_step_share": 0.00246875,
+   "foot_slip_p95_mps": 0.10267481952905655,
+   "ground_penetration_m": 0.002473883330821991
+  },
+  "p0v5b_s105": {
+   "action_jitter_high_freq_power_share": 0.007739780521653091,
+   "actuator_limit_step_share": 0.002671875,
+   "foot_slip_p95_mps": 0.10169187188148499,
+   "ground_penetration_m": 0.0019445177167654037
+  },
+  "p0v5b_s107": {
+   "action_jitter_high_freq_power_share": 0.009352703334497024,
+   "actuator_limit_step_share": 0.00275,
+   "foot_slip_p95_mps": 0.10875150561332703,
+   "ground_penetration_m": 0.002529347315430641
+  },
+  "p0v5b_s108": {
+   "action_jitter_high_freq_power_share": 0.00809983867091512,
+   "actuator_limit_step_share": 0.002734375,
+   "foot_slip_p95_mps": 0.10715819150209427,
+   "ground_penetration_m": 0.0025076884776353836
+  },
+  "p0v5b_s109": {
+   "action_jitter_high_freq_power_share": 0.009196816983605598,
+   "actuator_limit_step_share": 0.002984375,
+   "foot_slip_p95_mps": 0.10579879581928253,
+   "ground_penetration_m": 0.0022528059780597687
+  },
+  "p0v5b_s110": {
+   "action_jitter_high_freq_power_share": 0.007202287993997465,
+   "actuator_limit_step_share": 0.00240625,
+   "foot_slip_p95_mps": 0.09907308965921402,
+   "ground_penetration_m": 0.0025304127484560013
+  },
+  "p0v5b_s111": {
+   "action_jitter_high_freq_power_share": 0.006804460438736767,
+   "actuator_limit_step_share": 0.002296875,
+   "foot_slip_p95_mps": 0.10277692973613739,
+   "ground_penetration_m": 0.0016644708812236786
+  },
+  "p0v5b_s113": {
+   "action_jitter_high_freq_power_share": 0.008914410224967438,
+   "actuator_limit_step_share": 0.00346875,
+   "foot_slip_p95_mps": 0.10333619266748428,
+   "ground_penetration_m": 0.0020837299525737762
+  },
+  "p0v5b_s114": {
+   "action_jitter_high_freq_power_share": 0.008734872497045845,
+   "actuator_limit_step_share": 0.00240625,
+   "foot_slip_p95_mps": 0.10621565580368042,
+   "ground_penetration_m": 0.0026002228260040283
+  },
+  "p0v5b_s115": {
+   "action_jitter_high_freq_power_share": 0.007575417183830816,
+   "actuator_limit_step_share": 0.002359375,
+   "foot_slip_p95_mps": 0.11240415275096893,
+   "ground_penetration_m": 0.0034379083663225174
+  },
+  "p0v5b_s116": {
+   "action_jitter_high_freq_power_share": 0.00845028262372918,
+   "actuator_limit_step_share": 0.0025625,
+   "foot_slip_p95_mps": 0.10526786744594574,
+   "ground_penetration_m": 0.0022250302135944366
+  },
+  "p0v5b_s117": {
+   "action_jitter_high_freq_power_share": 0.006980330823479601,
+   "actuator_limit_step_share": 0.00265625,
+   "foot_slip_p95_mps": 0.10630837082862854,
+   "ground_penetration_m": 0.0019795000553131104
+  },
+  "p0v5b_s118": {
+   "action_jitter_high_freq_power_share": 0.007702616005525464,
+   "actuator_limit_step_share": 0.002640625,
+   "foot_slip_p95_mps": 0.10304209589958191,
+   "ground_penetration_m": 0.0029880907386541367
+  },
+  "p0v5b_s119": {
+   "action_jitter_high_freq_power_share": 0.00694352198533625,
+   "actuator_limit_step_share": 0.0023125,
+   "foot_slip_p95_mps": 0.10594134032726288,
+   "ground_penetration_m": 0.002172531560063362
+  },
+  "p0v5b_s120": {
+   "action_jitter_high_freq_power_share": 0.006181033123371817,
+   "actuator_limit_step_share": 0.0023125,
+   "foot_slip_p95_mps": 0.10424599051475525,
+   "ground_penetration_m": 0.002969624474644661
+  },
+  "p0v5b_s121": {
+   "action_jitter_high_freq_power_share": 0.008828809535698163,
+   "actuator_limit_step_share": 0.0025625,
+   "foot_slip_p95_mps": 0.10309911519289017,
+   "ground_penetration_m": 0.0035154595971107483
+  },
+  "p0v5b_s122": {
+   "action_jitter_high_freq_power_share": 0.0077967497543307025,
+   "actuator_limit_step_share": 0.00365625,
+   "foot_slip_p95_mps": 0.10588258504867554,
+   "ground_penetration_m": 0.002371525391936302
+  }
+ },
+ "command_set": {
+  "n": 64,
+  "ranges": {
+   "ang_vel_z": [
+    -1.0,
+    1.0
+   ],
+   "lin_vel_x": [
+    -1.0,
+    1.0
+   ],
+   "lin_vel_y": [
+    -1.0,
+    1.0
+   ]
+  },
+  "seed": 20261012,
+  "sha256": "56222a90befd10592b31ac2a15155d1ffa8d5bb908cb9ee075df8bc8a0df2cea",
+  "source": "/isaac-sim/kit/python/lib/python3.12/site-packages/sim2gate/mvp/go2_flat_commands_64.json"
+ },
+ "contact_force_samples_per_step": 4,
+ "floors": {
+  "action_jitter_high_freq_power_share": 0.0001,
+  "actuator_limit_step_share": 0.0001,
+  "foot_slip_p95_mps": 0.001,
+  "ground_penetration_m": 0.0001
+ },
+ "floors_used_for_new_robots": [],
+ "limit": 1.0540540540540542,
+ "measurement_config": {
+  "contact_force_n": 1.0,
+  "dt": 0.02,
+  "flat_ground": true,
+  "foot_geometry": "collision_shapes",
+  "foot_radius_m": 0.0,
+  "jitter_window": 50,
+  "measurement_version": 3,
+  "penetration_tol_m": 0.005
+ },
+ "metrics": [
+  "foot_slip_p95_mps",
+  "ground_penetration_m",
+  "actuator_limit_step_share",
+  "action_jitter_high_freq_power_share"
+ ],
+ "physics_context": {
+  "overrides": [
+   "physics=isaacsim_physx"
+  ],
+  "physics_handles_decimation": false
+ },
+ "protocol": "docs/v2/LAYER1_LIMITS_PROTOCOL.md",
+ "protocol_sha256": "3b72a48590c337160832c1862926e5bdd7b9984d38f5ff4d90ca964671498a18",
+ "reported_only": [
+  "contact_force_p99_bw"
+ ],
+ "rule": "flag when max over metrics of value / max(clean maximum, floor) exceeds the limit",
+ "sources": [
+  {
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_20-28-49/model_1999.pt",
+   "checkpoint_sha256": "14e03fab96f671e5b45c43ffefe947ea11754c6a07634d232c58b67745befe62",
+   "env_steps": 64000,
+   "report": "/home/claude/sim2gate-repo/p0v5b_s101",
+   "report_sha256": "90ccf5650c0b63b959b07f4ba2d52c385d255a15079c34cb8369cf140fcaa43b"
+  },
+  {
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_21-25-39/model_1999.pt",
+   "checkpoint_sha256": "dcd188cbf70d0c9c0a94cd1dd2165e714c977c9db67382563900f96358e0989b",
+   "env_steps": 64000,
+   "report": "/home/claude/sim2gate-repo/p0v5b_s102",
+   "report_sha256": "95c9811986060d374b2f80fe09cb92efd3dec3bb8a9c0d9677b3a3dcfbe1ef84"
+  },
+  {
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_22-18-59/model_1999.pt",
+   "checkpoint_sha256": "612ea5b6f092e44b338fa74d88b2d9c8befb3481e0202c9026295edc7d941343",
+   "env_steps": 64000,
+   "report": "/home/claude/sim2gate-repo/p0v5b_s103",
+   "report_sha256": "f976ee3580a9d079d9cb33e3d45aae26707192002dd7bec33e9691470298cdc5"
+  },
+  {
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_23-14-16/model_1999.pt",
+   "checkpoint_sha256": "7c3061069ae3571e8b11c1719db4a578f24844e156745c66968a2c34d7ea2215",
+   "env_steps": 64000,
+   "report": "/home/claude/sim2gate-repo/p0v5b_s104",
+   "report_sha256": "8c9608ed87b71f8d8c12908f3729d9e8d95ae92721f3762e873195b65f5fb0c8"
+  },
+  {
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_00-08-49/model_1999.pt",
+   "checkpoint_sha256": "4891931732af39e55fee00cd9ea7aa5c99b664969837b3fccadd4d19f579e46e",
+   "env_steps": 64000,
+   "report": "/home/claude/sim2gate-repo/p0v5b_s105",
+   "report_sha256": "6e9061e5ff3fecc92ef7c393f0b9c6614c6ba8e4d319b004bfadfc6444da1284"
+  },
+  {
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_01-52-53/model_1999.pt",
+   "checkpoint_sha256": "d371877538484ffeb7aa157a7d3988b9d330324c829e4a9434ded52d426cac8c",
+   "env_steps": 64000,
+   "report": "/home/claude/sim2gate-repo/p0v5b_s107",
+   "report_sha256": "51a76a30db21d6102e4db6ecdb505e9b6c4b09622c9fabb27fa933f3e730c05e"
+  },
+  {
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_02-48-20/model_1999.pt",
+   "checkpoint_sha256": "5eb41198d2a0ab8572cbe6a3b9e715ff4456f5153cb30c4c5b71dc3b61f5875f",
+   "env_steps": 64000,
+   "report": "/home/claude/sim2gate-repo/p0v5b_s108",
+   "report_sha256": "949bf307771103426bb3bf9910b0c316b96555d27884714d22043ada0f4f965b"
+  },
+  {
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_03-42-01/model_1999.pt",
+   "checkpoint_sha256": "3aa27e227c08e90abb24a43021cf50f798939601857fe62e1a14226cfe27889f",
+   "env_steps": 64000,
+   "report": "/home/claude/sim2gate-repo/p0v5b_s109",
+   "report_sha256": "c1daf3bb724631ce594754d267ebe125e020d1c567e2e37379d0c4e946b839f5"
+  },
+  {
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_04-39-36/model_1999.pt",
+   "checkpoint_sha256": "e94d30f21ad1aaf95576d5ac1a59b08c7bdaee125897ebfb3ad4b166baea984d",
+   "env_steps": 64000,
+   "report": "/home/claude/sim2gate-repo/p0v5b_s110",
+   "report_sha256": "88097e979def54c55df32d0ae9a78c9f3f62898132ddebaf9d966cbe7b101cca"
+  },
+  {
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_05-36-58/model_1999.pt",
+   "checkpoint_sha256": "b8fdea2878abfffd73a1605bc259ff2f45e38b00a0cc641119fc60f540e19327",
+   "env_steps": 64000,
+   "report": "/home/claude/sim2gate-repo/p0v5b_s111",
+   "report_sha256": "ed8dd0b027f8f5a7362195ddcc3be26e4bc0b5257566efea067e342c58112e94"
+  },
+  {
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_07-22-47/model_1999.pt",
+   "checkpoint_sha256": "a9b285e0b5ced309b79f36fbd532ff93d79cd88e231cc47fd93deb548c603a89",
+   "env_steps": 64000,
+   "report": "/home/claude/sim2gate-repo/p0v5b_s113",
+   "report_sha256": "4fca3e98b4963176978e13b69dd072390c1605d72944383c841452abfc2e87d3"
+  },
+  {
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_08-18-00/model_1999.pt",
+   "checkpoint_sha256": "3100813929cf2e680943acb8789ae8b02b4cbf85e4ddb3d522b844abda1211b6",
+   "env_steps": 64000,
+   "report": "/home/claude/sim2gate-repo/p0v5b_s114",
+   "report_sha256": "b3a34b70422caf8d04640884044a1012e05d660168538e065bb10a26f33d97bc"
+  },
+  {
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_09-11-52/model_1999.pt",
+   "checkpoint_sha256": "d9a30ab12bce840a257e6957d4ae1b724cf897c10fc43000437e2a476d947aa9",
+   "env_steps": 64000,
+   "report": "/home/claude/sim2gate-repo/p0v5b_s115",
+   "report_sha256": "5a7c9bbf7485295b483a9bff3ab073a6abf321506153211dcc85e370af4cfcfb"
+  },
+  {
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_10-05-58/model_1999.pt",
+   "checkpoint_sha256": "b8b29f0edfdfbe48e1643663c93aab06aba832c012a6917fef7f97695e4b6767",
+   "env_steps": 64000,
+   "report": "/home/claude/sim2gate-repo/p0v5b_s116",
+   "report_sha256": "4f0a2bf9f1f109d9ec7d77b571ef61fe51efdcf3f6b9badef8ed848c143d48af"
+  },
+  {
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_11-00-07/model_1999.pt",
+   "checkpoint_sha256": "100373d8e18badf51f0a0d15d4d410cb4ea83578100f18f4e55964285a29a44e",
+   "env_steps": 64000,
+   "report": "/home/claude/sim2gate-repo/p0v5b_s117",
+   "report_sha256": "ced68d279e48956551352388284b6e5655b146a899261633f62e0c3c2ef486b6"
+  },
+  {
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_11-55-12/model_1999.pt",
+   "checkpoint_sha256": "dd87778d215fe542a25cf0bef46fe67c7643194911ccf4717c987031a34a948e",
+   "env_steps": 64000,
+   "report": "/home/claude/sim2gate-repo/p0v5b_s118",
+   "report_sha256": "f62fdfb921eb58e24c61e4aa67b6061aa602d49567b2d67f2cb8d87437161ed1"
+  },
+  {
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_12-48-20/model_1999.pt",
+   "checkpoint_sha256": "5861d33eff71a4c66ca5fd808931ae1490809452f84d7f6737a145df27f44b26",
+   "env_steps": 64000,
+   "report": "/home/claude/sim2gate-repo/p0v5b_s119",
+   "report_sha256": "9f067b1db79151708290a84755a8d90f446332c30f0d00c37f194a724882d9e1"
+  },
+  {
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_13-43-28/model_1999.pt",
+   "checkpoint_sha256": "2fd320c5883442cf7d8996ddb6226206e588dddc715ff06f4c62a0602d5e1d0c",
+   "env_steps": 64000,
+   "report": "/home/claude/sim2gate-repo/p0v5b_s120",
+   "report_sha256": "7c886cdc3ab6efeb9593647775cf2772a5cad47efcdce12115ea1c851dc4e31a"
+  },
+  {
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_14-40-34/model_1999.pt",
+   "checkpoint_sha256": "a5b3de386334d54811b9b42e2c48aa9ecd1f1d6c877e85684c28ca097d2927b1",
+   "env_steps": 64000,
+   "report": "/home/claude/sim2gate-repo/p0v5b_s121",
+   "report_sha256": "0d51334fb6012906839fd20745f54d6dbd5b90d11bc9a596a4cc45d55f1e1293"
+  },
+  {
+   "checkpoint": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_15-34-29/model_1999.pt",
+   "checkpoint_sha256": "55873ab02a2bdf152bbbdffffe40538bc6e5d6550a2a3707c3da452dbd7d97ce",
+   "env_steps": 64000,
+   "report": "/home/claude/sim2gate-repo/p0v5b_s122",
+   "report_sha256": "96b29c2abf1e8c39d29b2c08afe605df7c48a833579b74043e7fb62240892189"
+  }
+ ],
+ "version": 1
+}
