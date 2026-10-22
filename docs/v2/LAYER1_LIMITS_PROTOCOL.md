@@ -89,8 +89,9 @@ re-reported under it, for information only.
 Before any test robot is trained, count the clean robots that would get a no-go from any check: check 1 as recorded,
 check 2 by leave-one-out (section 6), and check 5.
 
-If more than 3 of the 20 would get a no-go, the run stops for a decision. Three is the most that keeps B4 (at most 1 of
-5 held-out clean robots gets a no-go) likely to pass by chance. A stop does not change any limit after the fact. Any
+If more than 3 of the 20 would get a no-go, the run stops for a decision. The reason is B4: at most 1 of 5 held-out clean robots
+may get a no-go. If 3 of 20 clean robots get a no-go (15%), B4 still passes about 84% of the time by chance. At
+5 of 20, that drops to about 63%. A stop does not change any limit after the fact. Any
 change is a logged amendment, tested on new robots.
 
 ## 6. Validation, reported only
