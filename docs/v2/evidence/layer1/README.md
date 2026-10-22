@@ -6,7 +6,8 @@ values were not read before the freeze.
 
 **Input.** `phase1-clean-measurements.tgz` (SHA-256 `9e1be1705da1073e1bd5a68cc2fe5469846ead13cae5663390b4d081be5fb38e`,
 1.4 MB). It holds `MANIFEST.json` and the 82 measurement files extracted from `phase1-clean.tgz` (`36bb9b75…`) on VJ's
-PC. Every file matched its SHA-256 in the manifest, and every measurement matched its robot's checkpoint.
+PC. Every file matched its SHA-256 in the manifest, and every measurement matched its robot's checkpoint. VJ confirmed that the bundle on his PC still has SHA-256 `36bb9b75…` and that the extract has `9e1be170…`, which is
+the same as the attached file.
 
 ## The limits
 
