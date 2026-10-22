@@ -50,7 +50,7 @@ Files: `frozen_success_p0v5b.json` and `check2_limit_v2.json`. Copies used by la
     flaw such as v1's missed jitter robot.
   - It also means a new clean robot only slightly outside the clean range would be flagged. The construction keeps that
     to at most 1 in 21. Leave-one-out flagged 0 of 20, with per-robot limits from the other 19 between 1.05 and 1.23.
-  - Foot slip drove most scores (13 of 20); jitter drove 4.
+  - Foot slip drove most scores (14 of 20), jitter 4, and penetration and actuator share 1 each.
 - **Check 5 is far from its limits.**
   - Every clean robot stayed upright in at least 99.6% of Newton episodes.
   - Tracking-error ratios (Newton / PhysX) were 1.32–1.61, against a limit of 2.
