@@ -43,3 +43,7 @@ below with date, reason and VJ's approval.
   too, so "clipped" again means the DC motor's limit was hit. This changes a measurement only: the torque applied,
   training and the pilot rule are unchanged, and P0 v4 robots (strength fixed at 1) are unaffected. The pilot
   robots' check 2 actuator values are not used; the clean robots are measured with the fix.
+- **Oct 22, 2026, the 20 clean robots: complete.** 20 of 22 qualified (seeds 106 and 112 at 0.844 and 0.832,
+  replaced by 121 and 122). Check 1 flagged 1 of 20 (seed 122, sensor noise), recorded and not used to reject. Bundle
+  `36bb9b75…` (2,597 MB). Details: `evidence/phase1/clean/README.md`. Check 2 and Newton values are not read until
+  the Layer 1 limits rules are frozen.
