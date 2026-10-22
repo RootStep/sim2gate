@@ -1,4 +1,4 @@
-# v2 Layer 1 limits: protocol (DRAFT, for VJ's approval; not frozen)
+# v2 Layer 1 limits: protocol (frozen; approved by VJ, Oct 22, 2026)
 
 This file says how Layer 1's v2 limits are computed from the 20 clean P0 v5b robots (phase 1). It is frozen, with its
 SHA-256 recorded in a freeze file, **before** anyone reads those robots' check 2 or Newton values, and before any test
@@ -10,8 +10,10 @@ check 2 fix).
 
 - **Calibration set:** the 20 qualified robots: seeds 101–105, 107–111, 113–122. Seeds 106 and 112 did not qualify
   and are not used.
-- **Bundle:** `phase1-clean.tgz`, SHA-256 `36bb9b75caf2ab7d37482bf7dc79c5ddd48cacfd2bde3f3aac834ef5c23b712a`. The
-  analysis checks this fingerprint and each measurement's checkpoint hash against the run's `state.json`.
+- **Bundle:** `phase1-clean.tgz`, SHA-256 `36bb9b75caf2ab7d37482bf7dc79c5ddd48cacfd2bde3f3aac834ef5c23b712a`.
+  - The analysis reads the measurement files and the bundle's `MANIFEST.json`, extracted from that bundle.
+  - It checks every file against the manifest's SHA-256.
+  - It checks each measurement's checkpoint hash against the run state recorded in the manifest.
 - **Measurements used:**
   - nominal PhysX (256 episodes);
   - check 2 (play mode, as recorded);
@@ -119,7 +121,7 @@ in phase 4, on 5 new clean robots.
 
 Each is set in phase 4's own protocol, frozen before those robots are trained.
 
-## Decisions for VJ
+## Decisions approved by VJ (Oct 22, 2026)
 
 1. Keep v1's success rule: no fall, and error at most 1.5 × the clean reference.
 2. Score four check 2 metrics, with contact force reported only.

@@ -39,7 +39,7 @@ Success uses v1's frozen threshold (`frozen_success_p0v4.json`) until the v2 thr
   count for check 1 on the v2 envelope. The pilot robots broke at 2.17× noise, just past the 2× edge, so noise is the
   condition where clean robots sit closest to the line.
 - **Check 2 values and Newton results:** not read yet. They set Layer 1's limits, so the rules for using them are
-  written and frozen first (`LAYER1_LIMITS_PROTOCOL.md`, draft).
+  written and frozen first (`../../../LAYER1_LIMITS_PROTOCOL.md`, frozen Oct 22).
 - **Check 2 fix:** confirmed on the GPU. Seed 101's torque-clipped share was 0.0025 (P0 v4 robots: about 0.002).
 
 ## Files (kept outside the repo)
