@@ -62,6 +62,16 @@ def wilson(k, n, z=1.959963984540054):
     return (max(0.0, c - h), min(1.0, c + h))
 
 
+def load_limit():
+    """The frozen combined check 2 limit (written once, Oct 22, 2026)."""
+    return json.load(open(os.path.join(os.path.dirname(__file__), "check2_limit_v2.json")))
+
+
+def load_success():
+    """The frozen v2 episode-success threshold (written once, Oct 22, 2026)."""
+    return json.load(open(os.path.join(os.path.dirname(__file__), "frozen_success_p0v5b.json")))
+
+
 # ---- loading -------------------------------------------------------------------------------------------------------
 
 def load(root, seeds=CALIBRATION_SEEDS):

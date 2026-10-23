@@ -49,7 +49,7 @@ MEASUREMENTS = ("nominal", "sweep", "check2", "newton")
 
 # ---- commands ------------------------------------------------------------------------------------------------------
 
-def train_command(seed, work, name, evidence=True, iterations=P0_V5_ITERATIONS):
+def train_command(seed, work, name, evidence=True, iterations=P0_V5_ITERATIONS, task=None):
     from ..checks import transfer
     from ..training.smoke_go2 import isaac_python
     d = os.path.join(work, "robots", name)
@@ -57,17 +57,17 @@ def train_command(seed, work, name, evidence=True, iterations=P0_V5_ITERATIONS):
                             "--signals", os.path.join(d, "monitor.jsonl")]
     if evidence:
         cmd += ["--evidence", os.path.join(d, "evidence")]
-    return cmd + ["--", "--task", TASK, "--seed", str(seed), "--max_iterations", str(iterations)] \
+    return cmd + ["--", "--task", task or TASK, "--seed", str(seed), "--max_iterations", str(iterations)] \
         + CALLBACK + [transfer.PHYSX]
 
 
-def measure_commands(ckpt, out_dir):
+def measure_commands(ckpt, out_dir, task=None):
     from ..checks import transfer
     from ..mvp.baselines import GO2_COMMANDS
     from ..mvp.blinded import CHECK2
     from ..training.smoke_go2 import isaac_python
     py = isaac_python()
-    task = ["--task", TASK]
+    task = ["--task", task or TASK]
     fixed = list(transfer.FIXED_OVERRIDES) + list(transfer.ORDERING)
     o = {m: os.path.join(out_dir, f"{m}.json") for m in MEASUREMENTS}
 
@@ -147,16 +147,16 @@ def summarize(files, success):
 
 
 def train_and_measure(work, name, seed, runner, evidence, measure=MEASUREMENTS, iterations=P0_V5_ITERATIONS,
-                      require_qualify=True):
+                      require_qualify=True, task=None, success=None):
     from ..mvp.baselines import shutdown_crash
     from ..training.smoke_go2 import _last_checkpoint, _run_dirs
     d = os.path.join(work, "robots", name)
     if os.path.exists(d):
         os.replace(d, d + f".incomplete-{datetime.datetime.now():%Y%m%d%H%M%S}")
     os.makedirs(d)
-    rec = {"name": name, "seed": seed, "task": TASK, "started": _now(), "problems": []}
+    rec = {"name": name, "seed": seed, "task": task or TASK, "started": _now(), "problems": []}
     before = _run_dirs()
-    rc, text = runner(train_command(seed, work, name, evidence, iterations), os.path.join(d, "train.log"))
+    rc, text = runner(train_command(seed, work, name, evidence, iterations, task=task), os.path.join(d, "train.log"))
     new = sorted(_run_dirs() - before)
     ck = _last_checkpoint(new[0]) if len(new) == 1 else None
     rec.update(train_returncode=rc, run_dir=os.path.abspath(new[0]) if new else None, trained=_now())
@@ -173,8 +173,8 @@ def train_and_measure(work, name, seed, runner, evidence, measure=MEASUREMENTS, 
     rec["checkpoint"] = {"path": os.path.abspath(ck), "sha256": sha256(ck)}
     out = os.path.join(d, "measure")
     os.makedirs(out, exist_ok=True)
-    cmds, files = measure_commands(rec["checkpoint"]["path"], out)
-    success = success_doc()
+    cmds, files = measure_commands(rec["checkpoint"]["path"], out, task=task)
+    success = success or success_doc()
     for m in measure:
         runner(cmds[m], os.path.join(out, f"{m}.log"))
         if not os.path.exists(files[m]):

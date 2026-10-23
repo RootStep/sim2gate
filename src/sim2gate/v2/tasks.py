@@ -199,9 +199,75 @@ _LAZY = {"Go2FlatP0EnvCfgV5": _p0v5_env_cfg, "Go2FlatP0PPORunnerCfgV5": _p0v5_ag
 _built = {}
 
 
+# ---- v2 phase 2 arms (sim2gate.v2.phase2_arms): P0 v5b with one change each --------------------------------------
+
+def _p2_names(arm, cid):
+    key = f"{arm}_{cid}".replace("-", "_").replace(".", "_")
+    return f"Go2FlatP2EnvCfg_{key}", f"Go2FlatP2PPORunnerCfg_{key}"
+
+
+def _p2_variants():
+    from .phase2_arms import ARMS, BASE_TASK, all_tasks
+    out = {}
+    for task, (arm, cid) in all_tasks().items():
+        env_name, agent_name = _p2_names(arm, cid)
+        out[task] = {**VARIANTS[BASE_TASK], "policy": "P2", "version": f"5b+{arm}:{cid}", "base_task": BASE_TASK,
+                     "arm": arm, "candidate": cid, "cause": ARMS[arm]["cause"],
+                     "changes": VARIANTS[BASE_TASK]["changes"] + [{"what": f"phase 2 arm {arm}, candidate {cid}"}],
+                     "experiment_name": "sim2gate_go2_flat_p2_" + f"{arm}_{cid}".lower().replace("-", "_").replace(".", "_"),
+                     "status": "v2 phase 2 (PHASE2_PROTOCOL part A)",
+                     "env_class": env_name, "agent_class": agent_name}
+    return out
+
+
+def _p2_env_cfg(arm, cid):
+    from isaaclab.utils import configclass
+    from .phase2_arms import apply
+    base = __getattr__("Go2FlatP0EnvCfgV5b")
+
+    @configclass
+    class Go2FlatP2EnvCfg(base):
+        def __post_init__(self):
+            super().__post_init__()
+            apply(self, arm, cid)
+
+    Go2FlatP2EnvCfg.__name__ = _p2_names(arm, cid)[0]
+    return Go2FlatP2EnvCfg
+
+
+def _p2_agent_cfg(arm, cid, experiment_name):
+    from isaaclab.utils import configclass
+    base = __getattr__("Go2FlatP0PPORunnerCfgV5b")
+
+    @configclass
+    class Go2FlatP2PPORunnerCfg(base):
+        def __post_init__(self):
+            super().__post_init__()
+            self.experiment_name = experiment_name
+
+    Go2FlatP2PPORunnerCfg.__name__ = _p2_names(arm, cid)[1]
+    return Go2FlatP2PPORunnerCfg
+
+
+def _p2_lazy(name):
+    for task, v in _p2_variants().items():
+        if name == v["env_class"]:
+            return lambda: _p2_env_cfg(v["arm"], v["candidate"])
+        if name == v["agent_class"]:
+            return lambda: _p2_agent_cfg(v["arm"], v["candidate"], v["experiment_name"])
+    return None
+
+
 def __getattr__(name):
     if name == "RampedPayload":
         return ramped_payload_class()
+    if name.startswith("Go2FlatP2"):
+        if name not in _built:
+            make = _p2_lazy(name)
+            if make is None:
+                raise AttributeError(name)
+            _built[name] = make()
+        return _built[name]
     if name in _LAZY:
         if name not in _built:
             _built[name] = _LAZY[name]()
@@ -214,7 +280,7 @@ def register():
     import gymnasium as gym
     from ..mvp import tasks
     tasks.register()
-    for task, v in VARIANTS.items():
+    for task, v in {**VARIANTS, **_p2_variants()}.items():
         if task not in gym.registry:
             gym.register(id=task, entry_point="isaaclab.envs:ManagerBasedRLEnv", disable_env_checker=True,
                          kwargs={"env_cfg_entry_point": f"{__name__}:{v['env_class']}",

@@ -1,4 +1,4 @@
-# v2 phase 2: protocol (DRAFT, revision 2; not frozen)
+# v2 phase 2: protocol (DRAFT, revision 3; part A approved by VJ Oct 23 pending one confirmation; not frozen)
 
 Phase 2 is the cause study (v2 plan, "Layer 2"). It tests two things on robots with planted interventions:
 
@@ -36,11 +36,24 @@ All arms start from P0 v5b (2,000 rounds, everything as phase 1) and change one 
 **Same reward terms everywhere (decision D1, approved in principle).** Every arm has the same reward-term names, in the
 same order, logged in the same format:
 
-- reward arms **weaken** a term instead of removing it;
-- the body-height term is present in every arm, at a small base weight;
+- reward arms **weaken or strengthen** an existing P0 v5b term, and no arm adds or removes a term;
 - arms differ only in reward weights or physics.
 
-No arm sets a weight to zero, so no zero-weight case arises.
+**Proposed change (revision 3, for VJ's confirmation before part A is frozen).** As approved, part A could not be
+carried out:
+
+- the controls are phase 1 robots, trained without a body-height term;
+- the body-height term would be "present in every arm";
+- so the controls' term list would differ from every other arm's, the same leak D1 closes.
+
+The fix keeps the controls and the identical term set: **R-hop strengthens the existing air-time reward
+(`feet_air_time`)** instead of adding a height term. A too-large air-time reward is a common real reward-design
+mistake, and its expected effect is long flight phases, that is, hopping or bounding. The hypothesis is checked in the
+pilots like every other.
+
+No arm sets a weight to zero. The stock recipe's `dof_pos_limits` term has weight 0 in P0 v5b and therefore in every
+arm, including the controls. Its features are the same in every robot and carry no arm information, and section 7's
+zero-variance rule drops them.
 
 | Arm | Change from P0 v5b | Planted cause (hypothesis) | Intended symptom | Candidate settings, tried in order |
 |---|---|---|---|---|
@@ -49,15 +62,37 @@ No arm sets a weight to zero, so no zero-weight case arises.
 | Φ-slip | Training ground friction changed; slip penalty kept | Physics | Foot slip | low only (static 0.2–0.5), then high only (static 1.0–1.2); dynamic = 0.75 × static |
 | R-jitter | Action-rate penalty (`action_rate_l2`) weight × k | Reward | Jitter | k = 0.1, then 0.03 |
 | Φ-jitter | No command delay in training (as v1's P2) | Physics | Jitter | the single setting |
-| R-hop | Body-height reward weight × m of its base weight | Reward | Abnormal hopping (section 3) | m = 10, then 30 |
+| R-hop | Air-time reward (`feet_air_time`) weight × m | Reward | Abnormal hopping (section 3) | m = 10, then 30 |
 
-The body-height term rewards the base being above its nominal standing height. The base weight is chosen so the
-control recipe is unaffected; the control pilot checks this.
+Base weights in P0 v5b (from its saved config):
+
+| Term | Base weight |
+|---|---|
+| `feet_slide` | −0.25 |
+| `action_rate_l2` | −0.01 |
+| `feet_air_time` | +0.25 |
+
+The friction change sets static friction as given and dynamic friction to 0.75 × static, as the task does.
+
+The code is in `sim2gate.v2.phase2_arms`, with one registered task per candidate,
+`Sim2Gate-Velocity-Flat-Go2-P2-<arm>-<candidate>`. Every pilot run's saved config is checked against its candidate,
+and a mismatch is a problem, not a pilot result.
 
 ## 3. Pilots and leak audit (part A)
 
-**Seeds.** Pilot robots use seeds 201–240, assigned in order. They are development robots, excluded from all scoring,
-and are never study robots or test robots.
+**Seeds.** Pilot robots are development robots: excluded from all scoring, and never study robots or test robots.
+Each candidate has fixed seeds, whatever earlier pilots show:
+
+| Arm | First candidate | Second candidate |
+|---|---|---|
+| R-slip | 201–202 | 203–204 |
+| Φ-slip | 205–206 | 207–208 |
+| R-jitter | 209–210 | 211–212 |
+| Φ-jitter | 213–214 | — |
+| R-hop | 215–216 | 217–218 |
+
+A smoke test comes first. It trains each arm's first candidate for 2 rounds (seed 99) to check the saved config, and
+re-measures one control on check 2 to check that the hop measures are written.
 
 **Measured.** Pilots are judged on their own measurements only:
 
@@ -71,7 +106,11 @@ and are never study robots or test robots.
 |---|---|
 | Slip | Foot slip p95 above 0.1124 m/s, the maximum of the 20 clean robots |
 | Jitter | Jitter share above 0.00935, the clean maximum |
-| Abnormal hopping | **All three:** (1) flight share at low commanded speed above the control pilot's value; (2) base vertical-speed RMS above the control pilot's value; (3) the robot still qualifies |
+| Abnormal hopping | **All three:** (1) flight share at low commanded speed above the controls' maximum; (2) base vertical-speed RMS at low commanded speed above the controls' maximum; (3) the robot still qualifies |
+
+**Hop reference (revision 3).** Instead of a control pilot, the 5 control robots (101–105) are re-measured on check 2
+with the hop measures. The reference is their maximum, from 5 robots rather than 1. Their re-measure is needed for
+part B anyway.
 
 The hop measures:
 
@@ -80,6 +119,9 @@ The hop measures:
   gaits do not count.
 - **Base vertical-speed RMS:** measured over the same steps.
 
+Both are new check 2 outputs. They are reported only and do not change the four scored metrics or the measurement
+version.
+
 **Stopping rules.**
 
 - An arm's setting passes when both pilot seeds show the intended symptom and both qualify (at least 85% over 256
@@ -87,8 +129,6 @@ The hop measures:
 - If it fails, the next candidate is tried on 2 new seeds.
 - If all candidates fail, the arm is dropped. Its hypothesis is reported as not supported, and no other arm changes
   because of it.
-- The control pilot (1 seed, base body-height weight) must qualify and stay inside the clean robots' check 2 range. If
-  it does not, the base weight is halved once and the control pilot re-run. If it fails again, R-hop is dropped.
 - Every pilot is reported, including the failures.
 
 **Leak audit.** Run on the pilot robots before part B is frozen. It passes only if all of these hold:
@@ -100,8 +140,8 @@ The hop measures:
    unweighted reward, which recovers the weights. Its accuracy is reported. This shows how much the weighted inputs
    would leak, and why they are kept out of the primary set.
 
-**Pilot cost.** About 45 minutes per robot. One pass is 11 robots, about 8 GPU hours; each failed candidate adds about
-1.5 hours. This is outside the plan's 24 hours for phase 2.
+**Pilot cost.** About 45 minutes per robot, plus about 30 minutes for the control re-measure. One pass is 10 robots,
+about 8 GPU hours; each failed candidate adds about 1.5 hours. This is outside the plan's 24 hours for phase 2.
 
 ## 4. Study robots (part B)
 
