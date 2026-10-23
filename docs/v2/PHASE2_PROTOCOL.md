@@ -1,4 +1,4 @@
-# v2 phase 2: protocol (DRAFT, revision 3; part A approved by VJ Oct 23 pending one confirmation; not frozen)
+# v2 phase 2: protocol (part B DRAFT; part A frozen separately in PHASE2_PART_A.md)
 
 Phase 2 is the cause study (v2 plan, "Layer 2"). It tests two things on robots with planted interventions:
 
@@ -29,119 +29,9 @@ Each part's SHA-256 is recorded in `PHASE2_FREEZE.md` when it is frozen.
 | Phase 0B: Vihaan's sign-off on Q1 (per-term ρ) and Q4 | **Pending**, needed for part B |
 | C3 kept, with no extra compute | Decided by VJ, Oct 22 |
 
-## 2. Arms (part A) ★
+## 2–3. Arms, pilots and leak audit (part A)
 
-All arms start from P0 v5b (2,000 rounds, everything as phase 1) and change one thing.
-
-**Same reward terms everywhere (decision D1, approved in principle).** Every arm has the same reward-term names, in the
-same order, logged in the same format:
-
-- reward arms **weaken or strengthen** an existing P0 v5b term, and no arm adds or removes a term;
-- arms differ only in reward weights or physics.
-
-**Proposed change (revision 3, for VJ's confirmation before part A is frozen).** As approved, part A could not be
-carried out:
-
-- the controls are phase 1 robots, trained without a body-height term;
-- the body-height term would be "present in every arm";
-- so the controls' term list would differ from every other arm's, the same leak D1 closes.
-
-The fix keeps the controls and the identical term set: **R-hop strengthens the existing air-time reward
-(`feet_air_time`)** instead of adding a height term. A too-large air-time reward is a common real reward-design
-mistake, and its expected effect is long flight phases, that is, hopping or bounding. The hypothesis is checked in the
-pilots like every other.
-
-No arm sets a weight to zero. The stock recipe's `dof_pos_limits` term has weight 0 in P0 v5b and therefore in every
-arm, including the controls. Its features are the same in every robot and carry no arm information, and section 7's
-zero-variance rule drops them.
-
-| Arm | Change from P0 v5b | Planted cause (hypothesis) | Intended symptom | Candidate settings, tried in order |
-|---|---|---|---|---|
-| Control | None: phase 1 seeds 101–105 | none | none | — |
-| R-slip | Foot-slip penalty (`feet_slide`) weight × k | Reward | Foot slip | k = 0.1, then 0.03 |
-| Φ-slip | Training ground friction changed; slip penalty kept | Physics | Foot slip | low only (static 0.2–0.5), then high only (static 1.0–1.2); dynamic = 0.75 × static |
-| R-jitter | Action-rate penalty (`action_rate_l2`) weight × k | Reward | Jitter | k = 0.1, then 0.03 |
-| Φ-jitter | No command delay in training (as v1's P2) | Physics | Jitter | the single setting |
-| R-hop | Air-time reward (`feet_air_time`) weight × m | Reward | Abnormal hopping (section 3) | m = 10, then 30 |
-
-Base weights in P0 v5b (from its saved config):
-
-| Term | Base weight |
-|---|---|
-| `feet_slide` | −0.25 |
-| `action_rate_l2` | −0.01 |
-| `feet_air_time` | +0.25 |
-
-The friction change sets static friction as given and dynamic friction to 0.75 × static, as the task does.
-
-The code is in `sim2gate.v2.phase2_arms`, with one registered task per candidate,
-`Sim2Gate-Velocity-Flat-Go2-P2-<arm>-<candidate>`. Every pilot run's saved config is checked against its candidate,
-and a mismatch is a problem, not a pilot result.
-
-## 3. Pilots and leak audit (part A)
-
-**Seeds.** Pilot robots are development robots: excluded from all scoring, and never study robots or test robots.
-Each candidate has fixed seeds, whatever earlier pilots show:
-
-| Arm | First candidate | Second candidate |
-|---|---|---|
-| R-slip | 201–202 | 203–204 |
-| Φ-slip | 205–206 | 207–208 |
-| R-jitter | 209–210 | 211–212 |
-| Φ-jitter | 213–214 | — |
-| R-hop | 215–216 | 217–218 |
-
-A smoke test comes first. It trains each arm's first candidate for 2 rounds (seed 99) to check the saved config, and
-re-measures one control on check 2 to check that the hop measures are written.
-
-**Measured.** Pilots are judged on their own measurements only:
-
-- nominal PhysX success over 256 episodes (v2 threshold);
-- check 2;
-- the hop measures below.
-
-**Intended symptoms.** Each threshold is fixed now, from data that exists today.
-
-| Symptom | Present when |
-|---|---|
-| Slip | Foot slip p95 above 0.1124 m/s, the maximum of the 20 clean robots |
-| Jitter | Jitter share above 0.00935, the clean maximum |
-| Abnormal hopping | **All three:** (1) flight share at low commanded speed above the controls' maximum; (2) base vertical-speed RMS at low commanded speed above the controls' maximum; (3) the robot still qualifies |
-
-**Hop reference (revision 3).** Instead of a control pilot, the 5 control robots (101–105) are re-measured on check 2
-with the hop measures. The reference is their maximum, from 5 robots rather than 1. Their re-measure is needed for
-part B anyway.
-
-The hop measures:
-
-- **Flight share at low commanded speed:** the share of control steps with no foot in contact, over the commands of
-  the fixed set whose speed is at most 0.5 m/s. At low speed a normal walking gait has no flight phase, so running
-  gaits do not count.
-- **Base vertical-speed RMS:** measured over the same steps.
-
-Both are new check 2 outputs. They are reported only and do not change the four scored metrics or the measurement
-version.
-
-**Stopping rules.**
-
-- An arm's setting passes when both pilot seeds show the intended symptom and both qualify (at least 85% over 256
-  episodes).
-- If it fails, the next candidate is tried on 2 new seeds.
-- If all candidates fail, the arm is dropped. Its hypothesis is reported as not supported, and no other arm changes
-  because of it.
-- Every pilot is reported, including the failures.
-
-**Leak audit.** Run on the pilot robots before part B is frozen. It passes only if all of these hold:
-
-1. Every pilot's exported training record has identical reward-term names, order and format (an automated check).
-2. No primary-input feature (section 5) is constant within every arm while differing between arms. Any such feature
-   would be a configuration value, not a measurement. Any found is removed and reported.
-3. A "trivial-clue" classifier is run (nearest centroid, as in section 7) on the per-term ratio of weighted to
-   unweighted reward, which recovers the weights. Its accuracy is reported. This shows how much the weighted inputs
-   would leak, and why they are kept out of the primary set.
-
-**Pilot cost.** About 45 minutes per robot, plus about 30 minutes for the control re-measure. One pass is 10 robots,
-about 8 GPU hours; each failed candidate adds about 1.5 hours. This is outside the plan's 24 hours for phase 2.
+Frozen separately, in `PHASE2_PART_A.md` (Oct 23, 2026).
 
 ## 4. Study robots (part B)
 

@@ -137,6 +137,8 @@ def pilot(work, phase1_work, runner):
         phase1.save_state(work, state)
     ref = hop_reference(state["controls"])
     state["hop_reference"] = ref
+    from .phase2_arms import symptom_thresholds
+    state["symptom_thresholds"] = symptom_thresholds(ref)
     _say(f"hop reference (max of controls): {json.dumps(ref)}")
     state.setdefault("arms", {})
     table = seed_table()

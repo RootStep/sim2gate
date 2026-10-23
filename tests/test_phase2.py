@@ -66,14 +66,22 @@ def test_check_config_reads_isaac_lab_yaml(tmp_path):
     assert phase2.check_config("R-hop", "m10", str(y))[0]                     # weight not scaled: a problem
 
 
-def test_symptoms_use_the_frozen_clean_maxima():
-    mx = load_limit()["clean_maxima"]
-    assert arms.symptom_present("slip", {"foot_slip_p95_mps": mx["foot_slip_p95_mps"] * 1.01}, {})
-    assert not arms.symptom_present("slip", {"foot_slip_p95_mps": mx["foot_slip_p95_mps"]}, {})
-    assert arms.symptom_present("jitter", {"action_jitter_high_freq_power_share": 0.02}, {})
-    ref = {"flight_share_low_speed": 0.01, "base_vz_rms_low_speed_mps": 0.05}
-    assert arms.symptom_present("hop", {"flight_share_low_speed": 0.2, "base_vz_rms_low_speed_mps": 0.3}, ref)
-    assert not arms.symptom_present("hop", {"flight_share_low_speed": 0.2, "base_vz_rms_low_speed_mps": 0.01}, ref)
+def test_symptoms_use_the_frozen_limit_and_hop_margins():
+    lim = load_limit()
+    slip_t = lim["limit"] * lim["clean_maxima"]["foot_slip_p95_mps"]
+    assert slip_t == pytest.approx(0.1185, abs=1e-4)
+    assert arms.symptom_present("slip", {"foot_slip_p95_mps": slip_t * 1.001}, {})
+    assert not arms.symptom_present("slip", {"foot_slip_p95_mps": lim["clean_maxima"]["foot_slip_p95_mps"] * 1.03}, {})
+    jit_t = lim["limit"] * lim["clean_maxima"]["action_jitter_high_freq_power_share"]
+    assert jit_t == pytest.approx(0.00986, abs=1e-5)
+    assert arms.symptom_present("jitter", {"action_jitter_high_freq_power_share": 0.0099}, {})
+    ref = {"flight_share_low_speed": 0.004, "base_vz_rms_low_speed_mps": 0.05}
+    th = arms.symptom_thresholds(ref)["hop"]
+    assert th == {"flight_share_low_speed": 0.02, "base_vz_rms_low_speed_mps": pytest.approx(0.075)}   # floor applies
+    assert arms.symptom_present("hop", {"flight_share_low_speed": 0.02, "base_vz_rms_low_speed_mps": 0.08}, ref)
+    assert not arms.symptom_present("hop", {"flight_share_low_speed": 0.3, "base_vz_rms_low_speed_mps": 0.07}, ref)
+    assert arms.symptom_thresholds({"flight_share_low_speed": 0.1, "base_vz_rms_low_speed_mps": 0.1})["hop"][
+        "flight_share_low_speed"] == pytest.approx(0.15)
 
 
 def test_pilot_tries_candidates_in_order_and_drops_an_arm(tmp_path, monkeypatch):

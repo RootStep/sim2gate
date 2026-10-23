@@ -69,21 +69,37 @@ def apply(cfg, arm, cid):
     return cfg
 
 
-def symptom_present(symptom, metrics, hop_reference):
-    """Part A section 3. metrics: a check 2 report's metrics. hop_reference: the controls' maxima of
-    flight_share_low_speed and base_vz_rms_low_speed_mps."""
+HOP_FACTOR = 1.5                           # part A: hop reference from 5 robots, so a wider margin than check 2's
+HOP_FLIGHT_FLOOR = 0.02                    # part A: at least 2% of low-speed steps airborne
+
+
+def symptom_thresholds(hop_reference):
+    """Part A section 3, numerical. Slip and jitter: the clean maximum times the frozen check 2 limit (the metric alone
+    would be flagged). Hop: both measures at least 1.5 x the controls' maximum, flight share also at least 0.02."""
     from .layer1_limits import load_limit
     lim = load_limit()
-    mx = lim["clean_maxima"]
-    if symptom == "slip":
-        return _gt(metrics.get("foot_slip_p95_mps"), mx["foot_slip_p95_mps"])
-    if symptom == "jitter":
-        return _gt(metrics.get("action_jitter_high_freq_power_share"), mx["action_jitter_high_freq_power_share"])
+    mx, L = lim["clean_maxima"], lim["limit"]
+    out = {"slip": {"foot_slip_p95_mps": L * mx["foot_slip_p95_mps"]},
+           "jitter": {"action_jitter_high_freq_power_share": L * mx["action_jitter_high_freq_power_share"]}}
+    if hop_reference:
+        out["hop"] = {"flight_share_low_speed": max(HOP_FACTOR * hop_reference["flight_share_low_speed"],
+                                                    HOP_FLIGHT_FLOOR),
+                      "base_vz_rms_low_speed_mps": HOP_FACTOR * hop_reference["base_vz_rms_low_speed_mps"]}
+    return out
+
+
+def symptom_present(symptom, metrics, hop_reference):
+    """True when every measure of the symptom clears its threshold (strictly above for slip and jitter, at or above for
+    the hop measures)."""
+    th = symptom_thresholds(hop_reference)[symptom]
     if symptom == "hop":
-        return (_gt(metrics.get("flight_share_low_speed"), hop_reference["flight_share_low_speed"])
-                and _gt(metrics.get("base_vz_rms_low_speed_mps"), hop_reference["base_vz_rms_low_speed_mps"]))
-    raise ValueError(symptom)
+        return all(_ge(metrics.get(k), t) for k, t in th.items())
+    return all(_gt(metrics.get(k), t) for k, t in th.items())
 
 
 def _gt(v, ref):
     return isinstance(v, (int, float)) and isinstance(ref, (int, float)) and v > ref
+
+
+def _ge(v, ref):
+    return isinstance(v, (int, float)) and isinstance(ref, (int, float)) and v >= ref
