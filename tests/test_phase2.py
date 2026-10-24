@@ -143,3 +143,15 @@ def test_pilot2_hard_stop(tmp_path, monkeypatch):
     st = json.load(open(tmp_path / "p" / "state.json"))
     assert st["result"] == {"Phi-slip-mild": False, "Phi-delay": True}
     assert st["cause_study"].startswith("not tested")
+
+
+def test_smoke2_checks_each_amendment_arm(tmp_path, monkeypatch):
+    seen = []
+    monkeypatch.setattr(phase2, "_env_yaml", lambda rec: "env.yaml")
+    monkeypatch.setattr(phase2, "check_config", lambda arm, cid, y: (seen.append(arm) or [], ["feet_slide"]))
+    monkeypatch.setattr(phase2.phase1, "train_and_measure",
+                        lambda *a, **k: (k["iterations"] == 2 and not k["measure"]) and
+                        {"finished": "t", "problems": [], "run_dir": None, "summary": {}})
+    assert phase2.smoke2(str(tmp_path / "s"), None) == 0 and seen == ["Phi-slip-mild", "Phi-delay"]
+    monkeypatch.setattr(phase2, "check_config", lambda *a: (["static friction wrong"], []))
+    assert phase2.smoke2(str(tmp_path / "s2"), None) == 1

@@ -262,11 +262,30 @@ def smoke(work, phase1_work, runner):
     return 0 if not problems else 1
 
 
+def smoke2(work, runner):
+    """Amendment 1 smoke: each new arm trains 2 rounds and its saved config is checked. No measuring."""
+    from .phase2_arms import AMENDMENT1_ORDER
+    os.makedirs(work, exist_ok=True)
+    problems = []
+    for arm in AMENDMENT1_ORDER:
+        cid = ARMS[arm]["candidates"][0]["id"]
+        name = f"smoke2_{arm}_{cid}".replace(".", "_")
+        rec = phase1.train_and_measure(work, name, 99, runner, evidence=False, measure=(), iterations=2,
+                                       task=task_id(arm, cid), success=_success())
+        y = _env_yaml(rec)
+        bad, terms = check_config(arm, cid, y) if y else (["no saved env.yaml"], [])
+        _say(f"smoke2 {arm}:{cid}: config {'OK' if not bad else bad}; reward terms {len(terms)}")
+        problems += [f"{arm}: {b}" for b in bad] + [f"{arm}: {p}" for p in rec.get("problems") or []
+                                                     if "no output" not in p]
+    _say("SMOKE2 OK" if not problems else "SMOKE2 FAILED: " + " | ".join(problems))
+    return 0 if not problems else 1
+
+
 def main(argv=None):
     from ..mvp.testset import quiet_run
     p = argparse.ArgumentParser(prog="python -m sim2gate.v2.phase2", description=__doc__.splitlines()[0])
     sub = p.add_subparsers(dest="cmd", required=True)
-    for c in ("smoke", "pilot", "pilot2", "bundle"):
+    for c in ("smoke", "pilot", "smoke2", "pilot2", "bundle"):
         s = sub.add_parser(c)
         s.add_argument("--work", required=True)
         if c in ("smoke", "pilot"):
@@ -278,6 +297,8 @@ def main(argv=None):
         return smoke(a.work, a.phase1, quiet_run)
     if a.cmd == "pilot":
         return pilot(a.work, a.phase1, quiet_run)
+    if a.cmd == "smoke2":
+        return smoke2(a.work, quiet_run)
     if a.cmd == "pilot2":
         return pilot2(a.work, quiet_run)
     return phase1.bundle(a.work, a.out)
