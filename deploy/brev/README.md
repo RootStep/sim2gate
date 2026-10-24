@@ -79,6 +79,9 @@ New instances pull the image in minutes instead of building it.
 
 - Newer Arena: change `ARENA_REF` in `setup.sh`, then re-run the smoke test before trusting results. If rsl-rl-lib
   changes, the version has to pass Sim2Gate's RSL-RL acceptance gate first.
+- Re-running `setup.sh` on an instance that already has `isaaclab_arena:latest` reuses that image and rebuilds only
+  the Sim2Gate layer, so the simulation environment stays fixed across sessions (v2 phases 1-4 depend on this).
+  `ARENA_REBUILD=1` forces a rebuild of Arena's image; do that only on purpose, and re-run the smoke test after it.
 - Newer Sim2Gate on an existing instance: `cd ~/sim2gate/deploy/brev && git pull && ./build.sh -s -R &&
   docker compose up -d` (`-R` skips Docker's cache, so pip fetches the new code).
 

@@ -36,6 +36,10 @@ ARENA_REPO_URL="${ARENA_REPO_URL:-https://github.com/isaac-sim/IsaacLab-Arena}"
 # pulls it instead of building for an hour. If the registry needs a login, also set REGISTRY, REGISTRY_USER
 # and REGISTRY_TOKEN (for NGC: REGISTRY=nvcr.io, REGISTRY_USER='$oauthtoken', REGISTRY_TOKEN=<NGC API key>).
 ARENA_IMAGE="${ARENA_IMAGE:-}"
+# Set to 1 to rebuild Arena's image even though one already exists on this host. By default an existing image is
+# reused as it is: a rebuild (docker build --pull) can pick up newer base images and packages, so experiments that
+# must run in one fixed environment (v2 phases 1-4) would silently change setup between sessions.
+ARENA_REBUILD="${ARENA_REBUILD:-0}"
 # Only an image reference counts (registry/name:tag); anything else (a stray value in the environment) is ignored.
 case "${ARENA_IMAGE}" in *[!A-Za-z0-9._:/@-]*|"") ARENA_IMAGE="" ;; esac
 export -n ARENA_IMAGE 2>/dev/null || true
@@ -136,6 +140,11 @@ if [ -n "${ARENA_IMAGE}" ]; then
     else
         echo "WARNING: could not pull ${ARENA_IMAGE}; building Arena from source instead." >&2
     fi
+fi
+
+if [ -z "${BUILD_ARGS}" ] && [ "${ARENA_REBUILD}" != "1" ] && [ -n "$(docker images -q isaaclab_arena:latest 2>/dev/null)" ]; then
+    echo "Reusing the existing isaaclab_arena:latest image (set ARENA_REBUILD=1 to rebuild it)."
+    BUILD_ARGS="-s"
 fi
 
 ./build.sh ${BUILD_ARGS} 2>&1 | tee "$HOME/isaac-arena-build.log"
