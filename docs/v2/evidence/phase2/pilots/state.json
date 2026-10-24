@@ -1,0 +1,1311 @@
+{
+ "created": "2026-10-23T14:53:19+00:00",
+ "robots": {
+  "p2pilot_R-slip_k0_1_s201": {
+   "name": "p2pilot_R-slip_k0_1_s201",
+   "seed": 201,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-R-slip-k0.1",
+   "started": "2026-10-23T14:57:52+00:00",
+   "problems": [],
+   "train_returncode": 0,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-23_14-58-08",
+   "trained": "2026-10-23T15:48:00+00:00",
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-23_14-58-08/model_1999.pt",
+    "sha256": "2a54c4a9e21510c8709fd50046ea916953a0e4564836892fb508cb1f15f7114f"
+   },
+   "summary": {
+    "nominal": {
+     "success_rate": 0.99609375,
+     "episodes": 256,
+     "falls": 1,
+     "qualifies": true,
+     "checkpoint_sha256": "2a54c4a9e21510c8709fd50046ea916953a0e4564836892fb508cb1f15f7114f"
+    },
+    "check2_metrics": {
+     "actuator_limit_step_share": 0.002484375,
+     "foot_slip_p95_mps": 2.831042766571045,
+     "foot_slip_sustained_p95_mps": 2.8045270442962646,
+     "ground_penetration_m": 0.0028999969363212585,
+     "min_foot_origin_z_m": 0.020595379173755646,
+     "min_body_z_m": -0.0028999969363212585,
+     "penetration_step_share": 0.0,
+     "contact_force_p99_bw": 0.692061185836792,
+     "actuator_torque_clipped_step_share": 0.00225,
+     "actuator_torque_clipped_joint_share": 0.00040625,
+     "joint_velocity_over_limit_step_share": 0.00171875,
+     "action_jitter_high_freq_power_share": 0.010794485131325823,
+     "flight_share": 0.002643268268268268,
+     "base_vz_rms_mps": 0.07573632718569592,
+     "flight_share_low_speed": 0.0022022022022022024,
+     "base_vz_rms_low_speed_mps": 0.0725594996880808,
+     "low_speed_env_steps": 4995
+    }
+   },
+   "finished": "2026-10-23T15:49:43+00:00",
+   "config_check": {
+    "problems": [],
+    "reward_terms": [
+     "action_rate_l2",
+     "ang_vel_xy_l2",
+     "dof_acc_l2",
+     "dof_pos_limits",
+     "dof_torques_l2",
+     "feet_air_time",
+     "feet_slide",
+     "flat_orientation_l2",
+     "lin_vel_z_l2",
+     "track_ang_vel_z_exp",
+     "track_lin_vel_xy_exp"
+    ]
+   }
+  },
+  "p2pilot_R-slip_k0_1_s202": {
+   "name": "p2pilot_R-slip_k0_1_s202",
+   "seed": 202,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-R-slip-k0.1",
+   "started": "2026-10-23T15:49:44+00:00",
+   "problems": [],
+   "train_returncode": 0,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-23_15-50-00",
+   "trained": "2026-10-23T16:39:51+00:00",
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-23_15-50-00/model_1999.pt",
+    "sha256": "3ba75a0570932cc1258be10a53ae42bc62e81fccd69efdf248c747b2e9388bd1"
+   },
+   "summary": {
+    "nominal": {
+     "success_rate": 0.99609375,
+     "episodes": 256,
+     "falls": 0,
+     "qualifies": true,
+     "checkpoint_sha256": "3ba75a0570932cc1258be10a53ae42bc62e81fccd69efdf248c747b2e9388bd1"
+    },
+    "check2_metrics": {
+     "actuator_limit_step_share": 0.002890625,
+     "foot_slip_p95_mps": 2.6917223930358887,
+     "foot_slip_sustained_p95_mps": 2.658432722091675,
+     "ground_penetration_m": 0.0017749890685081482,
+     "min_foot_origin_z_m": 0.0211690291762352,
+     "min_body_z_m": -0.0017749890685081482,
+     "penetration_step_share": 0.0,
+     "contact_force_p99_bw": 0.685730516910553,
+     "actuator_torque_clipped_step_share": 0.0025625,
+     "actuator_torque_clipped_joint_share": 0.00042317708333333335,
+     "joint_velocity_over_limit_step_share": 0.0016875,
+     "action_jitter_high_freq_power_share": 0.012410804540521018,
+     "flight_share": 0.0033158158158158157,
+     "base_vz_rms_mps": 0.07254388883032276,
+     "flight_share_low_speed": 0.0024024024024024023,
+     "base_vz_rms_low_speed_mps": 0.06491403577006316,
+     "low_speed_env_steps": 4995
+    }
+   },
+   "finished": "2026-10-23T16:41:35+00:00",
+   "config_check": {
+    "problems": [],
+    "reward_terms": [
+     "action_rate_l2",
+     "ang_vel_xy_l2",
+     "dof_acc_l2",
+     "dof_pos_limits",
+     "dof_torques_l2",
+     "feet_air_time",
+     "feet_slide",
+     "flat_orientation_l2",
+     "lin_vel_z_l2",
+     "track_ang_vel_z_exp",
+     "track_lin_vel_xy_exp"
+    ]
+   }
+  },
+  "p2pilot_Phi-slip_low_s205": {
+   "name": "p2pilot_Phi-slip_low_s205",
+   "seed": 205,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-slip-low",
+   "started": "2026-10-23T16:41:35+00:00",
+   "problems": [],
+   "train_returncode": 1,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_low/2026-10-23_16-41-52",
+   "trained": "2026-10-23T17:34:49+00:00",
+   "train_shutdown_crash": {
+    "returncode": 1,
+    "last_iteration": "1999/2000",
+    "final_checkpoint": "model_1999.pt",
+    "crash": "process died in Isaac Sim's SimulationApp.close() after training finished"
+   },
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_low/2026-10-23_16-41-52/model_1999.pt",
+    "sha256": "89af4dfb0cfe449c298176b840ff78a40e5e5f2a685c696ad35a70c6b55e03f7"
+   },
+   "summary": {
+    "nominal": {
+     "success_rate": 0.828125,
+     "episodes": 256,
+     "falls": 0,
+     "qualifies": false,
+     "checkpoint_sha256": "89af4dfb0cfe449c298176b840ff78a40e5e5f2a685c696ad35a70c6b55e03f7"
+    },
+    "check2_metrics": {
+     "actuator_limit_step_share": 0.003703125,
+     "foot_slip_p95_mps": 0.47627997398376465,
+     "foot_slip_sustained_p95_mps": 0.3550272583961487,
+     "ground_penetration_m": 0.0014731548726558685,
+     "min_foot_origin_z_m": 0.021506130695343018,
+     "min_body_z_m": -0.0014731548726558685,
+     "penetration_step_share": 0.0,
+     "contact_force_p99_bw": 0.7951299548149109,
+     "actuator_torque_clipped_step_share": 0.003,
+     "actuator_torque_clipped_joint_share": 0.000453125,
+     "joint_velocity_over_limit_step_share": 0.001890625,
+     "action_jitter_high_freq_power_share": 0.008400616283557628,
+     "flight_share": 0.0027683933933933935,
+     "base_vz_rms_mps": 0.11485995430917226,
+     "flight_share_low_speed": 0.002002002002002002,
+     "base_vz_rms_low_speed_mps": 0.08487062454543559,
+     "low_speed_env_steps": 4995
+    }
+   },
+   "finished": "2026-10-23T17:40:33+00:00",
+   "config_check": {
+    "problems": [],
+    "reward_terms": [
+     "action_rate_l2",
+     "ang_vel_xy_l2",
+     "dof_acc_l2",
+     "dof_pos_limits",
+     "dof_torques_l2",
+     "feet_air_time",
+     "feet_slide",
+     "flat_orientation_l2",
+     "lin_vel_z_l2",
+     "track_ang_vel_z_exp",
+     "track_lin_vel_xy_exp"
+    ]
+   }
+  },
+  "p2pilot_Phi-slip_low_s206": {
+   "name": "p2pilot_Phi-slip_low_s206",
+   "seed": 206,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-slip-low",
+   "started": "2026-10-23T17:40:33+00:00",
+   "problems": [],
+   "train_returncode": 0,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_low/2026-10-23_17-40-50",
+   "trained": "2026-10-23T18:31:41+00:00",
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_low/2026-10-23_17-40-50/model_1999.pt",
+    "sha256": "5a386ba2e86b20a771d66d2e04925a125a354fc3f564edd7cb984e986aca7eaa"
+   },
+   "summary": {
+    "nominal": {
+     "success_rate": 0.0,
+     "episodes": 256,
+     "falls": 0,
+     "qualifies": false,
+     "checkpoint_sha256": "5a386ba2e86b20a771d66d2e04925a125a354fc3f564edd7cb984e986aca7eaa"
+    },
+    "check2_metrics": {
+     "actuator_limit_step_share": 0.0043125,
+     "foot_slip_p95_mps": 0.17429859936237335,
+     "foot_slip_sustained_p95_mps": 0.1481262594461441,
+     "ground_penetration_m": 0.0014692097902297974,
+     "min_foot_origin_z_m": 0.021317563951015472,
+     "min_body_z_m": -0.0015675872564315796,
+     "penetration_step_share": 0.0,
+     "contact_force_p99_bw": 0.849220871925354,
+     "actuator_torque_clipped_step_share": 0.003671875,
+     "actuator_torque_clipped_joint_share": 0.0005533854166666667,
+     "joint_velocity_over_limit_step_share": 0.00203125,
+     "action_jitter_high_freq_power_share": 0.010852555339841408,
+     "flight_share": 0.11569381881881882,
+     "base_vz_rms_mps": 0.1169813100023636,
+     "flight_share_low_speed": 0.25545545545545545,
+     "base_vz_rms_low_speed_mps": 0.12548715982342307,
+     "low_speed_env_steps": 4995
+    }
+   },
+   "finished": "2026-10-23T18:33:25+00:00",
+   "config_check": {
+    "problems": [],
+    "reward_terms": [
+     "action_rate_l2",
+     "ang_vel_xy_l2",
+     "dof_acc_l2",
+     "dof_pos_limits",
+     "dof_torques_l2",
+     "feet_air_time",
+     "feet_slide",
+     "flat_orientation_l2",
+     "lin_vel_z_l2",
+     "track_ang_vel_z_exp",
+     "track_lin_vel_xy_exp"
+    ]
+   }
+  },
+  "p2pilot_Phi-slip_high_s207": {
+   "name": "p2pilot_Phi-slip_high_s207",
+   "seed": 207,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-slip-high",
+   "started": "2026-10-23T18:33:25+00:00",
+   "problems": [],
+   "train_returncode": 0,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_high/2026-10-23_18-33-42",
+   "trained": "2026-10-23T19:23:12+00:00",
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_high/2026-10-23_18-33-42/model_1999.pt",
+    "sha256": "a3931be9be9269517183193bc7d926f0350dde17a21d8744882d5f9a418b3ef4"
+   },
+   "summary": {
+    "nominal": {
+     "success_rate": 0.97265625,
+     "episodes": 256,
+     "falls": 1,
+     "qualifies": true,
+     "checkpoint_sha256": "a3931be9be9269517183193bc7d926f0350dde17a21d8744882d5f9a418b3ef4"
+    },
+    "check2_metrics": {
+     "actuator_limit_step_share": 0.003484375,
+     "foot_slip_p95_mps": 0.10088183730840683,
+     "foot_slip_sustained_p95_mps": 0.09342750161886215,
+     "ground_penetration_m": 0.0030398964881896973,
+     "min_foot_origin_z_m": 0.01989120990037918,
+     "min_body_z_m": -0.0030398964881896973,
+     "penetration_step_share": 0.0,
+     "contact_force_p99_bw": 0.8315064311027527,
+     "actuator_torque_clipped_step_share": 0.00325,
+     "actuator_torque_clipped_joint_share": 0.00048177083333333335,
+     "joint_velocity_over_limit_step_share": 0.001578125,
+     "action_jitter_high_freq_power_share": 0.009049781187515218,
+     "flight_share": 0.0025807057057057057,
+     "base_vz_rms_mps": 0.07234680723503929,
+     "flight_share_low_speed": 0.002002002002002002,
+     "base_vz_rms_low_speed_mps": 0.07037255078393538,
+     "low_speed_env_steps": 4995
+    }
+   },
+   "finished": "2026-10-23T19:24:55+00:00",
+   "config_check": {
+    "problems": [],
+    "reward_terms": [
+     "action_rate_l2",
+     "ang_vel_xy_l2",
+     "dof_acc_l2",
+     "dof_pos_limits",
+     "dof_torques_l2",
+     "feet_air_time",
+     "feet_slide",
+     "flat_orientation_l2",
+     "lin_vel_z_l2",
+     "track_ang_vel_z_exp",
+     "track_lin_vel_xy_exp"
+    ]
+   }
+  },
+  "p2pilot_Phi-slip_high_s208": {
+   "name": "p2pilot_Phi-slip_high_s208",
+   "seed": 208,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-slip-high",
+   "started": "2026-10-23T19:24:55+00:00",
+   "problems": [],
+   "train_returncode": 0,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_high/2026-10-23_19-25-12",
+   "trained": "2026-10-23T20:14:34+00:00",
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_high/2026-10-23_19-25-12/model_1999.pt",
+    "sha256": "817eb9106ef78644c09a6102a53ace67829151aaedb08bfe48c4f64f4ede8402"
+   },
+   "summary": {
+    "nominal": {
+     "success_rate": 1.0,
+     "episodes": 256,
+     "falls": 0,
+     "qualifies": true,
+     "checkpoint_sha256": "817eb9106ef78644c09a6102a53ace67829151aaedb08bfe48c4f64f4ede8402"
+    },
+    "check2_metrics": {
+     "actuator_limit_step_share": 0.003234375,
+     "foot_slip_p95_mps": 0.1017579510807991,
+     "foot_slip_sustained_p95_mps": 0.09391407668590546,
+     "ground_penetration_m": 0.002249673008918762,
+     "min_foot_origin_z_m": 0.020567983388900757,
+     "min_body_z_m": -0.002249673008918762,
+     "penetration_step_share": 0.0,
+     "contact_force_p99_bw": 0.8449836373329163,
+     "actuator_torque_clipped_step_share": 0.002953125,
+     "actuator_torque_clipped_joint_share": 0.00046484375,
+     "joint_velocity_over_limit_step_share": 0.001640625,
+     "action_jitter_high_freq_power_share": 0.008188978573455998,
+     "flight_share": 0.002549424424424424,
+     "base_vz_rms_mps": 0.06502341189021642,
+     "flight_share_low_speed": 0.002002002002002002,
+     "base_vz_rms_low_speed_mps": 0.061884487339590344,
+     "low_speed_env_steps": 4995
+    }
+   },
+   "finished": "2026-10-23T20:16:17+00:00",
+   "config_check": {
+    "problems": [],
+    "reward_terms": [
+     "action_rate_l2",
+     "ang_vel_xy_l2",
+     "dof_acc_l2",
+     "dof_pos_limits",
+     "dof_torques_l2",
+     "feet_air_time",
+     "feet_slide",
+     "flat_orientation_l2",
+     "lin_vel_z_l2",
+     "track_ang_vel_z_exp",
+     "track_lin_vel_xy_exp"
+    ]
+   }
+  },
+  "p2pilot_R-jitter_k0_1_s209": {
+   "name": "p2pilot_R-jitter_k0_1_s209",
+   "seed": 209,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-R-jitter-k0.1",
+   "started": "2026-10-23T20:16:17+00:00",
+   "problems": [],
+   "train_returncode": 0,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_jitter_k0_1/2026-10-23_20-16-34",
+   "trained": "2026-10-23T21:05:29+00:00",
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_jitter_k0_1/2026-10-23_20-16-34/model_1999.pt",
+    "sha256": "c27d9a7654701ad5fc6e26a9fd2cdeef592aafcf8713384812e6e66312f366e1"
+   },
+   "summary": {
+    "nominal": {
+     "success_rate": 0.9765625,
+     "episodes": 256,
+     "falls": 0,
+     "qualifies": true,
+     "checkpoint_sha256": "c27d9a7654701ad5fc6e26a9fd2cdeef592aafcf8713384812e6e66312f366e1"
+    },
+    "check2_metrics": {
+     "actuator_limit_step_share": 0.003484375,
+     "foot_slip_p95_mps": 0.10750560462474823,
+     "foot_slip_sustained_p95_mps": 0.09638950228691101,
+     "ground_penetration_m": 0.0029460471123456955,
+     "min_foot_origin_z_m": 0.020210430026054382,
+     "min_body_z_m": -0.0029460471123456955,
+     "penetration_step_share": 0.0,
+     "contact_force_p99_bw": 0.8325375914573669,
+     "actuator_torque_clipped_step_share": 0.00325,
+     "actuator_torque_clipped_joint_share": 0.0004947916666666667,
+     "joint_velocity_over_limit_step_share": 0.002109375,
+     "action_jitter_high_freq_power_share": 0.009866668632765849,
+     "flight_share": 0.0024242992992992993,
+     "base_vz_rms_mps": 0.06236981688941815,
+     "flight_share_low_speed": 0.002002002002002002,
+     "base_vz_rms_low_speed_mps": 0.05670231058740995,
+     "low_speed_env_steps": 4995
+    }
+   },
+   "finished": "2026-10-23T21:07:12+00:00",
+   "config_check": {
+    "problems": [],
+    "reward_terms": [
+     "action_rate_l2",
+     "ang_vel_xy_l2",
+     "dof_acc_l2",
+     "dof_pos_limits",
+     "dof_torques_l2",
+     "feet_air_time",
+     "feet_slide",
+     "flat_orientation_l2",
+     "lin_vel_z_l2",
+     "track_ang_vel_z_exp",
+     "track_lin_vel_xy_exp"
+    ]
+   }
+  },
+  "p2pilot_R-jitter_k0_1_s210": {
+   "name": "p2pilot_R-jitter_k0_1_s210",
+   "seed": 210,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-R-jitter-k0.1",
+   "started": "2026-10-23T21:07:12+00:00",
+   "problems": [],
+   "train_returncode": 1,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_jitter_k0_1/2026-10-23_21-07-29",
+   "trained": "2026-10-23T21:58:20+00:00",
+   "train_shutdown_crash": {
+    "returncode": 1,
+    "last_iteration": "1999/2000",
+    "final_checkpoint": "model_1999.pt",
+    "crash": "process died in Isaac Sim's SimulationApp.close() after training finished"
+   },
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_jitter_k0_1/2026-10-23_21-07-29/model_1999.pt",
+    "sha256": "75cb0f2d3be8c2585da66c04385b0e174cf75f03564a0bc794cda03e2cc58976"
+   },
+   "summary": {
+    "nominal": {
+     "success_rate": 0.984375,
+     "episodes": 256,
+     "falls": 0,
+     "qualifies": true,
+     "checkpoint_sha256": "75cb0f2d3be8c2585da66c04385b0e174cf75f03564a0bc794cda03e2cc58976"
+    },
+    "check2_metrics": {
+     "actuator_limit_step_share": 0.00353125,
+     "foot_slip_p95_mps": 0.11195894330739975,
+     "foot_slip_sustained_p95_mps": 0.09823548793792725,
+     "ground_penetration_m": 0.0031192246824502945,
+     "min_foot_origin_z_m": 0.01981830596923828,
+     "min_body_z_m": -0.0031192246824502945,
+     "penetration_step_share": 0.0,
+     "contact_force_p99_bw": 0.8703091740608215,
+     "actuator_torque_clipped_step_share": 0.00328125,
+     "actuator_torque_clipped_joint_share": 0.00048177083333333335,
+     "joint_velocity_over_limit_step_share": 0.001625,
+     "action_jitter_high_freq_power_share": 0.009728598099366338,
+     "flight_share": 0.00243993993993994,
+     "base_vz_rms_mps": 0.0668975151122646,
+     "flight_share_low_speed": 0.002002002002002002,
+     "base_vz_rms_low_speed_mps": 0.05196663479958118,
+     "low_speed_env_steps": 4995
+    }
+   },
+   "finished": "2026-10-23T22:02:03+00:00",
+   "config_check": {
+    "problems": [],
+    "reward_terms": [
+     "action_rate_l2",
+     "ang_vel_xy_l2",
+     "dof_acc_l2",
+     "dof_pos_limits",
+     "dof_torques_l2",
+     "feet_air_time",
+     "feet_slide",
+     "flat_orientation_l2",
+     "lin_vel_z_l2",
+     "track_ang_vel_z_exp",
+     "track_lin_vel_xy_exp"
+    ]
+   }
+  },
+  "p2pilot_R-jitter_k0_03_s211": {
+   "name": "p2pilot_R-jitter_k0_03_s211",
+   "seed": 211,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-R-jitter-k0.03",
+   "started": "2026-10-23T22:02:03+00:00",
+   "problems": [],
+   "train_returncode": 0,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_jitter_k0_03/2026-10-23_22-02-20",
+   "trained": "2026-10-23T22:52:07+00:00",
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_jitter_k0_03/2026-10-23_22-02-20/model_1999.pt",
+    "sha256": "d1bd2605f1709f347972e448e1dfa63f81740d37fd35e6c6db26a84c3e6cd0bf"
+   },
+   "summary": {
+    "nominal": {
+     "success_rate": 0.984375,
+     "episodes": 256,
+     "falls": 0,
+     "qualifies": true,
+     "checkpoint_sha256": "d1bd2605f1709f347972e448e1dfa63f81740d37fd35e6c6db26a84c3e6cd0bf"
+    },
+    "check2_metrics": {
+     "actuator_limit_step_share": 0.003859375,
+     "foot_slip_p95_mps": 0.11167344450950623,
+     "foot_slip_sustained_p95_mps": 0.09627901017665863,
+     "ground_penetration_m": 0.0026820842176675797,
+     "min_foot_origin_z_m": 0.02039555460214615,
+     "min_body_z_m": -0.0026820842176675797,
+     "penetration_step_share": 0.0,
+     "contact_force_p99_bw": 0.8384614586830139,
+     "actuator_torque_clipped_step_share": 0.003546875,
+     "actuator_torque_clipped_joint_share": 0.0005364583333333333,
+     "joint_velocity_over_limit_step_share": 0.00240625,
+     "action_jitter_high_freq_power_share": 0.008483794555494216,
+     "flight_share": 0.00243993993993994,
+     "base_vz_rms_mps": 0.06576690812746225,
+     "flight_share_low_speed": 0.002002002002002002,
+     "base_vz_rms_low_speed_mps": 0.0660223704244229,
+     "low_speed_env_steps": 4995
+    }
+   },
+   "finished": "2026-10-23T22:55:50+00:00",
+   "config_check": {
+    "problems": [],
+    "reward_terms": [
+     "action_rate_l2",
+     "ang_vel_xy_l2",
+     "dof_acc_l2",
+     "dof_pos_limits",
+     "dof_torques_l2",
+     "feet_air_time",
+     "feet_slide",
+     "flat_orientation_l2",
+     "lin_vel_z_l2",
+     "track_ang_vel_z_exp",
+     "track_lin_vel_xy_exp"
+    ]
+   }
+  },
+  "p2pilot_R-jitter_k0_03_s212": {
+   "name": "p2pilot_R-jitter_k0_03_s212",
+   "seed": 212,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-R-jitter-k0.03",
+   "started": "2026-10-23T22:55:50+00:00",
+   "problems": [],
+   "train_returncode": 0,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_jitter_k0_03/2026-10-23_22-56-07",
+   "trained": "2026-10-23T23:45:26+00:00",
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_jitter_k0_03/2026-10-23_22-56-07/model_1999.pt",
+    "sha256": "5b72aa488481e0b8752cfb5aedad99c782c247fb9da09fdb37141f9d8bc1bac4"
+   },
+   "summary": {
+    "nominal": {
+     "success_rate": 0.9921875,
+     "episodes": 256,
+     "falls": 0,
+     "qualifies": true,
+     "checkpoint_sha256": "5b72aa488481e0b8752cfb5aedad99c782c247fb9da09fdb37141f9d8bc1bac4"
+    },
+    "check2_metrics": {
+     "actuator_limit_step_share": 0.003125,
+     "foot_slip_p95_mps": 0.1148185133934021,
+     "foot_slip_sustained_p95_mps": 0.10092677921056747,
+     "ground_penetration_m": 0.004873700439929962,
+     "min_foot_origin_z_m": 0.018068037927150726,
+     "min_body_z_m": -0.004873700439929962,
+     "penetration_step_share": 0.0,
+     "contact_force_p99_bw": 0.8284944295883179,
+     "actuator_torque_clipped_step_share": 0.00278125,
+     "actuator_torque_clipped_joint_share": 0.0004388020833333333,
+     "joint_velocity_over_limit_step_share": 0.001703125,
+     "action_jitter_high_freq_power_share": 0.009772500491287809,
+     "flight_share": 0.0026901901901901903,
+     "base_vz_rms_mps": 0.0703896323946672,
+     "flight_share_low_speed": 0.0022022022022022024,
+     "base_vz_rms_low_speed_mps": 0.06711916197955581,
+     "low_speed_env_steps": 4995
+    }
+   },
+   "finished": "2026-10-23T23:47:09+00:00",
+   "config_check": {
+    "problems": [],
+    "reward_terms": [
+     "action_rate_l2",
+     "ang_vel_xy_l2",
+     "dof_acc_l2",
+     "dof_pos_limits",
+     "dof_torques_l2",
+     "feet_air_time",
+     "feet_slide",
+     "flat_orientation_l2",
+     "lin_vel_z_l2",
+     "track_ang_vel_z_exp",
+     "track_lin_vel_xy_exp"
+    ]
+   }
+  },
+  "p2pilot_Phi-jitter_nodelay_s213": {
+   "name": "p2pilot_Phi-jitter_nodelay_s213",
+   "seed": 213,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-jitter-nodelay",
+   "started": "2026-10-23T23:47:09+00:00",
+   "problems": [],
+   "train_returncode": 0,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_jitter_nodelay/2026-10-23_23-47-26",
+   "trained": "2026-10-24T00:35:38+00:00",
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_jitter_nodelay/2026-10-23_23-47-26/model_1999.pt",
+    "sha256": "1d059bd583ea1474db5a83bfe7fd99895b30fd17ce66341748796c809ae946cc"
+   },
+   "summary": {
+    "nominal": {
+     "success_rate": 0.9921875,
+     "episodes": 256,
+     "falls": 0,
+     "qualifies": true,
+     "checkpoint_sha256": "1d059bd583ea1474db5a83bfe7fd99895b30fd17ce66341748796c809ae946cc"
+    },
+    "check2_metrics": {
+     "actuator_limit_step_share": 0.0035,
+     "foot_slip_p95_mps": 0.09304940700531006,
+     "foot_slip_sustained_p95_mps": 0.0842362493276596,
+     "ground_penetration_m": 0.0014305096119642258,
+     "min_foot_origin_z_m": 0.021138183772563934,
+     "min_body_z_m": -0.0014305096119642258,
+     "penetration_step_share": 0.0,
+     "contact_force_p99_bw": 0.8246630430221558,
+     "actuator_torque_clipped_step_share": 0.00346875,
+     "actuator_torque_clipped_joint_share": 0.000359375,
+     "joint_velocity_over_limit_step_share": 0.000765625,
+     "action_jitter_high_freq_power_share": 0.009693065578573112,
+     "flight_share": 0.0024242992992992993,
+     "base_vz_rms_mps": 0.052607383057703835,
+     "flight_share_low_speed": 0.0018018018018018018,
+     "base_vz_rms_low_speed_mps": 0.0522606117536801,
+     "low_speed_env_steps": 4995
+    }
+   },
+   "finished": "2026-10-24T00:37:20+00:00",
+   "config_check": {
+    "problems": [],
+    "reward_terms": [
+     "action_rate_l2",
+     "ang_vel_xy_l2",
+     "dof_acc_l2",
+     "dof_pos_limits",
+     "dof_torques_l2",
+     "feet_air_time",
+     "feet_slide",
+     "flat_orientation_l2",
+     "lin_vel_z_l2",
+     "track_ang_vel_z_exp",
+     "track_lin_vel_xy_exp"
+    ]
+   }
+  },
+  "p2pilot_Phi-jitter_nodelay_s214": {
+   "name": "p2pilot_Phi-jitter_nodelay_s214",
+   "seed": 214,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-jitter-nodelay",
+   "started": "2026-10-24T00:37:20+00:00",
+   "problems": [],
+   "train_returncode": 1,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_jitter_nodelay/2026-10-24_00-37-37",
+   "trained": "2026-10-24T01:28:23+00:00",
+   "train_shutdown_crash": {
+    "returncode": 1,
+    "last_iteration": "1999/2000",
+    "final_checkpoint": "model_1999.pt",
+    "crash": "process died in Isaac Sim's SimulationApp.close() after training finished"
+   },
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_jitter_nodelay/2026-10-24_00-37-37/model_1999.pt",
+    "sha256": "70af2ee91eb65fd98f077f361589de58a0c5716c9c40d9ad5c3ae9bcb30333f0"
+   },
+   "summary": {
+    "nominal": {
+     "success_rate": 1.0,
+     "episodes": 256,
+     "falls": 0,
+     "qualifies": true,
+     "checkpoint_sha256": "70af2ee91eb65fd98f077f361589de58a0c5716c9c40d9ad5c3ae9bcb30333f0"
+    },
+    "check2_metrics": {
+     "actuator_limit_step_share": 0.004828125,
+     "foot_slip_p95_mps": 0.09194238483905792,
+     "foot_slip_sustained_p95_mps": 0.08470617234706879,
+     "ground_penetration_m": 0.0015233047306537628,
+     "min_foot_origin_z_m": 0.02093050628900528,
+     "min_body_z_m": -0.0015233047306537628,
+     "penetration_step_share": 0.0,
+     "contact_force_p99_bw": 0.8287746906280518,
+     "actuator_torque_clipped_step_share": 0.004734375,
+     "actuator_torque_clipped_joint_share": 0.0004713541666666667,
+     "joint_velocity_over_limit_step_share": 0.00128125,
+     "action_jitter_high_freq_power_share": 0.011717302804053465,
+     "flight_share": 0.002346096096096096,
+     "base_vz_rms_mps": 0.05329803997931367,
+     "flight_share_low_speed": 0.002002002002002002,
+     "base_vz_rms_low_speed_mps": 0.05200612024638221,
+     "low_speed_env_steps": 4995
+    }
+   },
+   "finished": "2026-10-24T01:30:06+00:00",
+   "config_check": {
+    "problems": [],
+    "reward_terms": [
+     "action_rate_l2",
+     "ang_vel_xy_l2",
+     "dof_acc_l2",
+     "dof_pos_limits",
+     "dof_torques_l2",
+     "feet_air_time",
+     "feet_slide",
+     "flat_orientation_l2",
+     "lin_vel_z_l2",
+     "track_ang_vel_z_exp",
+     "track_lin_vel_xy_exp"
+    ]
+   }
+  },
+  "p2pilot_R-hop_m10_s215": {
+   "name": "p2pilot_R-hop_m10_s215",
+   "seed": 215,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-R-hop-m10",
+   "started": "2026-10-24T01:30:06+00:00",
+   "problems": [],
+   "train_returncode": 0,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_hop_m10/2026-10-24_01-30-23",
+   "trained": "2026-10-24T02:19:42+00:00",
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_hop_m10/2026-10-24_01-30-23/model_1999.pt",
+    "sha256": "d5e59a2a0d44bdce8d439b43afb89c71e221010a3375dc9b691edb6f748795cd"
+   },
+   "summary": {
+    "nominal": {
+     "success_rate": 0.91015625,
+     "episodes": 256,
+     "falls": 0,
+     "qualifies": true,
+     "checkpoint_sha256": "d5e59a2a0d44bdce8d439b43afb89c71e221010a3375dc9b691edb6f748795cd"
+    },
+    "check2_metrics": {
+     "actuator_limit_step_share": 0.006671875,
+     "foot_slip_p95_mps": 0.10291934013366699,
+     "foot_slip_sustained_p95_mps": 0.09362014383077621,
+     "ground_penetration_m": 0.002373151481151581,
+     "min_foot_origin_z_m": 0.020603597164154053,
+     "min_body_z_m": -0.002373151481151581,
+     "penetration_step_share": 0.0,
+     "contact_force_p99_bw": 0.8233511447906494,
+     "actuator_torque_clipped_step_share": 0.004984375,
+     "actuator_torque_clipped_joint_share": 0.0006315104166666666,
+     "joint_velocity_over_limit_step_share": 0.004359375,
+     "action_jitter_high_freq_power_share": 0.010510910978201359,
+     "flight_share": 0.002533783783783784,
+     "base_vz_rms_mps": 0.07506189079580729,
+     "flight_share_low_speed": 0.0022022022022022024,
+     "base_vz_rms_low_speed_mps": 0.07427265731373794,
+     "low_speed_env_steps": 4995
+    }
+   },
+   "finished": "2026-10-24T02:21:25+00:00",
+   "config_check": {
+    "problems": [],
+    "reward_terms": [
+     "action_rate_l2",
+     "ang_vel_xy_l2",
+     "dof_acc_l2",
+     "dof_pos_limits",
+     "dof_torques_l2",
+     "feet_air_time",
+     "feet_slide",
+     "flat_orientation_l2",
+     "lin_vel_z_l2",
+     "track_ang_vel_z_exp",
+     "track_lin_vel_xy_exp"
+    ]
+   }
+  },
+  "p2pilot_R-hop_m10_s216": {
+   "name": "p2pilot_R-hop_m10_s216",
+   "seed": 216,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-R-hop-m10",
+   "started": "2026-10-24T11:59:31+00:00",
+   "problems": [],
+   "train_returncode": 0,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_hop_m10/2026-10-24_11-59-58",
+   "trained": "2026-10-24T12:49:03+00:00",
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_hop_m10/2026-10-24_11-59-58/model_1999.pt",
+    "sha256": "e7af21c87e8ca251fa0cab15957fb9d82bffb0ccd2a60f7247a91a790b8f4796"
+   },
+   "summary": {
+    "nominal": {
+     "success_rate": 0.984375,
+     "episodes": 256,
+     "falls": 0,
+     "qualifies": true,
+     "checkpoint_sha256": "e7af21c87e8ca251fa0cab15957fb9d82bffb0ccd2a60f7247a91a790b8f4796"
+    },
+    "check2_metrics": {
+     "actuator_limit_step_share": 0.007734375,
+     "foot_slip_p95_mps": 0.10350922495126724,
+     "foot_slip_sustained_p95_mps": 0.09505610913038254,
+     "ground_penetration_m": 0.0022517740726470947,
+     "min_foot_origin_z_m": 0.020714208483695984,
+     "min_body_z_m": -0.0022517740726470947,
+     "penetration_step_share": 0.0,
+     "contact_force_p99_bw": 0.8631896376609802,
+     "actuator_torque_clipped_step_share": 0.007265625,
+     "actuator_torque_clipped_joint_share": 0.0008372395833333333,
+     "joint_velocity_over_limit_step_share": 0.002125,
+     "action_jitter_high_freq_power_share": 0.011166469895012864,
+     "flight_share": 0.0025025025025025025,
+     "base_vz_rms_mps": 0.0795960193974462,
+     "flight_share_low_speed": 0.002002002002002002,
+     "base_vz_rms_low_speed_mps": 0.0853262402440296,
+     "low_speed_env_steps": 4995
+    }
+   },
+   "finished": "2026-10-24T12:50:48+00:00",
+   "config_check": {
+    "problems": [],
+    "reward_terms": [
+     "action_rate_l2",
+     "ang_vel_xy_l2",
+     "dof_acc_l2",
+     "dof_pos_limits",
+     "dof_torques_l2",
+     "feet_air_time",
+     "feet_slide",
+     "flat_orientation_l2",
+     "lin_vel_z_l2",
+     "track_ang_vel_z_exp",
+     "track_lin_vel_xy_exp"
+    ]
+   }
+  },
+  "p2pilot_R-hop_m30_s217": {
+   "name": "p2pilot_R-hop_m30_s217",
+   "seed": 217,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-R-hop-m30",
+   "started": "2026-10-24T12:50:48+00:00",
+   "problems": [],
+   "train_returncode": 0,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_hop_m30/2026-10-24_12-51-04",
+   "trained": "2026-10-24T13:41:07+00:00",
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_hop_m30/2026-10-24_12-51-04/model_1999.pt",
+    "sha256": "37c794a74c2a0498c41c4607dc557b2ec05014df86b2afd312b7ad1728999224"
+   },
+   "summary": {
+    "nominal": {
+     "success_rate": 0.5859375,
+     "episodes": 256,
+     "falls": 0,
+     "qualifies": false,
+     "checkpoint_sha256": "37c794a74c2a0498c41c4607dc557b2ec05014df86b2afd312b7ad1728999224"
+    },
+    "check2_metrics": {
+     "actuator_limit_step_share": 0.080046875,
+     "foot_slip_p95_mps": 1.8151434659957886,
+     "foot_slip_sustained_p95_mps": 1.8164422512054443,
+     "ground_penetration_m": 0.002941582351922989,
+     "min_foot_origin_z_m": 0.019752345979213715,
+     "min_body_z_m": -0.002941582351922989,
+     "penetration_step_share": 0.0,
+     "contact_force_p99_bw": 0.8954123258590698,
+     "actuator_torque_clipped_step_share": 0.074859375,
+     "actuator_torque_clipped_joint_share": 0.00720703125,
+     "joint_velocity_over_limit_step_share": 0.01721875,
+     "action_jitter_high_freq_power_share": 0.010697369936783158,
+     "flight_share": 0.004786036036036036,
+     "base_vz_rms_mps": 0.16966698027786598,
+     "flight_share_low_speed": 0.0032032032032032033,
+     "base_vz_rms_low_speed_mps": 0.10894359047840449,
+     "low_speed_env_steps": 4995
+    }
+   },
+   "finished": "2026-10-24T13:42:51+00:00",
+   "config_check": {
+    "problems": [],
+    "reward_terms": [
+     "action_rate_l2",
+     "ang_vel_xy_l2",
+     "dof_acc_l2",
+     "dof_pos_limits",
+     "dof_torques_l2",
+     "feet_air_time",
+     "feet_slide",
+     "flat_orientation_l2",
+     "lin_vel_z_l2",
+     "track_ang_vel_z_exp",
+     "track_lin_vel_xy_exp"
+    ]
+   }
+  },
+  "p2pilot_R-hop_m30_s218": {
+   "name": "p2pilot_R-hop_m30_s218",
+   "seed": 218,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-R-hop-m30",
+   "started": "2026-10-24T13:42:51+00:00",
+   "problems": [],
+   "train_returncode": 0,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_hop_m30/2026-10-24_13-43-08",
+   "trained": "2026-10-24T14:33:10+00:00",
+   "checkpoint": {
+    "path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_hop_m30/2026-10-24_13-43-08/model_1999.pt",
+    "sha256": "1f1c327bfded74a39ba522a5cf2663a8d1a48e2ca43db304bc7e82fee44e8e80"
+   },
+   "summary": {
+    "nominal": {
+     "success_rate": 0.015625,
+     "episodes": 256,
+     "falls": 43,
+     "qualifies": false,
+     "checkpoint_sha256": "1f1c327bfded74a39ba522a5cf2663a8d1a48e2ca43db304bc7e82fee44e8e80"
+    },
+    "check2_metrics": {
+     "actuator_limit_step_share": 0.02078125,
+     "foot_slip_p95_mps": 0.03296719118952751,
+     "foot_slip_sustained_p95_mps": 0.032017141580581665,
+     "ground_penetration_m": 0.002976987510919571,
+     "min_foot_origin_z_m": 0.02045423537492752,
+     "min_body_z_m": -0.002976987510919571,
+     "penetration_step_share": 0.0,
+     "contact_force_p99_bw": 0.560587465763092,
+     "actuator_torque_clipped_step_share": 0.02040625,
+     "actuator_torque_clipped_joint_share": 0.00196484375,
+     "joint_velocity_over_limit_step_share": 0.0035,
+     "action_jitter_high_freq_power_share": 0.019630190894217685,
+     "flight_share": 0.0035035035035035035,
+     "base_vz_rms_mps": 0.09084496059544656,
+     "flight_share_low_speed": 0.0028028028028028026,
+     "base_vz_rms_low_speed_mps": 0.09103640700799523,
+     "low_speed_env_steps": 4995
+    }
+   },
+   "finished": "2026-10-24T14:34:54+00:00",
+   "config_check": {
+    "problems": [],
+    "reward_terms": [
+     "action_rate_l2",
+     "ang_vel_xy_l2",
+     "dof_acc_l2",
+     "dof_pos_limits",
+     "dof_torques_l2",
+     "feet_air_time",
+     "feet_slide",
+     "flat_orientation_l2",
+     "lin_vel_z_l2",
+     "track_ang_vel_z_exp",
+     "track_lin_vel_xy_exp"
+    ]
+   }
+  }
+ },
+ "controls": {
+  "p0v5b_s101": {
+   "checkpoint_sha256": "14e03fab96f671e5b45c43ffefe947ea11754c6a07634d232c58b67745befe62",
+   "check2_metrics": {
+    "actuator_limit_step_share": 0.00271875,
+    "foot_slip_p95_mps": 0.1054583340883255,
+    "foot_slip_sustained_p95_mps": 0.0943034216761589,
+    "ground_penetration_m": 0.002329384908080101,
+    "min_foot_origin_z_m": 0.020892322063446045,
+    "min_body_z_m": -0.002329384908080101,
+    "penetration_step_share": 0.0,
+    "contact_force_p99_bw": 0.8329196572303772,
+    "actuator_torque_clipped_step_share": 0.00246875,
+    "actuator_torque_clipped_joint_share": 0.0004388020833333333,
+    "joint_velocity_over_limit_step_share": 0.00178125,
+    "action_jitter_high_freq_power_share": 0.009249185553714298,
+    "flight_share": 0.0026745495495495496,
+    "base_vz_rms_mps": 0.06902408326996441,
+    "flight_share_low_speed": 0.002002002002002002,
+    "base_vz_rms_low_speed_mps": 0.05621600019641032,
+    "low_speed_env_steps": 4995
+   }
+  },
+  "p0v5b_s102": {
+   "checkpoint_sha256": "dcd188cbf70d0c9c0a94cd1dd2165e714c977c9db67382563900f96358e0989b",
+   "check2_metrics": {
+    "actuator_limit_step_share": 0.002609375,
+    "foot_slip_p95_mps": 0.10605884343385696,
+    "foot_slip_sustained_p95_mps": 0.09362594783306122,
+    "ground_penetration_m": 0.0019268766045570374,
+    "min_foot_origin_z_m": 0.02068115770816803,
+    "min_body_z_m": -0.0019268766045570374,
+    "penetration_step_share": 0.0,
+    "contact_force_p99_bw": 0.821113109588623,
+    "actuator_torque_clipped_step_share": 0.0024375,
+    "actuator_torque_clipped_joint_share": 0.0004296875,
+    "joint_velocity_over_limit_step_share": 0.001625,
+    "action_jitter_high_freq_power_share": 0.008326311558555602,
+    "flight_share": 0.002346096096096096,
+    "base_vz_rms_mps": 0.0677165642659779,
+    "flight_share_low_speed": 0.0018018018018018018,
+    "base_vz_rms_low_speed_mps": 0.05951191351620234,
+    "low_speed_env_steps": 4995
+   }
+  },
+  "p0v5b_s103": {
+   "checkpoint_sha256": "612ea5b6f092e44b338fa74d88b2d9c8befb3481e0202c9026295edc7d941343",
+   "check2_metrics": {
+    "actuator_limit_step_share": 0.002734375,
+    "foot_slip_p95_mps": 0.10281506180763245,
+    "foot_slip_sustained_p95_mps": 0.09235122799873352,
+    "ground_penetration_m": 0.001929624006152153,
+    "min_foot_origin_z_m": 0.021038569509983063,
+    "min_body_z_m": -0.001929624006152153,
+    "penetration_step_share": 0.0,
+    "contact_force_p99_bw": 0.8151904940605164,
+    "actuator_torque_clipped_step_share": 0.002546875,
+    "actuator_torque_clipped_joint_share": 0.00042057291666666664,
+    "joint_velocity_over_limit_step_share": 0.001609375,
+    "action_jitter_high_freq_power_share": 0.008360808273843435,
+    "flight_share": 0.002299174174174174,
+    "base_vz_rms_mps": 0.0666879863980204,
+    "flight_share_low_speed": 0.0018018018018018018,
+    "base_vz_rms_low_speed_mps": 0.06029164757021687,
+    "low_speed_env_steps": 4995
+   }
+  },
+  "p0v5b_s104": {
+   "checkpoint_sha256": "7c3061069ae3571e8b11c1719db4a578f24844e156745c66968a2c34d7ea2215",
+   "check2_metrics": {
+    "actuator_limit_step_share": 0.00246875,
+    "foot_slip_p95_mps": 0.10267481952905655,
+    "foot_slip_sustained_p95_mps": 0.09234201163053513,
+    "ground_penetration_m": 0.002473883330821991,
+    "min_foot_origin_z_m": 0.020556189119815826,
+    "min_body_z_m": -0.002473883330821991,
+    "penetration_step_share": 0.0,
+    "contact_force_p99_bw": 0.844987154006958,
+    "actuator_torque_clipped_step_share": 0.002234375,
+    "actuator_torque_clipped_joint_share": 0.00040364583333333333,
+    "joint_velocity_over_limit_step_share": 0.00146875,
+    "action_jitter_high_freq_power_share": 0.007881295213345999,
+    "flight_share": 0.0025025025025025025,
+    "base_vz_rms_mps": 0.07044515890692807,
+    "flight_share_low_speed": 0.002002002002002002,
+    "base_vz_rms_low_speed_mps": 0.04925779842958447,
+    "low_speed_env_steps": 4995
+   }
+  },
+  "p0v5b_s105": {
+   "checkpoint_sha256": "4891931732af39e55fee00cd9ea7aa5c99b664969837b3fccadd4d19f579e46e",
+   "check2_metrics": {
+    "actuator_limit_step_share": 0.002671875,
+    "foot_slip_p95_mps": 0.10169187188148499,
+    "foot_slip_sustained_p95_mps": 0.09225372225046158,
+    "ground_penetration_m": 0.0019445177167654037,
+    "min_foot_origin_z_m": 0.021161779761314392,
+    "min_body_z_m": -0.0019445177167654037,
+    "penetration_step_share": 0.0,
+    "contact_force_p99_bw": 0.8493896722793579,
+    "actuator_torque_clipped_step_share": 0.002546875,
+    "actuator_torque_clipped_joint_share": 0.00044401041666666666,
+    "joint_velocity_over_limit_step_share": 0.0015625,
+    "action_jitter_high_freq_power_share": 0.007739780521653091,
+    "flight_share": 0.002533783783783784,
+    "base_vz_rms_mps": 0.06714112791938792,
+    "flight_share_low_speed": 0.0018018018018018018,
+    "base_vz_rms_low_speed_mps": 0.05458860147928922,
+    "low_speed_env_steps": 4995
+   }
+  }
+ },
+ "hop_reference": {
+  "flight_share_low_speed": 0.002002002002002002,
+  "base_vz_rms_low_speed_mps": 0.06029164757021687
+ },
+ "symptom_thresholds": {
+  "slip": {
+   "foot_slip_p95_mps": 0.11848005289966997
+  },
+  "jitter": {
+   "action_jitter_high_freq_power_share": 0.00985825486609146
+  },
+  "hop": {
+   "flight_share_low_speed": 0.02,
+   "base_vz_rms_low_speed_mps": 0.0904374713553253
+  }
+ },
+ "arms": {
+  "R-slip": {
+   "tried": [
+    {
+     "candidate": "k0.1",
+     "seeds": [
+      201,
+      202
+     ],
+     "robots": {
+      "p2pilot_R-slip_k0_1_s201": {
+       "qualifies": true,
+       "symptom": true,
+       "pass": true,
+       "success_rate": 0.99609375
+      },
+      "p2pilot_R-slip_k0_1_s202": {
+       "qualifies": true,
+       "symptom": true,
+       "pass": true,
+       "success_rate": 0.99609375
+      }
+     },
+     "pass": true
+    }
+   ],
+   "setting": "k0.1",
+   "dropped": false
+  },
+  "Phi-slip": {
+   "tried": [
+    {
+     "candidate": "low",
+     "seeds": [
+      205,
+      206
+     ],
+     "robots": {
+      "p2pilot_Phi-slip_low_s205": {
+       "qualifies": false,
+       "symptom": true,
+       "pass": false,
+       "success_rate": 0.828125
+      },
+      "p2pilot_Phi-slip_low_s206": {
+       "qualifies": false,
+       "symptom": true,
+       "pass": false,
+       "success_rate": 0.0
+      }
+     },
+     "pass": false
+    },
+    {
+     "candidate": "high",
+     "seeds": [
+      207,
+      208
+     ],
+     "robots": {
+      "p2pilot_Phi-slip_high_s207": {
+       "qualifies": true,
+       "symptom": false,
+       "pass": false,
+       "success_rate": 0.97265625
+      },
+      "p2pilot_Phi-slip_high_s208": {
+       "qualifies": true,
+       "symptom": false,
+       "pass": false,
+       "success_rate": 1.0
+      }
+     },
+     "pass": false
+    }
+   ],
+   "setting": null,
+   "dropped": true
+  },
+  "R-jitter": {
+   "tried": [
+    {
+     "candidate": "k0.1",
+     "seeds": [
+      209,
+      210
+     ],
+     "robots": {
+      "p2pilot_R-jitter_k0_1_s209": {
+       "qualifies": true,
+       "symptom": true,
+       "pass": true,
+       "success_rate": 0.9765625
+      },
+      "p2pilot_R-jitter_k0_1_s210": {
+       "qualifies": true,
+       "symptom": false,
+       "pass": false,
+       "success_rate": 0.984375
+      }
+     },
+     "pass": false
+    },
+    {
+     "candidate": "k0.03",
+     "seeds": [
+      211,
+      212
+     ],
+     "robots": {
+      "p2pilot_R-jitter_k0_03_s211": {
+       "qualifies": true,
+       "symptom": false,
+       "pass": false,
+       "success_rate": 0.984375
+      },
+      "p2pilot_R-jitter_k0_03_s212": {
+       "qualifies": true,
+       "symptom": false,
+       "pass": false,
+       "success_rate": 0.9921875
+      }
+     },
+     "pass": false
+    }
+   ],
+   "setting": null,
+   "dropped": true
+  },
+  "Phi-jitter": {
+   "tried": [
+    {
+     "candidate": "nodelay",
+     "seeds": [
+      213,
+      214
+     ],
+     "robots": {
+      "p2pilot_Phi-jitter_nodelay_s213": {
+       "qualifies": true,
+       "symptom": false,
+       "pass": false,
+       "success_rate": 0.9921875
+      },
+      "p2pilot_Phi-jitter_nodelay_s214": {
+       "qualifies": true,
+       "symptom": true,
+       "pass": true,
+       "success_rate": 1.0
+      }
+     },
+     "pass": false
+    }
+   ],
+   "setting": null,
+   "dropped": true
+  },
+  "R-hop": {
+   "tried": [
+    {
+     "candidate": "m10",
+     "seeds": [
+      215,
+      216
+     ],
+     "robots": {
+      "p2pilot_R-hop_m10_s215": {
+       "qualifies": true,
+       "symptom": false,
+       "pass": false,
+       "success_rate": 0.91015625
+      },
+      "p2pilot_R-hop_m10_s216": {
+       "qualifies": true,
+       "symptom": false,
+       "pass": false,
+       "success_rate": 0.984375
+      }
+     },
+     "pass": false
+    },
+    {
+     "candidate": "m30",
+     "seeds": [
+      217,
+      218
+     ],
+     "robots": {
+      "p2pilot_R-hop_m30_s217": {
+       "qualifies": false,
+       "symptom": false,
+       "pass": false,
+       "success_rate": 0.5859375
+      },
+      "p2pilot_R-hop_m30_s218": {
+       "qualifies": false,
+       "symptom": false,
+       "pass": false,
+       "success_rate": 0.015625
+      }
+     },
+     "pass": false
+    }
+   ],
+   "setting": null,
+   "dropped": true
+  }
+ },
+ "same_reward_terms": true,
+ "result": {
+  "R-slip": "k0.1",
+  "Phi-slip": null,
+  "R-jitter": null,
+  "Phi-jitter": null,
+  "R-hop": null
+ }
+}
