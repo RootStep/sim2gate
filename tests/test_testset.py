@@ -125,8 +125,11 @@ def test_three_failures_stop_for_a_decision(world):
 
 def test_check_refuses_a_bad_key_and_missing_calibration(world):
     tmp, args, fail, calls = world
-    with pytest.raises(testset.OpenSSLError):
+    with pytest.raises(testset.PrivateKeyError):
         testset.check_pubkey("priv.pem")
+    (tmp / "junk.pem").write_text("-----BEGIN PUBLIC KEY-----\nnot a key\n-----END PUBLIC KEY-----\n")
+    with pytest.raises(testset.OpenSSLError):
+        testset.check_pubkey("junk.pem")
     (tmp / "logs" / "rsl_rl" / "sim2gate_go2_flat_p0_v4" / "cal2" / "model_1999.pt").write_bytes(b"changed")
     with pytest.raises(ValueError, match="seed 2"):
         testset._calibration("cal.json")
@@ -148,8 +151,9 @@ def test_openssl_runs_without_a_foreign_library_path(world, monkeypatch):
     monkeypatch.setenv("LD_LIBRARY_PATH", str(tmp / "not-a-real-lib-dir"))
     monkeypatch.setenv("OPENSSL_CONF", str(tmp / "missing.cnf"))     # would make openssl fail if passed through
     assert "Public-Key" in testset.check_pubkey("pub.pem")
+    (tmp / "junk.pem").write_text("-----BEGIN PUBLIC KEY-----\nnot a key\n-----END PUBLIC KEY-----\n")
     with pytest.raises(testset.OpenSSLError, match="failed"):
-        testset.check_pubkey("priv.pem")
+        testset.check_pubkey("junk.pem")
 
 
 def test_a_stopped_run_resumes_only_after_a_redefinition(world, capsys):

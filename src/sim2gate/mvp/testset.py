@@ -74,6 +74,10 @@ class OpenSSLError(ValueError):
     pass
 
 
+class PrivateKeyError(ValueError):
+    pass
+
+
 def _openssl(*args, **kw):
     env = {k: v for k, v in os.environ.items() if k not in _OPENSSL_ENV_DROP}
     r = subprocess.run(["openssl", *args], capture_output=True, env=env, **kw)
@@ -86,6 +90,13 @@ def _openssl(*args, **kw):
 def check_pubkey(pubkey):
     if shutil.which("openssl") is None:
         raise ValueError("openssl is not installed here; sealing needs it")
+    # Newer OpenSSL (3.5+, e.g. Ubuntu 26) accepts a private key file with -pubin and quietly uses its public half,
+    # so the file itself is checked: a private key must never be used, or even be present, where sealing runs.
+    with open(pubkey, "rb") as f:
+        head = f.read(1 << 16)
+    if b"PRIVATE KEY" in head:
+        raise PrivateKeyError(f"{pubkey} contains a private key; use the public key only, and keep the private key "
+                              "on its owner's computer")
     out = _openssl("pkey", "-pubin", "-in", pubkey, "-noout", "-text").stdout.decode()
     if "Public-Key" not in out:
         raise ValueError(f"{pubkey} is not a public key")
