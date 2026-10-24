@@ -24,8 +24,9 @@ jobs:
       - run: |
           set -o pipefail
           python -m pip freeze > pip-freeze.txt
-          python -m pytest -q -rs -rf --tb=line tests 2>&1 | tee pytest.out
-          status=${PIPESTATUS[0]}
+          status=0
+          python -m pytest -q -rs -rf --tb=line tests > pytest.out 2>&1 || status=$?
+          cat pytest.out
           if [ "$status" != "0" ]; then
             grep -E "^(FAILED|ERROR)|^E |Error:|error:|\.py:[0-9]+:" pytest.out | head -30 | while IFS= read -r l; do echo "::error::$l"; done
             grep -iE "^(torch|numpy|tensordict|rsl-rl-lib|pytest|usd-core|onnx|pyyaml)==" pip-freeze.txt | while IFS= read -r l; do echo "::notice::$l"; done
