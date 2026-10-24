@@ -44,10 +44,13 @@ slip above 0.1185 m/s, jitter above 0.00986, hop as above.
 
 ## Observations, reported only
 
-- **R-slip.** At 10% slip penalty both robots slid beyond every clean robot, yet tracked speed better than any clean
-  robot (99.6% success; clean robots 88–98%). Judged on success alone, they would look like the best robots.
-- **Φ-slip, low friction (0.2–0.5).** It produced slip, but the robots could not walk properly at the nominal friction
-  of 0.8 (83% and 0%).
+- **R-slip.** At 10% slip penalty both robots slid far beyond every clean robot, yet scored 99.6% nominal success.
+  Under the same v2 threshold, the 20 clean robots scored 91.8–99.2% (`../../phase1/`, Watch record). So R-slip is at
+  the top of the clean range, not clearly above it: 0.996 against 0.992 is one episode in 256. Judged on success alone,
+  these robots would look as good as the best clean ones. Corrected Oct 24, after VJ's review: an earlier draft
+  compared them with the clean range under v1's threshold.
+- **Φ-slip, low friction (0.2–0.5).** It produced slip, but both robots failed the success test at the nominal friction
+  of 0.8 (83% and 0%) with **zero falls**: poor task performance (tracking), not falling.
 - **Φ-slip, high friction only (1.0–1.2).** The robots walked well and did not slip beyond the clean range.
 - **R-jitter.** Even at 3% of the stock action-rate weight, 3 of 4 robots stayed under the jitter threshold. P0 v5b
   robots, trained across payload, motor-strength and delay ranges, appear to stay smooth without the penalty doing
@@ -106,5 +109,8 @@ repository.
 
 ## What happens next
 
-Phase 2 as designed cannot test C2 or C3. Any revised design is a new, logged amendment approved by VJ. It must
-disclose all 16 pilot robots above and be frozen before any new robot is trained.
+Phase 2 as designed cannot test C2 or C3. VJ approved a bounded final pilot round on Oct 24 (`PHASE2_PART_A_AMENDMENT1.md`).
+It discloses all 16 pilot robots above.
+
+Matching reward-term lists and clean configuration checks close the missing-term leak only. They do not show that
+weighted log magnitudes cannot reveal an intervention; part B's leak audit tests that.

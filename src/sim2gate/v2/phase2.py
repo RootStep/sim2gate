@@ -123,7 +123,11 @@ def robot_verdict(rec, symptom, hop_ref):
     s = rec.get("summary") or {}
     nom, met = s.get("nominal") or {}, s.get("check2_metrics") or {}
     q = bool(nom.get("qualifies"))
-    sym = symptom_present(symptom, met, hop_ref) if met else False
+    if symptom == "delay":
+        from .phase2_arms import delay_symptom
+        sym = delay_symptom(s.get("check1"))
+    else:
+        sym = symptom_present(symptom, met, hop_ref) if met else False
     return {"qualifies": q, "symptom": sym, "pass": q and sym and not rec.get("problems"),
             "success_rate": nom.get("success_rate")}
 
@@ -185,6 +189,54 @@ def pilot(work, phase1_work, runner):
     return 0
 
 
+# ---- amendment 1: the final, bounded pilot round ---------------------------------------------------------------------
+
+AMENDMENT1_MEASURE = ("nominal", "sweep", "check2")
+
+
+def pilot2(work, runner):
+    """Amendment 1: one candidate per arm, its fixed seeds, nominal + check 1 + check 2; no further candidates."""
+    from .phase2_arms import AMENDMENT1_ORDER, AMENDMENT1_SEEDS
+    os.makedirs(work, exist_ok=True)
+    state = phase1.load_state(work)
+    state.setdefault("arms", {})
+    success = _success()
+    for arm in AMENDMENT1_ORDER:
+        cid = ARMS[arm]["candidates"][0]["id"]
+        entry = state["arms"].setdefault(arm, {"candidate": cid, "seeds": list(AMENDMENT1_SEEDS[(arm, cid)]),
+                                               "robots": {}})
+        for sd in AMENDMENT1_SEEDS[(arm, cid)]:
+            name = f"p2pilot_{arm}_{cid}_s{sd}".replace(".", "_")
+            rec = state["robots"].get(name)
+            if not (rec and rec.get("finished") and not rec.get("problems")):
+                _say(f"pilot {name} ({task_id(arm, cid)})")
+                rec = phase1.train_and_measure(work, name, sd, runner, evidence=True, measure=AMENDMENT1_MEASURE,
+                                               require_qualify=False, task=task_id(arm, cid), success=success)
+                y = _env_yaml(rec)
+                bad, terms = check_config(arm, cid, y) if y else (["no saved env.yaml"], [])
+                rec["config_check"] = {"problems": bad, "reward_terms": terms}
+                if bad:
+                    rec["problems"] += [f"config: {b}" for b in bad]
+                state["robots"][name] = rec
+                phase1.save_state(work, state)
+            v = robot_verdict(rec, ARMS[arm]["symptom"], None)
+            c1 = (rec.get("summary") or {}).get("check1") or {}
+            v["latency_cliff_ms"] = (c1.get("cliffs") or {}).get("action_latency_ms")
+            v["slip_p95_mps"] = ((rec.get("summary") or {}).get("check2_metrics") or {}).get("foot_slip_p95_mps")
+            entry["robots"][name] = v
+            _say(f"  {name}: success {v['success_rate']}, qualifies {v['qualifies']}, symptom {v['symptom']} "
+                 f"(slip p95 {v['slip_p95_mps']}, latency cliff {v['latency_cliff_ms']})")
+        entry["pass"] = len(entry["robots"]) == 2 and all(x["pass"] for x in entry["robots"].values())
+        _say(f"{arm}: {'PASSED' if entry['pass'] else 'FAILED'}")
+        phase1.save_state(work, state)
+    slip_ok = state["arms"]["Phi-slip-mild"]["pass"]
+    state["result"] = {a: state["arms"][a]["pass"] for a in AMENDMENT1_ORDER}
+    state["cause_study"] = "testable" if slip_ok else "not tested (hard stop: Phi-slip-mild failed)"
+    phase1.save_state(work, state)
+    _say(f"AMENDMENT 1 PILOTS COMPLETE: {json.dumps(state['result'])}; cause study: {state['cause_study']}")
+    return 0
+
+
 # ---- smoke --------------------------------------------------------------------------------------------------------
 
 def smoke(work, phase1_work, runner):
@@ -214,7 +266,7 @@ def main(argv=None):
     from ..mvp.testset import quiet_run
     p = argparse.ArgumentParser(prog="python -m sim2gate.v2.phase2", description=__doc__.splitlines()[0])
     sub = p.add_subparsers(dest="cmd", required=True)
-    for c in ("smoke", "pilot", "bundle"):
+    for c in ("smoke", "pilot", "pilot2", "bundle"):
         s = sub.add_parser(c)
         s.add_argument("--work", required=True)
         if c in ("smoke", "pilot"):
@@ -226,6 +278,8 @@ def main(argv=None):
         return smoke(a.work, a.phase1, quiet_run)
     if a.cmd == "pilot":
         return pilot(a.work, a.phase1, quiet_run)
+    if a.cmd == "pilot2":
+        return pilot2(a.work, quiet_run)
     return phase1.bundle(a.work, a.out)
 
 

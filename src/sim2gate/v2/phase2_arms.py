@@ -26,6 +26,14 @@ ARMS = {
                              {"id": "m30", "reward_scale": {"feet_air_time": 30.0}}]},
 }
 ARM_ORDER = ("R-slip", "Phi-slip", "R-jitter", "Phi-jitter", "R-hop")
+
+# Amendment 1 (PHASE2_PART_A_AMENDMENT1.md, approved by VJ Oct 24, 2026): the final, bounded pilot round
+ARMS["Phi-slip-mild"] = {"cause": "physics", "symptom": "slip",
+                         "candidates": [{"id": "mild", "static_friction": (0.3, 0.6)}]}
+ARMS["Phi-delay"] = {"cause": "physics", "symptom": "delay",
+                     "candidates": [{"id": "nodelay", "max_delay_steps": 0}]}
+AMENDMENT1_ORDER = ("Phi-slip-mild", "Phi-delay")
+AMENDMENT1_SEEDS = {("Phi-slip-mild", "mild"): (219, 220), ("Phi-delay", "nodelay"): (221, 222)}
 DYNAMIC_RATIO = 0.75                       # dynamic friction = 0.75 x static, as the task's own ratio
 
 
@@ -41,7 +49,7 @@ def task_id(arm, cid):
 
 
 def all_tasks():
-    return {task_id(a, c["id"]): (a, c["id"]) for a in ARM_ORDER for c in ARMS[a]["candidates"]}
+    return {task_id(a, c["id"]): (a, c["id"]) for a in ARMS for c in ARMS[a]["candidates"]}
 
 
 def apply(cfg, arm, cid):
@@ -86,6 +94,13 @@ def symptom_thresholds(hop_reference):
                                                     HOP_FLIGHT_FLOOR),
                       "base_vz_rms_low_speed_mps": HOP_FACTOR * hop_reference["base_vz_rms_low_speed_mps"]}
     return out
+
+
+def delay_symptom(check1):
+    """Amendment 1: delay fragility = check 1, scored under the v2 success threshold, flags action_latency_ms (a cliff
+    inside the realistic 0-30 ms range). check1: the robot's check 1 summary."""
+    return bool(check1) and check1.get("status") == "scored" and \
+        "action_latency_ms" in (check1.get("flagged_params") or [])
 
 
 def symptom_present(symptom, metrics, hop_reference):

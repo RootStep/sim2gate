@@ -44,8 +44,8 @@ def test_refuses_to_zero_a_term(monkeypatch):
 
 def test_tasks_registered_for_every_candidate():
     v = tasks._p2_variants()
-    assert set(v) == set(arms.all_tasks()) and len(v) == 9
-    assert len({x["env_class"] for x in v.values()}) == 9 and len({x["experiment_name"] for x in v.values()}) == 9
+    assert set(v) == set(arms.all_tasks()) and len(v) == 11
+    assert len({x["env_class"] for x in v.values()}) == 11 and len({x["experiment_name"] for x in v.values()}) == 11
     assert all(x["base_task"] == arms.BASE_TASK and x["max_iterations"] == 2000 for x in v.values())
 
 
@@ -111,3 +111,35 @@ def test_pilot_tries_candidates_in_order_and_drops_an_arm(tmp_path, monkeypatch)
     assert st["arms"]["Phi-jitter"]["dropped"] and len(calls) == 12
     n = len(calls)
     assert phase2.pilot(work, "unused", None) == 0 and len(calls) == n               # resumable: nothing retrained
+
+
+def test_amendment1_arms_and_delay_symptom():
+    c = arms.apply(fake_cfg(), "Phi-slip-mild", "mild")
+    assert c.events.physics_material.params["static_friction_range"] == (0.3, 0.6)
+    assert c.events.physics_material.params["dynamic_friction_range"] == pytest.approx((0.225, 0.45))
+    assert arms.apply(fake_cfg(), "Phi-delay", "nodelay").scene.robot.actuators["base_legs"].max_delay == 0
+    assert set(arms.AMENDMENT1_SEEDS.values()) == {(219, 220), (221, 222)}
+    assert not set(s for p in arms.AMENDMENT1_SEEDS.values() for s in p) & \
+        set(s for p in phase2.seed_table().values() for s in p)                  # new seeds only
+    assert arms.delay_symptom({"status": "scored", "flagged_params": ["action_latency_ms"]})
+    assert not arms.delay_symptom({"status": "scored", "flagged_params": ["ground_friction"]})
+    assert not arms.delay_symptom({"status": "invalid", "flagged_params": ["action_latency_ms"]})
+
+
+def test_pilot2_hard_stop(tmp_path, monkeypatch):
+    monkeypatch.setattr(phase2, "_env_yaml", lambda rec: "env.yaml")
+    monkeypatch.setattr(phase2, "check_config", lambda *a: ([], ["feet_slide"]))
+
+    def fake_tm(work, name, seed, runner, evidence, measure, require_qualify, task, success, **k):
+        assert "sweep" in measure
+        arm, _ = arms.all_tasks()[task]
+        return {"finished": "t", "problems": [], "run_dir": None,
+                "summary": {"nominal": {"qualifies": True, "success_rate": 0.95},
+                            "check2_metrics": {"foot_slip_p95_mps": 0.05},                  # mild friction: no slip
+                            "check1": {"status": "scored", "flagged_params": ["action_latency_ms"],
+                                       "cliffs": {"action_latency_ms": 25.0}}}}
+    monkeypatch.setattr(phase2.phase1, "train_and_measure", fake_tm)
+    assert phase2.pilot2(str(tmp_path / "p"), None) == 0
+    st = json.load(open(tmp_path / "p" / "state.json"))
+    assert st["result"] == {"Phi-slip-mild": False, "Phi-delay": True}
+    assert st["cause_study"].startswith("not tested")

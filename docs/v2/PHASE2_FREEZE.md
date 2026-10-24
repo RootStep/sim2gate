@@ -12,3 +12,8 @@ Check: `sha256sum docs/v2/PHASE2_PART_A.md`. Later changes are listed below with
   - R-slip passed at `feet_slide` × 0.1. Φ-slip, R-jitter, Φ-jitter and R-hop were dropped.
   - Under part A, C2 and C3 are not testable as designed. Details are in `evidence/phase2/pilots/README.md`.
   - Any revision is a new amendment, approved by VJ before any new robot is trained.
+- Oct 24, 2026: **amendment 1 approved by VJ and frozen**, before any of its robots was trained.
+  - File: `docs/v2/PHASE2_PART_A_AMENDMENT1.md`, SHA-256 `ea1ce36a6d6bbaf9dbd6bb3825a4032e94159e799f5043668e6befcd6ec07e71`.
+  - Content: the final bounded pilot round, Φ-slip-mild (seeds 219–220) and Φ-delay judged by check 1's latency
+    sweep (seeds 221–222).
+  - Hard stop: if Φ-slip-mild fails, C2 and C3 are not tested.
