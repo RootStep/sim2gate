@@ -19,6 +19,18 @@ jobs:
       - run: python -m pip install -e ".[dev]" "rsl-rl-lib==${{ matrix.rsl-rl }}"
       # tests/test_signals.py needs ppo-shaping-diagnostics (not on PyPI yet) and is the only test allowed to skip;
       # tests/test_signals_reference.py checks the same math against committed reference outputs instead.
-      - run: python -m pytest -q -rs tests
+      # Failing tests are also written as annotations, which can be read through the API when the raw log is not
+      # reachable.
+      - run: |
+          set -o pipefail
+          python -m pip freeze > pip-freeze.txt
+          python -m pytest -q -rs -rf --tb=line tests 2>&1 | tee pytest.out
+          status=${PIPESTATUS[0]}
+          if [ "$status" != "0" ]; then
+            grep -E "^(FAILED|ERROR)|^E |Error:|error:|\.py:[0-9]+:" pytest.out | head -30 | while IFS= read -r l; do echo "::error::$l"; done
+            grep -iE "^(torch|numpy|tensordict|rsl-rl-lib|pytest|usd-core|onnx|pyyaml)==" pip-freeze.txt | while IFS= read -r l; do echo "::notice::$l"; done
+          fi
+          exit $status
+        shell: bash
         env:
           SIM2GATE_ALLOWED_SKIPS: tests/test_signals.py
