@@ -8,3 +8,7 @@
 Check: `sha256sum docs/v2/PHASE2_PART_A.md`. Later changes are listed below with date, reason and approval.
 
 ## Log
+- Oct 24, 2026: arm pilots complete (16 robots, seeds 201–218 without 203–204).
+  - R-slip passed at `feet_slide` × 0.1. Φ-slip, R-jitter, Φ-jitter and R-hop were dropped.
+  - Under part A, C2 and C3 are not testable as designed. Details are in `evidence/phase2/pilots/README.md`.
+  - Any revision is a new amendment, approved by VJ before any new robot is trained.
