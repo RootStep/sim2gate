@@ -10,6 +10,18 @@ hypothesis about what it does, and the pilots check it.
 
 Revision 2 takes in VJ's review of Oct 22 (decision 1 approved in principle, with safeguards).
 
+**Revision 4 (Oct 25, draft for VJ).** It follows the amendment 1 pilots, in which both new arms passed, and VJ's
+direction of Oct 25:
+
+- pilot tuning ends; there are no further pilot rounds;
+- the amended study is frozen, then evaluated on fresh seeds;
+- the original failed interventions stay in the record;
+- pilot robots are excluded from confirmatory scoring;
+- no-delay training is a separate intervention, delay fragility, not a jitter cause.
+
+The arms, folds, labels and early-warning targets below are changed for that. Every change was made **after** the
+pilots, knowing their results, and is disclosed as such.
+
 **Two freezes.**
 
 | Part | Sections | Frozen when |
@@ -28,21 +40,67 @@ Each part's SHA-256 is recorded in `PHASE2_FREEZE.md` when it is frozen.
 | C1: Vihaan confirms the Oct 9 RSL-RL acceptance gate | **Pending**, needed for part B |
 | Phase 0B: Vihaan's sign-off on Q1 (per-term ρ) and Q4 | **Pending**, needed for part B |
 | C3 kept, with no extra compute | Decided by VJ, Oct 22 |
+| Arm pilots (part A, 16 robots) and amendment 1 pilots (4 robots) | Done Oct 24–25; 3 arms kept |
+| Leak audit on the pilot robots' records (part A) | **Pending**, needed for part B |
 
 ## 2–3. Arms, pilots and leak audit (part A)
 
-Frozen separately, in `PHASE2_PART_A.md` (Oct 23, 2026).
+Frozen separately, in `PHASE2_PART_A.md` (Oct 23, 2026), and amended once (`PHASE2_PART_A_AMENDMENT1.md`, Oct 24).
+
+### 3a. The study's arms (from the pilots)
+
+| Label | Change from P0 v5b | Planted cause | Pilot evidence |
+|---|---|---|---|
+| Control | none (robots 101–105 from phase 1) | — | — |
+| R-slip | `feet_slide` weight × 0.1 | reward | seeds 201–202 passed |
+| Φ-slip-mild | training static friction 0.3–0.6 (dynamic 0.75 ×) | physics | seeds 219–220 passed |
+| Φ-delay | no command delay in training (`max_delay` 0) | physics | seeds 221–222 passed |
+
+**Not in the study, kept in the record:** Φ-slip (0.2–0.5 and 1.0–1.2), R-jitter (× 0.1 and × 0.03), Φ-jitter (judged
+on jitter) and R-hop (× 10 and × 30). Their pilot robots and the reasons they were dropped are in
+`evidence/phase2/pilots/README.md`.
+
+**Φ-delay is a delay-fragility intervention.** It is the same training change as the dropped Φ-jitter arm, judged by a
+different, predefined symptom (check 1's latency flag, amendment 1). It is not counted as a jitter cause.
+
+**What a reduced design can and cannot show.** Two arms share a symptom with different causes (R-slip and
+Φ-slip-mild), which is what C2 needs. The study cannot show anything about jitter or hopping.
+
+### 3b. Intended-symptom patterns (manipulation check, reported only)
+
+Amendment 1 asked for the symptoms to be revisited as patterns across several measures. They are used **only** to
+report whether each study robot shows its arm's intended change. They never select robots, never enter a feature
+table and never enter scoring, so they cannot be tuned to favour any approach.
+
+| Arm | Pattern (all parts must hold) |
+|---|---|
+| R-slip | foot slip p95 > 0.1185 m/s, and nominal success ≥ 0.85 |
+| Φ-slip-mild | foot slip p95 > 0.1185 m/s, and nominal success ≥ 0.85 |
+| Φ-delay | check 1 scored and flags `action_latency_ms`, and foot slip p95 ≤ 0.1185 m/s |
+| Control | none of the above |
+
+Each arm reports the share of its robots that show its pattern, and every other measure that moved beyond the
+controls' maximum (as in the pilot reports). The pilots showed that most interventions move several measures at once;
+this table records that rather than assuming one symptom per cause.
 
 ## 4. Study robots (part B)
 
-- **Seeds and recipe.** Each kept arm trains 5 robots on seeds 301–325, with the full training record
-  (EvidenceRecorder, as phase 1).
+- **Seeds and recipe.** Each kept arm trains 5 robots on fresh seeds, fixed in advance, with the full training record
+  (EvidenceRecorder, as phase 1). No pilot seed (201–222) is reused.
+
+  | Arm | Primary seeds | Spares, used in order |
+  |---|---|---|
+  | R-slip | 301–305 | 326–330 |
+  | Φ-slip-mild | 306–310 | 331–335 |
+  | Φ-delay | 311–315 | 336–340 |
+
+  Seeds 316–325 and 341–345, set aside for arms that were dropped, are not used.
 - **Every robot is fully measured, qualified or not:**
   - nominal PhysX over 256 episodes;
   - check 1 on the v2 envelope;
   - check 2 with the hop measures;
   - Newton.
-- **Failures are kept.** A robot that does not qualify is replaced by the next spare seed (326–345), and still stays in
+- **Failures are kept.** A robot that does not qualify is replaced by its arm's next spare seed, and still stays in
   the record and in the secondary analysis.
 - **Analysis sets.**
   - Primary: the first 5 qualified robots of each arm, by seed order.
@@ -53,10 +111,14 @@ Frozen separately, in `PHASE2_PART_A.md` (Oct 23, 2026).
   are fixed without data. They are re-measured under phase 2's measurement code, so that every robot's behaviour
   features come from the same code version. A measurement is reused only where its code is unchanged, which is checked
   by version hash. Their phase 1 training records (TensorBoard and recorder) give B and C what they need.
-- **GPU estimate.**
-  - 25 study robots: about 23 hours.
-  - Re-measuring the controls: about 2 hours.
-  - Full measurement of failed robots: about 0.4 hours each.
+- **Pilot robots are excluded.** No pilot robot (seeds 201–222) is a study robot, a control or a test robot, or enters
+  any feature table, rule or score. They are used only for the leak audit (part A), which is reported.
+- **GPU estimate.** The amendment 1 pilots took about 55 minutes per robot for training, nominal, check 1 and check 2;
+  with Newton (check 5), about 1 hour.
+  - 15 study robots: best case about 15 hours, worst case about 19 hours (more robots needing spares, and slower runs).
+  - Each spare: about 1 hour.
+  - Re-measuring the controls (check 1, check 2 and Newton under phase 2's code): about 2–3 hours.
+  - In all: best case about 17 hours, worst case about 25 hours if the stop rule's limit of spares is reached.
 
 ## 5. Inputs and leakage (part B) ★
 
@@ -123,8 +185,9 @@ C uses the per-term quantity from phase 0B: ρ_k = corr(A, A − T_k).
 **B and C are identical except for ρ.** Same features, preprocessing, model and settings, and no tuning for either.
 C-placebo shows how much of any C-over-B gain comes from having more features alone.
 
-**Folds.** The unit is the independently trained robot. Fold *i* (1–5) holds each arm's *i*-th robot, and fold 1 also
-holds control robot 101. Episodes and log rows are never split across folds.
+**Folds.** The unit is the independently trained robot. Fold *i* (1–5) holds each arm's *i*-th primary robot (by
+seed order) and control robot 100 + *i*. That is 4 robots per fold, 20 in all. Episodes and log rows are never split
+across folds.
 
 **Preprocessing (training folds only).**
 
@@ -136,16 +199,20 @@ holds control robot 101. Episodes and log rows are never split across folds.
 **Question 1, classification of the planted intervention.**
 
 - **Rule:** nearest centroid, Euclidean distance, equal feature weights.
-- **Ties:** go to the first label in the order Control, R-slip, Φ-slip, R-jitter, Φ-jitter, R-hop.
-- **Score:** accuracy over all robots of the primary set, with the reward-vs-physics accuracy also reported.
+- **Labels:** Control, R-slip, Φ-slip-mild, Φ-delay.
+- **Ties:** go to the first label in that order.
+- **Score:** accuracy over all 20 robots of the primary set (chance is 25%).
+- **Also reported:** the reward-vs-physics accuracy, and the accuracy on the two slip arms alone (R-slip against
+  Φ-slip-mild), which is the part of the question the behaviour measures are least designed to answer.
 
 **Question 2, early warning.**
 
 - **Inputs:** window 1 features only.
-- **Rule:** ridge regression, penalty 1.0, predicting the log of each final symptom measure separately: foot slip p95,
-  jitter share, and flight share at low speed.
-- **Score:** Spearman correlation between predicted and measured values over all primary robots, averaged over the
-  three.
+- **Rule:** ridge regression, penalty 1.0, predicting the log of the final foot slip p95.
+- **Score:** Spearman correlation between predicted and measured values over all 20 primary robots.
+- **Why slip only.** Jitter and hopping are no longer study symptoms. Delay fragility cannot be predicted from window
+  1: Φ-delay's training is identical to the control recipe until the delay ramp starts at round 500. The latency cliff
+  is still predicted the same way and reported, not scored.
 - **A is excluded:** it has no training-time data.
 
 ## 8. Blinding, labels and scoring (part B) ★
@@ -182,10 +249,16 @@ size of each term's influence, which a simple variance ratio also captures, and 
 - C-placebo and C against B-var;
 - B_w and C_w;
 - the secondary analysis set;
-- results without Φ-jitter. Its change only starts at round 500, so window 1 cannot see it.
+- question 1 without Φ-delay (Control, R-slip and Φ-slip-mild only);
+- the intended-symptom table (section 3b).
 
-**Arms dropped in the pilots.** Scores are computed on the remaining arms, and the reduced design is stated. If two or
-more flawed arms are dropped, C2 and C3 are reported as not tested.
+**Arms dropped in the pilots.** Under part A as first written, dropping two or more arms meant C2 and C3 were not
+tested, and that is reported. Amendment 1, approved before its pilots, replaced that rule with a final pilot round and
+a hard stop that was not triggered. C2 and C3 are scored on the four labels above, and the report states:
+
+- the reduced design;
+- that the arms were chosen after seeing pilot results;
+- every dropped arm.
 
 ## Decisions for VJ (★ = Vihaan reviews too)
 
@@ -200,8 +273,11 @@ more flawed arms are dropped, C2 and C3 are reported as not tested.
   pilot; separate seeds; every pilot reported.
 - **D4 ★** Rules as in section 7: features, scaling, model, ties, missing data, robot-level folds and training-fold-only
   preprocessing.
-- **D5.** Abnormal hopping needs flight share at low commanded speed, vertical motion and continued qualification
-  together.
+- **D5 (revised).** Hopping is not a study symptom. Intended-symptom patterns (section 3b) are a reported manipulation
+  check only and never select robots or enter scoring.
+- **D9 (new, revision 4).** The arms are Control, R-slip, Φ-slip-mild and Φ-delay. Seeds are as in section 4. Pilot
+  robots are excluded from all confirmatory scoring.
+- **D10 (new, revision 4).** Early warning (question 2) is scored on foot slip only; the latency cliff is reported.
 - **D6 ★** Sealed two-stage scoring. Vihaan runs stage 1 with training-fold labels only; VJ and Claude stay blind until
   the predictions are committed.
 - **D7.** Every robot is fully measured and kept; failures are reported per arm; there is a secondary analysis on all
