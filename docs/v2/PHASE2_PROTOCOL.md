@@ -46,7 +46,7 @@ Each part's SHA-256 is recorded in `PHASE2_FREEZE.md` when it is frozen.
 | Independent gradient cross-check (phase 0B Q1 rule) | **Passed Oct 25**: Vihaan's package and Sim2Gate's standalone code agree on all 756 directions, minimum cosine 0.9999999999999996 (rule ≥ 0.999999) |
 | C3 kept, with no extra compute | Decided by VJ, Oct 22 |
 | Arm pilots (part A, 16 robots) and amendment 1 pilots (4 robots) | Done Oct 24–25; 3 arms kept |
-| Leak audit on the pilot robots' records (part A) | **Pending**, needed for part B |
+| Leak audit on the pilot robots' records (part A) | **Passed Oct 25** (`evidence/phase2/leak_audit/`): one term list in all 20 pilots; no configuration-like feature; trivial weight clue 0.60 (chance 0.10), reported; 0 undefined or invalid ρ values in 440,000 |
 
 ## 2–3. Arms, pilots and leak audit (part A)
 
@@ -363,7 +363,7 @@ phase 0B as "passed the recorded decision rules" with its limits, and asked for 
 
 1. ~~An independent gradient cross-check on phase 0A's 256-environment sample (cosine ≥ 0.999999).~~ Passed Oct 25
    (756 directions, minimum cosine 0.9999999999999996).
-2. The exporter, tested, and the leak audit on the pilot robots' records.
+2. ~~The exporter, tested, and the leak audit on the pilot robots' records.~~ Done Oct 25 (`evidence/phase2/leak_audit/`).
 3. The scoring program, tested, with its hash committed.
 4. Tests passing on GitHub for the exact study commit.
 5. The original Oct 9 gate report, if it can be found. Replayed ρ values in CI show compatibility of today's code

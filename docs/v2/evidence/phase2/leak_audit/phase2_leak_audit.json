@@ -1,0 +1,74 @@
+{
+ "robots": 20,
+ "arms": {
+  "Phi-delay:nodelay": 2,
+  "Phi-jitter:nodelay": 2,
+  "Phi-slip-mild:mild": 2,
+  "Phi-slip:high": 2,
+  "Phi-slip:low": 2,
+  "R-hop:m10": 2,
+  "R-hop:m30": 2,
+  "R-jitter:k0.03": 2,
+  "R-jitter:k0.1": 2,
+  "R-slip:k0.1": 2
+ },
+ "1_same_terms_order_format": {
+  "pass": true,
+  "term_lists": [
+   [
+    "track_lin_vel_xy_exp",
+    "track_ang_vel_z_exp",
+    "lin_vel_z_l2",
+    "ang_vel_xy_l2",
+    "dof_torques_l2",
+    "dof_acc_l2",
+    "action_rate_l2",
+    "feet_air_time",
+    "flat_orientation_l2",
+    "dof_pos_limits",
+    "feet_slide"
+   ]
+  ]
+ },
+ "2_constant_within_arm_features": {
+  "pass": true,
+  "found": [],
+  "action": null
+ },
+ "3_trivial_clue_accuracy": {
+  "accuracy": 0.6,
+  "chance": 0.1,
+  "features": "weight x step_dt per term (recovers the weights)",
+  "rule": "nearest centroid, leave one robot out",
+  "reported_only": true
+ },
+ "rho_counts": {
+  "undefined": 0,
+  "invalid": 0,
+  "checks": 440000
+ },
+ "pass": true,
+ "note": "Condition 2 removes features rather than failing the audit (part A). Condition 3 is reported.",
+ "robot_names": [
+  "p2pilot_Phi-jitter_nodelay_s213",
+  "p2pilot_Phi-jitter_nodelay_s214",
+  "p2pilot_Phi-slip_high_s207",
+  "p2pilot_Phi-slip_high_s208",
+  "p2pilot_Phi-slip_low_s205",
+  "p2pilot_Phi-slip_low_s206",
+  "p2pilot_R-hop_m10_s215",
+  "p2pilot_R-hop_m10_s216",
+  "p2pilot_R-hop_m30_s217",
+  "p2pilot_R-hop_m30_s218",
+  "p2pilot_R-jitter_k0_03_s211",
+  "p2pilot_R-jitter_k0_03_s212",
+  "p2pilot_R-jitter_k0_1_s209",
+  "p2pilot_R-jitter_k0_1_s210",
+  "p2pilot_R-slip_k0_1_s201",
+  "p2pilot_R-slip_k0_1_s202",
+  "p2pilot_Phi-delay_nodelay_s221",
+  "p2pilot_Phi-delay_nodelay_s222",
+  "p2pilot_Phi-slip-mild_mild_s219",
+  "p2pilot_Phi-slip-mild_mild_s220"
+ ]
+}

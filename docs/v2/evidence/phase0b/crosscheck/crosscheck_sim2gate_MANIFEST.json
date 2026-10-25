@@ -1,0 +1,547 @@
+{
+ "implementation": "sim2gate.v2.crosscheck",
+ "files": {
+  "base_s1_it00000.npz": "a5c5b01f8ed5f646a64efdf55df7a4999e8c3cbff075d875a765f102c5ee6a14",
+  "base_s1_it00050.npz": "d7a846de3b70041cbaad559fbbdf951e1ba3a7ccf21c94bbdb6d1e69ce03f380",
+  "base_s1_it00200.npz": "18885b863a82a876bca3b5a55e5113a88f46ed90a9e2f3a13fe544c13ee3cd4e",
+  "base_s1_it00500.npz": "6ad5d001ab674d3aa7b687751a4f648a9d879815761d6a6599638c545fa03094",
+  "base_s1_it01000.npz": "999f993fd3f396b1d0ac41de5fe077d01704ef57fcd2f05d95c947790c51d425",
+  "base_s1_it01999.npz": "2291817651e14d30958b2f7cd9d2146650bae6ffdf6c5a4bbdeb51be149b1722",
+  "base_s2_it00000.npz": "c7504e16f169fe3b13515f7691eab7520e67f41b020635ad7bcec0f9dccdcd1f",
+  "base_s2_it00050.npz": "d38b038d22149822941a168ea2a99554c36fcdfc7f7837c38dce6e96da66ef92",
+  "base_s2_it00200.npz": "dc9fc1a8f57782db2f48b8befb24260c43325bbcb0de2eb09f39adb64bcfb5f6",
+  "base_s2_it00500.npz": "992364c3391e6342565d2f745fcb4090a5ef02c161760d5b03b2c64fbb0d6f0e",
+  "base_s2_it01000.npz": "b5ada5406727e3a9f02d9309c9ca2c591c0fb0cbadbbc55fea2d8b3709dc4c7f",
+  "base_s2_it01999.npz": "ee1de7e6ba85537b2b7aa705bbfadb70162b7ef0f3e37cba8ada1c4e99d9e8b6",
+  "bsrs_0.5_s1_it00000.npz": "f4fb938913233cc280a7964dec86e499b11e88b11dfa9481ecea41debdf758af",
+  "bsrs_0.5_s1_it00050.npz": "188c4af262684855773fcf4da3e81a6ec1082bc04db4284c210ccf501a872295",
+  "bsrs_0.5_s1_it00200.npz": "7872bfa860a82d2411510c4d49480fc69a0c5a7e1688ea4053452321782dc5ca",
+  "bsrs_0.5_s1_it00500.npz": "fca1c1f17bd8060776cdd6ddda3f680238771eeabbbd751ef7d1117cf814c013",
+  "bsrs_0.5_s1_it01000.npz": "bae8e5126f7e64cae01bab486285e051ce5f3abcb898d5e890ad1fb5b22ad91a",
+  "bsrs_0.5_s1_it01999.npz": "cd358ce1e4049d8486a80c9aaeefd4fa48bb8f6582eedaebfe3161c64315194e",
+  "bsrs_0.5_s2_it00000.npz": "79b2458a672e5aaac30274c94b6f2461ba2a773356e21d859dd3dbc0379edeea",
+  "bsrs_0.5_s2_it00050.npz": "6dec54fa88852fec1080ec3e48e2435708625e0f2af6a0379aacb354c95d2526",
+  "bsrs_0.5_s2_it00200.npz": "d9dc754418f2c13eaf6da54b38c96a16e89943798a7cc6c9ba60918fd0c91a8c",
+  "bsrs_0.5_s2_it00500.npz": "b3ec80cdf583336af5b4fc07540699f80e033a3c89255876fb0fb8035140bde8",
+  "bsrs_0.5_s2_it01000.npz": "246284c775940958ad856d7443b88b43116c6c94863191587acdd13e41c244b0",
+  "bsrs_0.5_s2_it01999.npz": "25624a758ff4f5360a81253dda14d3f662d738c5f90d44a07939d71a34bcecb6",
+  "bsrs_2_s1_it00000.npz": "0c661240cee5808c494eb7ae25e3c91429bf45d04fa59fe3027495f547f0b0d6",
+  "bsrs_2_s1_it00050.npz": "5086568d90687da91e96f2c51de9674b029db6abb6198e0a433e2f0be842b3e2",
+  "bsrs_2_s1_it00200.npz": "18aa93b2e2f99a6c0f621dda2f986389e721c49cd173bb8fc26cdc65dc096a04",
+  "bsrs_2_s1_it00500.npz": "91e43f1fa4038348d2e3f98b75a554654d5fca36d08c5e1b55523d3244bfee95",
+  "bsrs_2_s1_it01000.npz": "d2d4e7f340b680b013483e17f951c1ae491e7c8015fae4c5569579c85ba858a4",
+  "bsrs_2_s1_it01999.npz": "9d0e5ab65cd474cca2739c397cae49530154c92957ac925b8cb715c55f1b349c",
+  "bsrs_2_s2_it00000.npz": "623b619c749354d71b4533f7af230d8de5efec2bffd603d9eecdb9667e85099d",
+  "bsrs_2_s2_it00050.npz": "db53bf38caae7f89892d865f78a8aabd555c4e2dbf4d0073069851b47b73f895",
+  "bsrs_2_s2_it00200.npz": "d0d5dc89c07f783a5c447b64dbb1039cb9258f7deefdc3064f4b5d7d72e4e2ed",
+  "bsrs_2_s2_it00500.npz": "f2ee7fa379c2586293641cffc907c0badd383d081a60d5b2755be63d68967ff4",
+  "bsrs_2_s2_it01000.npz": "610eaf2f6a0fa5697bfd6318b0bced04c01ec4c60003d558a8949e9ae836e6a1",
+  "bsrs_2_s2_it01999.npz": "6918538bd7d8b34a916f1870bb336e86cfaaa883825a62af5d48d14d5ed2b9b1",
+  "no_action_rate_s1_it00000.npz": "43a237d1104033b4f661e6e15501180524064ad82d4ab0d7999b44c09e4c9e4c",
+  "no_action_rate_s1_it00050.npz": "37a449163cfee7b1e38c4ea431d38f9ed149c345e1a687c7092d7ad6d127d84a",
+  "no_action_rate_s1_it00200.npz": "cef964267d9634959a5db7e885e18b68905f238d76b490b3e7922f6f9c5c2a58",
+  "no_action_rate_s1_it00500.npz": "7b4e3396ab3b7b53c089761ee3d1eb78426b7cb460ce344dbca6ad63156844a0",
+  "no_action_rate_s1_it01000.npz": "20ca3291f72b9c012094686749f990250e70f49b2dbe0a65e0af96fe0ff7e6ca",
+  "no_action_rate_s1_it01999.npz": "02052256eb87db424d1cd6905e2236baaf9718d713e6aa4fa0932b6ce1b5c802",
+  "no_action_rate_s2_it00000.npz": "ec1fa6cde6f8583329cb99a296d7b172e07eddafed5be771581d3d2ef9f5d8a7",
+  "no_action_rate_s2_it00050.npz": "324f28131f9a9d66bcbb84946f424b51d885a7fb54d641ba73c87d502a46d9c5",
+  "no_action_rate_s2_it00200.npz": "027307f401369228b8472a7da946158958745ea308ffc57e050b23d550fcb7b3",
+  "no_action_rate_s2_it00500.npz": "9e9cecd62a6d02bb537ffc91d960ce844e9bfcf1b614d96f6a8795647ad6b063",
+  "no_action_rate_s2_it01000.npz": "94c9fb7ca6d2b41b51fe869171361b617f6945913e35b017dc73df44895eb71a",
+  "no_action_rate_s2_it01999.npz": "436946b6a32f8fae49ca792e131e600fa0de24f425ef509d8d415a2da44da54f",
+  "no_slip_s1_it00000.npz": "4057d289e7c8148a6e8a491ead821b633b8d5d9803274f3c83ab615a8ad8e0fc",
+  "no_slip_s1_it00050.npz": "29ea2ddcf0b2882e640fac53110fec6859d2b75c917812336fc0f87e03126a8c",
+  "no_slip_s1_it00200.npz": "3a2d8b5cc77d9b0ceadc5a7f9b90d8d2a4fdbaf61e7e02301cba9afc1da34c78",
+  "no_slip_s1_it00500.npz": "522ced87a492229dd118bb62fce369c8b71a520289ae5629f56ed380ae094ce4",
+  "no_slip_s1_it01000.npz": "3acd30cb38ba5746c5240935f0f832eaebbd6c5bf93826a77d40103654a51843",
+  "no_slip_s1_it01999.npz": "553b344502afe26b178effdf28a4289bd33a262539480846989af8892426e961",
+  "no_slip_s2_it00000.npz": "9180118eeae6a9dc124a1d35c60f2828bb6a86d33ea197c879775607756a5114",
+  "no_slip_s2_it00050.npz": "f86ea757dec94b0be8576af89032475016de4163faeb7c2b868f42e2b983742b",
+  "no_slip_s2_it00200.npz": "bc1f1043f4ef655f79ed83a8b2d1b341038a27c5cdf09a71d58ef9826504734f",
+  "no_slip_s2_it00500.npz": "dd9cdcc10d9ed4b5e23a161e4dffa3ade7c7d207880612ae6ebf76332a0aefd7",
+  "no_slip_s2_it01000.npz": "9882175d8cbca9cfd42294bb4ab9632676ad05774423674ce2ee8490efb52cb7",
+  "no_slip_s2_it01999.npz": "b989527d3f1792c283fe8f6eafb99e203ff89d035f4d6b344315a2fcb074b91c"
+ },
+ "self_checks": {
+  "base_s1_it00000.npz": {
+   "log_prob_max_abs_diff": 0.0020383045356311413,
+   "mean_max_abs_diff": 0.000629473751458387,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.8799851925498388e-06,
+   "neighbour_mean_max_abs_diff": 3.538253997810631,
+   "neighbour_separated": true
+  },
+  "base_s1_it00050.npz": {
+   "log_prob_max_abs_diff": 0.004124735268785429,
+   "mean_max_abs_diff": 0.0010332551490380704,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 3.5574510413027838e-06,
+   "neighbour_mean_max_abs_diff": 3.068595837162574,
+   "neighbour_separated": true
+  },
+  "base_s1_it00200.npz": {
+   "log_prob_max_abs_diff": 0.011959935414820322,
+   "mean_max_abs_diff": 0.0022854968983292423,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.303662768099457e-06,
+   "neighbour_mean_max_abs_diff": 3.908084137719105,
+   "neighbour_separated": true
+  },
+  "base_s1_it00500.npz": {
+   "log_prob_max_abs_diff": 0.014379432942389414,
+   "mean_max_abs_diff": 0.0021155698640317744,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.5933094665854242e-06,
+   "neighbour_mean_max_abs_diff": 2.8373347041505816,
+   "neighbour_separated": true
+  },
+  "base_s1_it01000.npz": {
+   "log_prob_max_abs_diff": 0.02036293713884696,
+   "mean_max_abs_diff": 0.00236776056843091,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.0500967288228367e-06,
+   "neighbour_mean_max_abs_diff": 2.8844800016633547,
+   "neighbour_separated": true
+  },
+  "base_s1_it01999.npz": {
+   "log_prob_max_abs_diff": 0.023991292288696897,
+   "mean_max_abs_diff": 0.002569693458002398,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.6202992565439445e-06,
+   "neighbour_mean_max_abs_diff": 1.581221989424305,
+   "neighbour_separated": true
+  },
+  "base_s2_it00000.npz": {
+   "log_prob_max_abs_diff": 0.0021476172006877903,
+   "mean_max_abs_diff": 0.0006180460695199841,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.8233426974111353e-06,
+   "neighbour_mean_max_abs_diff": 2.6629224581639916,
+   "neighbour_separated": true
+  },
+  "base_s2_it00050.npz": {
+   "log_prob_max_abs_diff": 0.004281732820251349,
+   "mean_max_abs_diff": 0.0009972155281298967,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.3320127624515408e-06,
+   "neighbour_mean_max_abs_diff": 2.131173086308628,
+   "neighbour_separated": true
+  },
+  "base_s2_it00200.npz": {
+   "log_prob_max_abs_diff": 0.013162559971366505,
+   "mean_max_abs_diff": 0.0026811304558971294,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.2154516123862322e-06,
+   "neighbour_mean_max_abs_diff": 4.382840022889101,
+   "neighbour_separated": true
+  },
+  "base_s2_it00500.npz": {
+   "log_prob_max_abs_diff": 0.01499878177700964,
+   "mean_max_abs_diff": 0.002824757321592486,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.7390011031181984e-06,
+   "neighbour_mean_max_abs_diff": 3.608045704345486,
+   "neighbour_separated": true
+  },
+  "base_s2_it01000.npz": {
+   "log_prob_max_abs_diff": 0.020476326597770544,
+   "mean_max_abs_diff": 0.003185289133910363,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.845603875949564e-06,
+   "neighbour_mean_max_abs_diff": 3.0377685950539117,
+   "neighbour_separated": true
+  },
+  "base_s2_it01999.npz": {
+   "log_prob_max_abs_diff": 0.02178497713811467,
+   "mean_max_abs_diff": 0.0027227212935083678,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.1117368262935088e-06,
+   "neighbour_mean_max_abs_diff": 3.660439415675088,
+   "neighbour_separated": true
+  },
+  "bsrs_0.5_s1_it00000.npz": {
+   "log_prob_max_abs_diff": 0.0020383045356311413,
+   "mean_max_abs_diff": 0.000629473751458387,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.8799851925498388e-06,
+   "neighbour_mean_max_abs_diff": 3.091022159088233,
+   "neighbour_separated": true
+  },
+  "bsrs_0.5_s1_it00050.npz": {
+   "log_prob_max_abs_diff": 0.004563353689359673,
+   "mean_max_abs_diff": 0.0008236897321007297,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.443284255804201e-06,
+   "neighbour_mean_max_abs_diff": 2.2613185291034403,
+   "neighbour_separated": true
+  },
+  "bsrs_0.5_s1_it00200.npz": {
+   "log_prob_max_abs_diff": 0.012499408494894837,
+   "mean_max_abs_diff": 0.0023349887516481704,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.1610249483217103e-06,
+   "neighbour_mean_max_abs_diff": 3.9455456530978497,
+   "neighbour_separated": true
+  },
+  "bsrs_0.5_s1_it00500.npz": {
+   "log_prob_max_abs_diff": 0.01845520767825981,
+   "mean_max_abs_diff": 0.0024374390401700197,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.6873498331904102e-06,
+   "neighbour_mean_max_abs_diff": 3.5301757120398736,
+   "neighbour_separated": true
+  },
+  "bsrs_0.5_s1_it01000.npz": {
+   "log_prob_max_abs_diff": 0.022170097116841703,
+   "mean_max_abs_diff": 0.0026698545463190726,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.132393230880325e-06,
+   "neighbour_mean_max_abs_diff": 4.161859623848155,
+   "neighbour_separated": true
+  },
+  "bsrs_0.5_s1_it01999.npz": {
+   "log_prob_max_abs_diff": 0.02235309866825297,
+   "mean_max_abs_diff": 0.002419368943758604,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.713832482153066e-06,
+   "neighbour_mean_max_abs_diff": 1.9536389778210594,
+   "neighbour_separated": true
+  },
+  "bsrs_0.5_s2_it00000.npz": {
+   "log_prob_max_abs_diff": 0.0021476172006877903,
+   "mean_max_abs_diff": 0.0006180460695199841,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.8233426974111353e-06,
+   "neighbour_mean_max_abs_diff": 2.6201492022515245,
+   "neighbour_separated": true
+  },
+  "bsrs_0.5_s2_it00050.npz": {
+   "log_prob_max_abs_diff": 0.005727087686313581,
+   "mean_max_abs_diff": 0.001106814139725354,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.3786049752061444e-06,
+   "neighbour_mean_max_abs_diff": 2.2182146233429645,
+   "neighbour_separated": true
+  },
+  "bsrs_0.5_s2_it00200.npz": {
+   "log_prob_max_abs_diff": 0.012209851402621652,
+   "mean_max_abs_diff": 0.0024485590884189,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.3564667230857594e-06,
+   "neighbour_mean_max_abs_diff": 3.1868261929707793,
+   "neighbour_separated": true
+  },
+  "bsrs_0.5_s2_it00500.npz": {
+   "log_prob_max_abs_diff": 0.017188160942900765,
+   "mean_max_abs_diff": 0.003321337365375543,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.8588872556790648e-06,
+   "neighbour_mean_max_abs_diff": 3.7314725177220085,
+   "neighbour_separated": true
+  },
+  "bsrs_0.5_s2_it01000.npz": {
+   "log_prob_max_abs_diff": 0.020257177969176254,
+   "mean_max_abs_diff": 0.0026021317154407697,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.7530445433067143e-06,
+   "neighbour_mean_max_abs_diff": 3.128760649195475,
+   "neighbour_separated": true
+  },
+  "bsrs_0.5_s2_it01999.npz": {
+   "log_prob_max_abs_diff": 0.019243613555624428,
+   "mean_max_abs_diff": 0.002560471278637566,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.7472559719067249e-06,
+   "neighbour_mean_max_abs_diff": 2.3036918378897546,
+   "neighbour_separated": true
+  },
+  "bsrs_2_s1_it00000.npz": {
+   "log_prob_max_abs_diff": 0.0020383045356311413,
+   "mean_max_abs_diff": 0.000629473751458387,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.8799851925498388e-06,
+   "neighbour_mean_max_abs_diff": 2.606833776646748,
+   "neighbour_separated": true
+  },
+  "bsrs_2_s1_it00050.npz": {
+   "log_prob_max_abs_diff": 0.003148405902827278,
+   "mean_max_abs_diff": 0.000979145493935074,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.9161629129248468e-06,
+   "neighbour_mean_max_abs_diff": 1.9464259136203639,
+   "neighbour_separated": true
+  },
+  "bsrs_2_s1_it00200.npz": {
+   "log_prob_max_abs_diff": 0.008873548735282455,
+   "mean_max_abs_diff": 0.002067549149271,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.8114842898219194e-06,
+   "neighbour_mean_max_abs_diff": 5.836993454699662,
+   "neighbour_separated": true
+  },
+  "bsrs_2_s1_it00500.npz": {
+   "log_prob_max_abs_diff": 0.01659241774304121,
+   "mean_max_abs_diff": 0.0043483558839688685,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.3230758934289497e-06,
+   "neighbour_mean_max_abs_diff": 4.304876341436852,
+   "neighbour_separated": true
+  },
+  "bsrs_2_s1_it01000.npz": {
+   "log_prob_max_abs_diff": 0.01783694331100527,
+   "mean_max_abs_diff": 0.0035861816943363323,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.9884674813397396e-06,
+   "neighbour_mean_max_abs_diff": 6.23275322872507,
+   "neighbour_separated": true
+  },
+  "bsrs_2_s1_it01999.npz": {
+   "log_prob_max_abs_diff": 0.021520153812466525,
+   "mean_max_abs_diff": 0.0026424878168593846,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.797996057817386e-06,
+   "neighbour_mean_max_abs_diff": 2.7971454743862116,
+   "neighbour_separated": true
+  },
+  "bsrs_2_s2_it00000.npz": {
+   "log_prob_max_abs_diff": 0.0021476172006877903,
+   "mean_max_abs_diff": 0.0006180460695199841,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.8233426974111353e-06,
+   "neighbour_mean_max_abs_diff": 2.435274838928886,
+   "neighbour_separated": true
+  },
+  "bsrs_2_s2_it00050.npz": {
+   "log_prob_max_abs_diff": 0.003608359845923559,
+   "mean_max_abs_diff": 0.0010315000648718486,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.993301801978987e-06,
+   "neighbour_mean_max_abs_diff": 2.0908704371148406,
+   "neighbour_separated": true
+  },
+  "bsrs_2_s2_it00200.npz": {
+   "log_prob_max_abs_diff": 0.012302318278994306,
+   "mean_max_abs_diff": 0.002037010391998495,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.907813918540114e-06,
+   "neighbour_mean_max_abs_diff": 4.525642515006246,
+   "neighbour_separated": true
+  },
+  "bsrs_2_s2_it00500.npz": {
+   "log_prob_max_abs_diff": 0.015313700507071815,
+   "mean_max_abs_diff": 0.004287730119254651,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.187697667466182e-06,
+   "neighbour_mean_max_abs_diff": 3.768862618762683,
+   "neighbour_separated": true
+  },
+  "bsrs_2_s2_it01000.npz": {
+   "log_prob_max_abs_diff": 0.017850689422942878,
+   "mean_max_abs_diff": 0.002510819901521799,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.2026409460806917e-06,
+   "neighbour_mean_max_abs_diff": 2.678211989085316,
+   "neighbour_separated": true
+  },
+  "bsrs_2_s2_it01999.npz": {
+   "log_prob_max_abs_diff": 0.020963262996000154,
+   "mean_max_abs_diff": 0.002458347581784315,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.9942641884540535e-06,
+   "neighbour_mean_max_abs_diff": 2.9005249285633137,
+   "neighbour_separated": true
+  },
+  "no_action_rate_s1_it00000.npz": {
+   "log_prob_max_abs_diff": 0.0020383045356311413,
+   "mean_max_abs_diff": 0.000629473751458387,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.8799851925498388e-06,
+   "neighbour_mean_max_abs_diff": 3.394083475644265,
+   "neighbour_separated": true
+  },
+  "no_action_rate_s1_it00050.npz": {
+   "log_prob_max_abs_diff": 0.004216728767925559,
+   "mean_max_abs_diff": 0.0009974907463245475,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.5159256491491533e-06,
+   "neighbour_mean_max_abs_diff": 2.4402761918262295,
+   "neighbour_separated": true
+  },
+  "no_action_rate_s1_it00200.npz": {
+   "log_prob_max_abs_diff": 0.013623374767053775,
+   "mean_max_abs_diff": 0.0031737421098204655,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.162414297401938e-06,
+   "neighbour_mean_max_abs_diff": 4.837183902971428,
+   "neighbour_separated": true
+  },
+  "no_action_rate_s1_it00500.npz": {
+   "log_prob_max_abs_diff": 0.019379740253715916,
+   "mean_max_abs_diff": 0.005643643466199055,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.390753710557192e-06,
+   "neighbour_mean_max_abs_diff": 5.231731047400431,
+   "neighbour_separated": true
+  },
+  "no_action_rate_s1_it01000.npz": {
+   "log_prob_max_abs_diff": 0.025756094427137555,
+   "mean_max_abs_diff": 0.0028645456739777586,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.815249827785692e-06,
+   "neighbour_mean_max_abs_diff": 4.192933531095898,
+   "neighbour_separated": true
+  },
+  "no_action_rate_s1_it01999.npz": {
+   "log_prob_max_abs_diff": 0.02189851774194196,
+   "mean_max_abs_diff": 0.0029995127131038357,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.9417160217471974e-06,
+   "neighbour_mean_max_abs_diff": 2.3807334528962922,
+   "neighbour_separated": true
+  },
+  "no_action_rate_s2_it00000.npz": {
+   "log_prob_max_abs_diff": 0.0021476172006877903,
+   "mean_max_abs_diff": 0.0006180460695199841,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.8233426974111353e-06,
+   "neighbour_mean_max_abs_diff": 2.9978988186098476,
+   "neighbour_separated": true
+  },
+  "no_action_rate_s2_it00050.npz": {
+   "log_prob_max_abs_diff": 0.006305981373778025,
+   "mean_max_abs_diff": 0.0010164660026781291,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.7118525061098353e-06,
+   "neighbour_mean_max_abs_diff": 2.7723562535009036,
+   "neighbour_separated": true
+  },
+  "no_action_rate_s2_it00200.npz": {
+   "log_prob_max_abs_diff": 0.010769249193888442,
+   "mean_max_abs_diff": 0.0029379075818289913,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.2810762487779357e-06,
+   "neighbour_mean_max_abs_diff": 4.915258670798409,
+   "neighbour_separated": true
+  },
+  "no_action_rate_s2_it00500.npz": {
+   "log_prob_max_abs_diff": 0.018610792814300225,
+   "mean_max_abs_diff": 0.003328037634974912,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.3987238204625783e-06,
+   "neighbour_mean_max_abs_diff": 4.277242954837145,
+   "neighbour_separated": true
+  },
+  "no_action_rate_s2_it01000.npz": {
+   "log_prob_max_abs_diff": 0.01567302567606177,
+   "mean_max_abs_diff": 0.0024390612921685317,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.1151159081966853e-06,
+   "neighbour_mean_max_abs_diff": 3.3612601896028798,
+   "neighbour_separated": true
+  },
+  "no_action_rate_s2_it01999.npz": {
+   "log_prob_max_abs_diff": 0.022955201984862228,
+   "mean_max_abs_diff": 0.003042904741242136,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.839829060656939e-06,
+   "neighbour_mean_max_abs_diff": 3.876849396862798,
+   "neighbour_separated": true
+  },
+  "no_slip_s1_it00000.npz": {
+   "log_prob_max_abs_diff": 0.0020383045356311413,
+   "mean_max_abs_diff": 0.000629473751458387,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.8799851925498388e-06,
+   "neighbour_mean_max_abs_diff": 3.2710971151118753,
+   "neighbour_separated": true
+  },
+  "no_slip_s1_it00050.npz": {
+   "log_prob_max_abs_diff": 0.007144073713909904,
+   "mean_max_abs_diff": 0.0010286451458482726,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.564861748766134e-06,
+   "neighbour_mean_max_abs_diff": 2.3599799190854918,
+   "neighbour_separated": true
+  },
+  "no_slip_s1_it00200.npz": {
+   "log_prob_max_abs_diff": 0.016808872957918553,
+   "mean_max_abs_diff": 0.0024860043015944022,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.8231363618781415e-06,
+   "neighbour_mean_max_abs_diff": 3.4570438009584246,
+   "neighbour_separated": true
+  },
+  "no_slip_s1_it00500.npz": {
+   "log_prob_max_abs_diff": 0.021026935186695184,
+   "mean_max_abs_diff": 0.002165663918579419,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.2207165937260243e-06,
+   "neighbour_mean_max_abs_diff": 2.680052841090126,
+   "neighbour_separated": true
+  },
+  "no_slip_s1_it01000.npz": {
+   "log_prob_max_abs_diff": 0.024157819551763993,
+   "mean_max_abs_diff": 0.0021801996537644808,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.863485900699402e-06,
+   "neighbour_mean_max_abs_diff": 2.2215257683479033,
+   "neighbour_separated": true
+  },
+  "no_slip_s1_it01999.npz": {
+   "log_prob_max_abs_diff": 0.020419088186164558,
+   "mean_max_abs_diff": 0.0025449075016936717,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.6745590372124752e-06,
+   "neighbour_mean_max_abs_diff": 1.888581439713336,
+   "neighbour_separated": true
+  },
+  "no_slip_s2_it00000.npz": {
+   "log_prob_max_abs_diff": 0.0021476172006877903,
+   "mean_max_abs_diff": 0.0006180460695199841,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.8233426974111353e-06,
+   "neighbour_mean_max_abs_diff": 3.376768029698792,
+   "neighbour_separated": true
+  },
+  "no_slip_s2_it00050.npz": {
+   "log_prob_max_abs_diff": 0.005188604737277558,
+   "mean_max_abs_diff": 0.0010681246773976416,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.845613050084239e-06,
+   "neighbour_mean_max_abs_diff": 3.0730960352332923,
+   "neighbour_separated": true
+  },
+  "no_slip_s2_it00200.npz": {
+   "log_prob_max_abs_diff": 0.017474245179499803,
+   "mean_max_abs_diff": 0.0027012493803058035,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 2.3224287986067793e-06,
+   "neighbour_mean_max_abs_diff": 3.702369428142157,
+   "neighbour_separated": true
+  },
+  "no_slip_s2_it00500.npz": {
+   "log_prob_max_abs_diff": 0.023795939248516973,
+   "mean_max_abs_diff": 0.0026801707994814628,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.7961480214268022e-06,
+   "neighbour_mean_max_abs_diff": 2.1553382131456105,
+   "neighbour_separated": true
+  },
+  "no_slip_s2_it01000.npz": {
+   "log_prob_max_abs_diff": 0.02401914320583387,
+   "mean_max_abs_diff": 0.0026407495844353174,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.5688626033849573e-06,
+   "neighbour_mean_max_abs_diff": 1.8699874144710456,
+   "neighbour_separated": true
+  },
+  "no_slip_s2_it01999.npz": {
+   "log_prob_max_abs_diff": 0.024056768814077145,
+   "mean_max_abs_diff": 0.0030209929245248457,
+   "std_max_abs_diff": 0.0,
+   "density_from_recorded_max_abs_diff": 1.575539158693573e-06,
+   "neighbour_mean_max_abs_diff": 2.5489087730106936,
+   "neighbour_separated": true
+  }
+ }
+}

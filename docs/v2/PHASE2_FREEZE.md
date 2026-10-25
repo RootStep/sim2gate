@@ -22,3 +22,6 @@ Check: `sha256sum docs/v2/PHASE2_PART_A.md`. Later changes are listed below with
   - Details in `evidence/phase2/pilots_amendment1/README.md`.
   - Part B is next revised for these arms (symptom patterns, leak audit), then frozen after Vihaan's sign-offs and
     VJ's approval, before any study robot.
+- Oct 25, 2026: **leak audit passed** on the 20 pilot robots (code `24784f2`); see `evidence/phase2/leak_audit/`.
+  Part B revision 4 (review corrections; key holder confirmed) remains unfrozen until the scoring program is tested
+  and VJ approves the final text.
