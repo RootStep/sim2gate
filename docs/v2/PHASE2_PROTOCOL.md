@@ -276,6 +276,14 @@ key (section 8). No fold assignment, seed order or arm-balanced ordering is ever
   program builds the folds itself from the key (section 7). For each fold it uses only the four training folds'
   labels and never reads the test fold's labels. It writes predictions per robot ID for every approach, and nothing
   about folds. He sends the predictions file and its SHA-256.
+- **The scoring program** is `sim2gate.v2.phase2_score` (its SHA-256 is recorded at the freeze and checked by stage 2).
+  Implementation details fixed with it:
+  - z-scoring uses the training folds' mean and standard deviation with n − 1;
+  - ridge fits an unpenalised intercept (the training-fold mean of the target) and penalises only the weights;
+  - C-placebo draws its noise features with seed 0 in robot-ID order, separately for question 1 and question 2;
+  - stage 1 also writes the reported analyses that need refitting: question 1 trained without Φ-delay robots (every
+    robot still receives a prediction, so nothing reveals which IDs are Φ-delay), and the qualified-only secondary
+    analysis (qualification read from the feature table, not from labels).
 - **Stage 2 (after the predictions hash is recorded).** Vihaan releases the key. Stage 2 checks the hashes and computes
   the scores.
 - **Who stays blind.** VJ and Claude see no labels until the predictions are committed.
@@ -288,7 +296,8 @@ key (section 8). No fold assignment, seed order or arm-balanced ordering is ever
 | C3 | C's accuracy is at least 10 points above B's; or C's early-warning Spearman is above B's, with the 95% bootstrap interval of the difference above zero |
 
 **The bootstrap (C3's early-warning test).** A paired bootstrap over robots: each resample draws robots with
-replacement, stratified by arm (controls as a fifth stratum), and keeps each drawn robot's B and C predictions together.
+replacement within each of the four label strata (controls included), and keeps each drawn robot's B and C predictions
+together.
 It resamples the **fixed out-of-fold predictions**; it does not refit the procedure. It therefore estimates the
 uncertainty that comes from which robots were sampled, given the fitted models, not the variability of refitting.
 10,000 resamples, seed 0; the interval is the 2.5th to 97.5th percentile of the Spearman difference C − B.
