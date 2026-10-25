@@ -67,3 +67,16 @@ are computed.
   `sim2gate.v2.phase0b`. That code was committed at `12dfca1` (22:56 ET), before these files were received, and it is
   not changed in response to them. The two analyses are to be compared after `sim2gate.v2.phase0b` has run on the
   bundle.
+- Oct 25, 2026: **decision recorded (VJ, in place of Vihaan's pending personal sign-offs).** VJ authorised a
+  documented review of this protocol, the results README and the report to stand in for Vihaan's Q1 and Q4
+  sign-offs. The protocol file reviewed matched its SHA-256 above.
+  - Q1: the per-term formula is approved for centred A and T_k with nonzero variance, with the reading recorded in
+    `PHASE2_PROTOCOL.md` section 6 (β > 1 is negative advantage correlation, not a reversed update; R = 0 gives ±1;
+    undefined when constant; the fixed critic is not retraining; identical masks, discounting and time-out bootstrap).
+  - Outcome wording: phase 0B **passed its recorded decision rules**. No unqualified claim that ρ reliably tracks
+    ordinary reward terms. The limits stay attached to the result: ρ beat Var(T_k)/Var(A) by only 0.002; within-run
+    tracking of `feet_slide` was 0.053; the critic-refit yardstick was weak; gradient directions, not replayed Adam
+    updates, were measured.
+  - Decision: ρ enters phase 2 as **a candidate diagnostic whose added value remains to be tested** (C3).
+  - Still open: the independent gradient cross-check on the 256-environment sample (Q1's numerical rule), and the
+    original Oct 9 gate report. The frozen result is not rescored.
