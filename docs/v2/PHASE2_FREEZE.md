@@ -17,3 +17,8 @@ Check: `sha256sum docs/v2/PHASE2_PART_A.md`. Later changes are listed below with
   - Content: the final bounded pilot round, Φ-slip-mild (seeds 219–220) and Φ-delay judged by check 1's latency
     sweep (seeds 221–222).
   - Hard stop: if Φ-slip-mild fails, C2 and C3 are not tested.
+- Oct 25, 2026: amendment 1 pilots complete (4 robots, seeds 219–222), code `1784558`.
+  - Φ-slip-mild and Φ-delay both passed. The cause study is testable with Control, R-slip, Φ-slip-mild and Φ-delay.
+  - Details in `evidence/phase2/pilots_amendment1/README.md`.
+  - Part B is next revised for these arms (symptom patterns, leak audit), then frozen after Vihaan's sign-offs and
+    VJ's approval, before any study robot.
