@@ -1,4 +1,4 @@
-# v2 phase 2: protocol (part B DRAFT; part A frozen separately in PHASE2_PART_A.md)
+# v2 phase 2: protocol (part B, revision 4, frozen Oct 25, 2026; part A frozen separately in PHASE2_PART_A.md)
 
 Phase 2 is the cause study (v2 plan, "Layer 2"). It tests two things on robots with planted interventions:
 
@@ -10,7 +10,7 @@ hypothesis about what it does, and the pilots check it.
 
 Revision 2 takes in VJ's review of Oct 22 (decision 1 approved in principle, with safeguards).
 
-**Revision 4 (Oct 25, draft for VJ).** It follows the amendment 1 pilots, in which both new arms passed, and VJ's
+**Revision 4 (Oct 25; approved by VJ and frozen the same day).** It follows the amendment 1 pilots, in which both new arms passed, and VJ's
 direction of Oct 25:
 
 - pilot tuning ends; there are no further pilot rounds;
@@ -22,7 +22,7 @@ direction of Oct 25:
 The arms, folds, labels and early-warning targets below are changed for that. Every change was made **after** the
 pilots, knowing their results, and is disclosed as such.
 
-**Revision 4, review corrections (Oct 25).** A documented review of the phase 0B files and this draft, authorised by
+**Revision 4, review corrections (Oct 25).** A documented review of the phase 0B files and the revision 4 draft, authorised by
 VJ in place of Vihaan's pending personal sign-offs, approved the per-term formula with stated assumptions and asked
 for bounded corrections. They are made in sections 4, 6, 7 and 8 and listed at the end ("Review corrections").
 
