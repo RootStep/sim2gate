@@ -92,3 +92,8 @@ are computed.
     before its reference was computed; the cosine ≥ 0.999999 criterion is unchanged.
   - **756 directions, not 780.** The no-slip and no-action-rate runs have 10 reward terms, so their files hold 12
     variants. Each side follows each sample's own term list.
+- Oct 25, 2026: **gradient cross-check PASSED.** On `sim2gate-arena-2`, code `24784f2`: Vihaan's
+  `vihaan-crosscheck.tgz` matched its recorded SHA-256 (`aff9e6b4…`) and its own checksum list; Sim2Gate's standalone
+  implementation (`sim2gate.v2.crosscheck`, which uses neither the recorder nor RSL-RL's classes) computed the same
+  60 files. All **756 directions** agree, **minimum cosine 0.9999999999999996** (rule: ≥ 0.999999). Q1's numerical
+  rule is met by two independent implementations.

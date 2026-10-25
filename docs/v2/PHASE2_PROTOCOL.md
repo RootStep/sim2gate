@@ -43,7 +43,7 @@ Each part's SHA-256 is recorded in `PHASE2_FREEZE.md` when it is frozen.
 | Layer 1 limits (success threshold 0.1187 m/s; combined check 2 limit) | Done Oct 22 |
 | C1: the Oct 9 RSL-RL acceptance gate | Accepted by VJ in place of Vihaan, Oct 25, on the repository's record (gate captures replayed in CI on 5.0.1, 5.4.1, 5.5.1). The original gate report is still sought |
 | Phase 0B Q1 (per-term formula) and Q4 (meaning) | Approved by VJ in place of Vihaan, Oct 25, through a documented review, with the assumptions and reading in section 6 |
-| Independent gradient cross-check (phase 0B Q1 rule) | **Pending**, needed for part B |
+| Independent gradient cross-check (phase 0B Q1 rule) | **Passed Oct 25**: Vihaan's package and Sim2Gate's standalone code agree on all 756 directions, minimum cosine 0.9999999999999996 (rule ≥ 0.999999) |
 | C3 kept, with no extra compute | Decided by VJ, Oct 22 |
 | Arm pilots (part A, 16 robots) and amendment 1 pilots (4 robots) | Done Oct 24–25; 3 arms kept |
 | Leak audit on the pilot robots' records (part A) | **Pending**, needed for part B |
@@ -361,7 +361,8 @@ phase 0B as "passed the recorded decision rules" with its limits, and asked for 
 
 **Still required before the freeze, unchanged by the authorisation:**
 
-1. An independent gradient cross-check on phase 0A's 256-environment sample (cosine ≥ 0.999999).
+1. ~~An independent gradient cross-check on phase 0A's 256-environment sample (cosine ≥ 0.999999).~~ Passed Oct 25
+   (756 directions, minimum cosine 0.9999999999999996).
 2. The exporter, tested, and the leak audit on the pilot robots' records.
 3. The scoring program, tested, with its hash committed.
 4. Tests passing on GitHub for the exact study commit.
