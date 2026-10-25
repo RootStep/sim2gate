@@ -146,7 +146,8 @@ seeds and file names.
 **Secondary experiment, reported separately.** B_w and C_w are B and C plus the weighted contributions. They test
 diagnosis with reward-design clues available. They are never pooled with the primary result.
 
-**Export.** One frozen exporter turns each robot's records into a feature table under a random ID. It is tested on
+**Export.** One frozen exporter (`sim2gate.v2.phase2_export`) turns each robot's records into a feature table under a
+random ID. A term with weight 0 has no recorded unweighted value; its B feature is missing (section 7). It is tested on
 synthetic data to confirm:
 
 - unweighted components do not change when a weight is rescaled while behaviour is held fixed;
@@ -163,8 +164,9 @@ C uses the per-term quantity from phase 0B: ρ_k = corr(A, A − T_k).
 - **The identity it rests on.** A = Σ_k T_k + V, where V is the GAE of zero reward with the trainer's critic. It holds
   only if every part uses the same episode masks (dones), γ, λ and bootstrap handling. RSL-RL's time-out bootstrap
   (adding γ·V at a time-out) belongs to V, not to any term. The recorder computes all parts from the same masks
-  (`sim2gate.training.evidence`, `_advantage_parts`), and the exporter checks the identity on every update: the
-  largest relative error of A − (Σ_k T_k + V) must be at most 10⁻⁵, or that update is flagged and left out.
+  (`sim2gate.training.evidence`, `_advantage_parts`) and records the largest residual |A − (Σ_k T_k + V)| of every
+  update. The exporter requires it to be at most 10⁻⁴ × max(1, sd(A)) (the float32 recursion's precision); otherwise
+  that update is invalid for ρ_k and Var(T_k)/Var(A), left out and counted.
 - **Computation:** from the recorder's per-update covariance of [A, T_1…T_K, V-part], with the closed form verified
   numerically in phase 0B.
 - **Normalisation:** correlation is unchanged by RSL-RL's per-rollout advantage normalisation (subtract the mean,
@@ -217,7 +219,7 @@ C uses the per-term quantity from phase 0B: ρ_k = corr(A, A − T_k).
 | Approach | Features per robot |
 |---|---|
 | A, behaviour only | Nominal success (v2 threshold); check 2's four scored metrics, contact force, flight share at low speed and vertical-speed RMS; check 1 cliff index for each of the five conditions (0–9; 10 = no cliff); check 5 fall-free share and error ratio |
-| B, ordinary training diagnostics | For each reward term, the unweighted component averaged per window; action std, value loss and learning rate per window (training logs); KL and clip fraction per window (recorder) |
+| B, ordinary training diagnostics | For each reward term, the unweighted component averaged per window; value loss, policy entropy (for RSL-RL's Gaussian policy, a monotone function of action std) and learning rate per window; KL and clip fraction per window. All from the recorder's per-update records |
 | C, B plus ρ | Exactly B's features, plus ρ_k per term per window |
 | B-var (comparison for C3's interpretation) | B plus Var(T_k)/Var(A) per term per window: the same number of extra features as C, from the same weighted information |
 | C-placebo (reported only) | B plus the same number of standard-normal noise features (seed 0) |
