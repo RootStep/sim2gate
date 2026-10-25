@@ -105,7 +105,8 @@ What the numbers add, reported only:
   not hold well for this recipe. That matters for any redesign.
 
 `state.json` SHA-256: `ce1ee52d337d68178f301c7bc2b57778ccffddb0492aeaee951956222008fe02`. The full pilot bundle (training records and checkpoints) is kept outside the
-repository.
+repository: `phase2-pilot.tgz`, 1184 files, 1887 MB, SHA-256
+`6b823bc2249596701ec4f335c3f81c5d68db8504ae34c606f90df881dee589c5` (made Oct 24 on `sim2gate-arena-2`).
 
 ## What happens next
 
