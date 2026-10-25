@@ -259,14 +259,15 @@ key (section 8). No fold assignment, seed order or arm-balanced ordering is ever
 
 ## 8. Blinding, labels and scoring (part B) ★
 
-- **Who does what.** Key holder and scoring operator: **Vihaan** (to be confirmed by VJ before the freeze). He holds
+- **Who does what.** Key holder and scoring operator: **Vihaan** (confirmed by VJ, Oct 25; key check below). He holds
   the private key on his own computer and runs stage 1 there. VJ authorised the pending personal sign-offs on Oct 25
   (see "Review corrections"); the key-holder role is separate and is not replaced.
 - **Random IDs.** The driver gives every study robot and every control a random ID from a cryptographic random source.
   IDs are not derived from seeds, names or order.
 - **The key.** The key maps ID to arm and seed. It is encrypted to the key holder's public key, as in v1 (Vihaan's RSA
-  3072-bit key of Oct 16, SHA-256 `9db064c8…`, if he confirms he still holds the private key; a sealed test file
-  he can open confirms it). The plain key is not kept on the instance or in the repository.
+  3072-bit key of Oct 16, SHA-256 `9db064c8…`). **Key check, Oct 25:** the public key VJ supplied matched that hash;
+  a random word sealed to it (RSA-OAEP, SHA-256) was opened by Vihaan on his own computer and returned correctly, so
+  he still holds the private key. The plain key is not kept on the instance or in the repository.
 - **Feature tables.** The exporter writes them under random IDs, with rows sorted by ID. They contain no fold, seed,
   arm, order or run name. Their SHA-256 hashes and the frozen scoring code are committed.
 - **Sealed scoring, stage 1 (key holder, on his computer).** He runs the frozen scoring program with the key. The
