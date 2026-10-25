@@ -80,3 +80,15 @@ are computed.
   - Decision: ρ enters phase 2 as **a candidate diagnostic whose added value remains to be tested** (C3).
   - Still open: the independent gradient cross-check on the 256-environment sample (Q1's numerical rule), and the
     original Oct 9 gate report. The frozen result is not rescored.
+- Oct 25, 2026: **gradient cross-check, Vihaan's side computed** (ppo-shaping-diagnostics 0.3.2, float64, CPU),
+  `vihaan-crosscheck.tgz` SHA-256 `aff9e6b4d826c5dfbf9cfe923e39d97e17289f7c32d238c903ed21cb508bcb3e`, 60 files. He did
+  not look at Sim2Gate's code or output. Two deviations from the steps Claude wrote, both errors in those steps:
+  - **Log-prob check.** The steps asked for log π of the rebuilt actor to match the recorded value to about 1e-5. It
+    matched only to 2e-3 – 2.6e-2, because the saved weights reproduce the recorded Gaussian mean only to
+    6e-4 – 5.6e-3. His diagnosis: collection ran on the GPU with reduced-precision (TF32) matrix products. Evidence:
+    the recorded mean and std reproduce the recorded log π to 3.6e-6 (the density is right); the std matches exactly;
+    a neighbouring iteration's actor is off by about 1.7 in the mean. The directions are defined at the saved actor
+    and do not use the recorded log π. Sim2Gate's own identity check was changed accordingly (commit `24784f2`)
+    before its reference was computed; the cosine ≥ 0.999999 criterion is unchanged.
+  - **756 directions, not 780.** The no-slip and no-action-rate runs have 10 reward terms, so their files hold 12
+    variants. Each side follows each sample's own term list.
