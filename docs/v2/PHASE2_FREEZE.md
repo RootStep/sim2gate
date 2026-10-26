@@ -38,3 +38,15 @@ Check: `sha256sum docs/v2/PHASE2_PART_A.md docs/v2/PHASE2_PROTOCOL.md src/sim2ga
   - Still open, not blocking: the original Oct 9 gate report (being searched for); Vihaan's OK for any public naming
     of his package.
   - Next: the study driver (training, control re-measure, random IDs, export, sealing), tested, then a GPU session.
+- Oct 26, 2026: **study run complete** (code `e502dae`; part B and its programs unchanged since the freeze). Started
+  Oct 25, 19:40 ET; finished Oct 26 before 12:20 ET.
+  - 15 study robots (seeds 301–315) trained and fully measured, 0 problems recorded; controls 101–105 re-measured.
+  - Exported: 20 robots, 162 feature columns, `features.json` SHA-256
+    `14e0feb97da0ca3aaebb3b8b1d7966b9ef0f95356311319b35482564bfd2f365`; missing training records 0.
+  - ρ: 6 undefined and 0 invalid of 437,052 update–term values. (Full records would give 440,000; about 268
+    updates are absent from at least one record. Which robot is not visible while blind; to be checked after stage 2.)
+  - Sealed to Vihaan's key (`9db064c8…`): `sealed_for_vihaan.tar.enc` SHA-256
+    `60228f28e5254c00f345625f11a50eb2480f876a4a0a00d5548730780d36cff1`, `sealed_for_vihaan.key.enc` SHA-256
+    `d86d4ae6799b78554fc56da3f66bbd5af63c0e55d23c9d3db8871987991eadf8`. The plain key and labelled records were
+    deleted on the instance after sealing.
+  - Next: stage 1 by Vihaan on his computer; the predictions' SHA-256 is recorded here before the key is released.
