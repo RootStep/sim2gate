@@ -1,0 +1,84 @@
+{
+ "robots": {
+  "reff3c0c6fd31": {
+   "arm": "R-slip",
+   "seed": 301
+  },
+  "re3d2fe63cb1c": {
+   "arm": "R-slip",
+   "seed": 302
+  },
+  "r8188b89b68e1": {
+   "arm": "R-slip",
+   "seed": 303
+  },
+  "raf32fffbe8b0": {
+   "arm": "R-slip",
+   "seed": 304
+  },
+  "r70563038e677": {
+   "arm": "R-slip",
+   "seed": 305
+  },
+  "r64a2ffa89c3f": {
+   "arm": "Phi-slip-mild",
+   "seed": 306
+  },
+  "r2b725dc952c2": {
+   "arm": "Phi-slip-mild",
+   "seed": 307
+  },
+  "r48065782ef39": {
+   "arm": "Phi-slip-mild",
+   "seed": 308
+  },
+  "re577ecac04c0": {
+   "arm": "Phi-slip-mild",
+   "seed": 309
+  },
+  "r085728f83912": {
+   "arm": "Phi-slip-mild",
+   "seed": 310
+  },
+  "r5a38e8ca2d1f": {
+   "arm": "Phi-delay",
+   "seed": 311
+  },
+  "rcf85b0497726": {
+   "arm": "Phi-delay",
+   "seed": 312
+  },
+  "rfea1fa95a78c": {
+   "arm": "Phi-delay",
+   "seed": 313
+  },
+  "r04746eea31d7": {
+   "arm": "Phi-delay",
+   "seed": 314
+  },
+  "r5c28106cd1c2": {
+   "arm": "Phi-delay",
+   "seed": 315
+  },
+  "ra239e772ea1b": {
+   "arm": "Control",
+   "seed": 101
+  },
+  "re02caed2b26c": {
+   "arm": "Control",
+   "seed": 102
+  },
+  "r120d037c7b47": {
+   "arm": "Control",
+   "seed": 103
+  },
+  "r8096cbd8be25": {
+   "arm": "Control",
+   "seed": 104
+  },
+  "rb67bb0220ca4": {
+   "arm": "Control",
+   "seed": 105
+  }
+ }
+}

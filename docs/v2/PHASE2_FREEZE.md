@@ -58,3 +58,8 @@ Check: `sha256sum docs/v2/PHASE2_PART_A.md docs/v2/PHASE2_PROTOCOL.md src/sim2ga
     holds Vihaan's private key, so VJ's blindness until now rests on agreement rather than on the lock alone. VJ and
     Claude did not see the key or the unsealed records before this entry.
   - Next: Vihaan releases `key.json`; stage 2 checks every hash and computes the scores.
+- Oct 26, 2026, about 15:15 ET: **key released by Vihaan; stage 2 scored.** `key.json` SHA-256 `fc8bfead…`; every hash
+  matched. **C2 not met** (A 0.85, B 0.95, C 0.95). **C3 not met** (C = B in accuracy; early warning 0.853 vs 0.842,
+  95% interval −0.054 to 0.084); no demonstrated advantage over the variance baseline. Details and post-hoc findings
+  (seed 313 has no behaviour measurements, a deviation from part B's run-failure rule; neither verdict changes) in
+  `evidence/phase2/scoring/README.md`.

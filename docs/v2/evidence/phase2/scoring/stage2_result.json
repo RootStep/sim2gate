@@ -1,0 +1,311 @@
+{
+ "program_sha256": "7231e36cc005aa15870f2bda484f4c40fdf681ff8ce42d5dcfd0f8fb8b126d92",
+ "predictions_sha256": "3e8d4f5f7cb946613315ce0b4be98ee8d106310c1c89b3d9ed65f294e63ec7ad",
+ "features_sha256": "14e0feb97da0ca3aaebb3b8b1d7966b9ef0f95356311319b35482564bfd2f365",
+ "robots": 20,
+ "chance_accuracy": 0.25,
+ "C2": {
+  "pass": false,
+  "rule": "B's or C's accuracy at least 20 points above A's",
+  "accuracy": {
+   "A": 0.85,
+   "B": 0.95,
+   "C": 0.95
+  }
+ },
+ "C3": {
+  "pass": false,
+  "rule": "C at least 10 points above B in accuracy, or C's early-warning Spearman above B's with the 95% paired-bootstrap interval of the difference above zero",
+  "accuracy_gain": 0.0,
+  "early_warning": {
+   "spearman": [
+    0.8526315789473683,
+    0.8421052631578946
+   ],
+   "ci95_difference": [
+    -0.05446293494705001,
+    0.08415841584158412
+   ]
+  },
+  "reading": "C3 not met.",
+  "C_against_Bvar": {
+   "beats": false,
+   "accuracy_gain": 0.0,
+   "early_warning": {
+    "spearman": [
+     0.8526315789473683,
+     0.8526315789473683
+    ],
+    "ci95_difference": [
+     0.0,
+     0.0
+    ]
+   }
+  }
+ },
+ "reported": {
+  "accuracy_all_approaches": {
+   "A": 0.85,
+   "B": 0.95,
+   "C": 0.95,
+   "Bvar": 0.95,
+   "Cplacebo": 0.9,
+   "Bw": 0.95,
+   "Cw": 0.95
+  },
+  "reward_vs_physics_accuracy": {
+   "A": 0.8,
+   "B": 0.9333333333333333,
+   "C": 0.9333333333333333,
+   "Bvar": 0.9333333333333333,
+   "Cplacebo": 0.8666666666666667,
+   "Bw": 0.9333333333333333,
+   "Cw": 0.9333333333333333
+  },
+  "slip_pair_accuracy": {
+   "A": 0.8,
+   "B": 1.0,
+   "C": 1.0,
+   "Bvar": 1.0,
+   "Cplacebo": 0.9,
+   "Bw": 1.0,
+   "Cw": 1.0
+  },
+  "confusion": {
+   "A": {
+    "Control": {
+     "Control": 5,
+     "R-slip": 0,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 0
+    },
+    "R-slip": {
+     "Control": 0,
+     "R-slip": 5,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 0
+    },
+    "Phi-slip-mild": {
+     "Control": 2,
+     "R-slip": 0,
+     "Phi-slip-mild": 3,
+     "Phi-delay": 0
+    },
+    "Phi-delay": {
+     "Control": 1,
+     "R-slip": 0,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 4
+    }
+   },
+   "B": {
+    "Control": {
+     "Control": 5,
+     "R-slip": 0,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 0
+    },
+    "R-slip": {
+     "Control": 0,
+     "R-slip": 5,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 0
+    },
+    "Phi-slip-mild": {
+     "Control": 0,
+     "R-slip": 0,
+     "Phi-slip-mild": 5,
+     "Phi-delay": 0
+    },
+    "Phi-delay": {
+     "Control": 1,
+     "R-slip": 0,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 4
+    }
+   },
+   "C": {
+    "Control": {
+     "Control": 5,
+     "R-slip": 0,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 0
+    },
+    "R-slip": {
+     "Control": 0,
+     "R-slip": 5,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 0
+    },
+    "Phi-slip-mild": {
+     "Control": 0,
+     "R-slip": 0,
+     "Phi-slip-mild": 5,
+     "Phi-delay": 0
+    },
+    "Phi-delay": {
+     "Control": 1,
+     "R-slip": 0,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 4
+    }
+   },
+   "Bvar": {
+    "Control": {
+     "Control": 5,
+     "R-slip": 0,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 0
+    },
+    "R-slip": {
+     "Control": 0,
+     "R-slip": 5,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 0
+    },
+    "Phi-slip-mild": {
+     "Control": 0,
+     "R-slip": 0,
+     "Phi-slip-mild": 5,
+     "Phi-delay": 0
+    },
+    "Phi-delay": {
+     "Control": 1,
+     "R-slip": 0,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 4
+    }
+   },
+   "Cplacebo": {
+    "Control": {
+     "Control": 5,
+     "R-slip": 0,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 0
+    },
+    "R-slip": {
+     "Control": 0,
+     "R-slip": 5,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 0
+    },
+    "Phi-slip-mild": {
+     "Control": 1,
+     "R-slip": 0,
+     "Phi-slip-mild": 4,
+     "Phi-delay": 0
+    },
+    "Phi-delay": {
+     "Control": 1,
+     "R-slip": 0,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 4
+    }
+   },
+   "Bw": {
+    "Control": {
+     "Control": 5,
+     "R-slip": 0,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 0
+    },
+    "R-slip": {
+     "Control": 0,
+     "R-slip": 5,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 0
+    },
+    "Phi-slip-mild": {
+     "Control": 0,
+     "R-slip": 0,
+     "Phi-slip-mild": 5,
+     "Phi-delay": 0
+    },
+    "Phi-delay": {
+     "Control": 1,
+     "R-slip": 0,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 4
+    }
+   },
+   "Cw": {
+    "Control": {
+     "Control": 5,
+     "R-slip": 0,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 0
+    },
+    "R-slip": {
+     "Control": 0,
+     "R-slip": 5,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 0
+    },
+    "Phi-slip-mild": {
+     "Control": 0,
+     "R-slip": 0,
+     "Phi-slip-mild": 5,
+     "Phi-delay": 0
+    },
+    "Phi-delay": {
+     "Control": 1,
+     "R-slip": 0,
+     "Phi-slip-mild": 0,
+     "Phi-delay": 4
+    }
+   }
+  },
+  "early_warning_slip_spearman": {
+   "B": 0.8421052631578946,
+   "C": 0.8526315789473683,
+   "Bvar": 0.8526315789473683,
+   "Cplacebo": 0.8421052631578946,
+   "Bw": 0.8631578947368419,
+   "Cw": 0.8456140350877192
+  },
+  "early_warning_latency_spearman": {
+   "B": 0.4746740794341659,
+   "C": 0.5570555312367897,
+   "Bvar": 0.5570555312367897,
+   "Cplacebo": 0.47075115315785043,
+   "Bw": 0.5158648053354777,
+   "Cw": 0.5747086994802091
+  },
+  "question1_without_phi_delay": {
+   "A": 0.8,
+   "B": 1.0,
+   "C": 1.0,
+   "Bvar": 1.0,
+   "Cplacebo": 1.0,
+   "Bw": 1.0,
+   "Cw": 1.0
+  },
+  "secondary_qualified_only": {
+   "robots": 19,
+   "note": "conditional on qualification",
+   "accuracy": {
+    "A": 0.8947368421052632,
+    "B": 1.0,
+    "C": 1.0,
+    "Bvar": 1.0,
+    "Cplacebo": 1.0,
+    "Bw": 1.0,
+    "Cw": 1.0
+   }
+  },
+  "bootstrap": {
+   "C_vs_B": {
+    "low": -0.05446293494705001,
+    "high": 0.08415841584158412,
+    "resamples": 10000,
+    "redrawn_undefined": 0
+   },
+   "C_vs_Bvar": {
+    "low": 0.0,
+    "high": 0.0,
+    "resamples": 10000,
+    "redrawn_undefined": 0
+   }
+  }
+ }
+}
