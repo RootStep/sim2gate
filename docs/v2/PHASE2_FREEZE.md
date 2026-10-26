@@ -50,3 +50,11 @@ Check: `sha256sum docs/v2/PHASE2_PART_A.md docs/v2/PHASE2_PROTOCOL.md src/sim2ga
     `d86d4ae6799b78554fc56da3f66bbd5af63c0e55d23c9d3db8871987991eadf8`. The plain key and labelled records were
     deleted on the instance after sealing.
   - Next: stage 1 by Vihaan on his computer; the predictions' SHA-256 is recorded here before the key is released.
+- Oct 26, 2026, 15:02 ET: **stage 1 predictions recorded, before the key was released.** `predictions.json` SHA-256
+  `3e8d4f5f7cb946613315ce0b4be98ee8d106310c1c89b3d9ed65f294e63ec7ad` (copied to `evidence/phase2/scoring/`). It
+  names the frozen scoring program (`7231e36c…`) and feature table (`14e0feb9…`); 20 primary robots, 20 for the
+  analysis without Φ-delay, 19 qualified for the secondary analysis.
+  - Vihaan unsealed and ran stage 1 himself. Note for the record: the computer used is shared by VJ and Vihaan and
+    holds Vihaan's private key, so VJ's blindness until now rests on agreement rather than on the lock alone. VJ and
+    Claude did not see the key or the unsealed records before this entry.
+  - Next: Vihaan releases `key.json`; stage 2 checks every hash and computes the scores.
