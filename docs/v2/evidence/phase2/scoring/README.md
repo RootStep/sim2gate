@@ -43,7 +43,13 @@ Control.
   records after stage 2):** training ran twice. The first attempt's folder was set aside at 11:30 UTC
   (`study_s313.incomplete-20261026113050`). The second crashed after about 2,500 s with a PhysX GPU error ("CUDA error:
   device-side assert triggered", in PhysX's GPU memory allocator and articulation views), leaving no final checkpoint,
-  so nothing was measured. Under part B that is a run failure, not an outcome. Part B says a run failure is retrained once and,
+  so nothing was measured. The first attempt had crashed the same way, at about the same point (2,545 s against
+  2,503 s; roughly 1,730 of 2,000 rounds). Under part B that is a run failure, not an outcome.
+- **The crash is reproducible for this seed.** A retry with the same seed replays the same simulation, so it hit the
+  same fault. Whether the fault comes from the planted change (no command delay) driving the simulation into an
+  unstable state, or from PhysX itself, is not known; no pilot or other study robot crashed. Lesson for later
+  protocols: a run-failure retry on the same seed cannot help with a deterministic crash, so the rule should name a
+  replacement seed or record the crash as a reported outcome. Part B says a run failure is retrained once and,
   if it fails again, the robot is missing **for every approach**. The driver instead exported its training features,
   so it entered scoring with behaviour features filled by training-fold means. This is a deviation between the driver
   and the frozen protocol, recorded here.
