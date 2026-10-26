@@ -63,3 +63,7 @@ Check: `sha256sum docs/v2/PHASE2_PART_A.md docs/v2/PHASE2_PROTOCOL.md src/sim2ga
   95% interval −0.054 to 0.084); no demonstrated advantage over the variance baseline. Details and post-hoc findings
   (seed 313 has no behaviour measurements, a deviation from part B's run-failure rule; neither verdict changes) in
   `evidence/phase2/scoring/README.md`.
+- Oct 26, 2026: **phase 2 conclusion approved by VJ with five wording amendments** (`PHASE2_CONCLUSION.md`). The
+  protocol-compliant analysis excludes seed 313, as part B section 4 requires (verified against the frozen text):
+  A 17/19, B 19/19, C 19/19. The 20-row stage 2 scores stay on record as the originally executed analysis. Neither
+  verdict changes. ρ is removed from current product claims; next are phases 3 and 4.

@@ -1,7 +1,7 @@
 # Phase 2 study: stage 2 scores (Oct 26, 2026)
 
-**Under the frozen rules: C2 not met, C3 not met.** Simulated robots with planted interventions (Unitree Go2,
-Isaac Lab); 20 robots in the primary set (5 per label). These are simulation results, still being validated, and say
+**Under the frozen rules: C2 not met, C3 not met.** 20 assigned simulated policy runs with planted interventions
+(Unitree Go2, Isaac Lab), of which 19 completed measurement; see "Protocol-compliant analysis" below. These are simulation results, still being validated, and say
 nothing yet about real hardware.
 
 Every hash checked before scoring: predictions `3e8d4f5f…` (recorded at 15:03 ET, before the key release), feature
@@ -53,9 +53,13 @@ Control.
   if it fails again, the robot is missing **for every approach**. The driver instead exported its training features,
   so it entered scoring with behaviour features filled by training-fold means. This is a deviation between the driver
   and the frozen protocol, recorded here.
-- **The deviation does not change either verdict.** Leaving seed 313 out of the counts: A 17/19 (0.895), B and C 19/19
-  (1.00). That is 10.5 points, still short of C2's 20. C and B remain equal. (This is a count over the existing
-  out-of-fold predictions, not a re-run of stage 1.)
+- **Protocol-compliant analysis (designated Oct 26, approved by VJ).** Part B section 4 (frozen text, SHA-256
+  `2d1b0a63…`, checked) requires seed 313 to be missing for every approach. The protocol-compliant result is therefore
+  the recount without it: A 17/19, B 19/19, C 19/19 (B-var 19/19, C-placebo 18/19, B_w and C_w 19/19); reward vs
+  physics A 12/14, B and C 14/14. The 20-row scores above are the originally executed analysis, kept for transparency.
+  The recount uses the frozen program's existing out-of-fold predictions; the program cannot refit on 19 runs (its
+  folds require five per arm: "Phi-delay: 4 robots in the key, expected 5"), and part B did not define folds for a
+  missing run. **Neither verdict changes:** C2's margin is 10.5 points against 20; C equals B.
 - **The 268 missing training updates** (437,052 of 440,000 ρ values) probably belong to the same run, if its training
   stopped early. To be confirmed from the records.
 - **ρ and the variance ratio gave the same early-warning ranking** on all 20 robots: their window-1 predictions differ
