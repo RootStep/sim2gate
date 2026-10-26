@@ -110,14 +110,22 @@ def export_and_seal(work, pubkey, blind_dir):
         y = os.path.join(rec["run_dir"], "params", "env.yaml") if rec.get("run_dir") else None
         robots.append({"arm": arm, "seed": seed, "evidence": os.path.join(work, "robots", name, "evidence"),
                        "env_yaml": y, "summary": rec.get("summary"),
-                       "measure": os.path.join(work, "robots", name, "measure")})
+                       "measure": os.path.join(work, "robots", name, "measure"),
+                       "run_failure": _run_failure(rec) or not rec.get("checkpoint")})
     for name, c in sorted(state.get("controls", {}).items()):
         robots.append({"arm": "Control", "seed": c["seed"], "evidence": c["evidence"], "env_yaml": c["env_yaml"],
                        "summary": c["summary"], "measure": c["measure_dir"]})
     if len(robots) != 20:
         raise SystemExit(f"expected 20 robots for export, found {len(robots)}")
     key, rows, missing_records, counts = {}, {}, 0, {"rho_undefined": 0, "rho_invalid": 0, "rho_checks": 0}
+    excluded = {}
     for r in robots:
+        if r.get("run_failure"):
+            # Part B section 4: a run that fails again after its one retry is missing for every approach. It gets no
+            # feature row; the sealed key lists it separately so the report can say so. (Added Oct 26, 2026, after the
+            # phase 2 study exported seed 313's partial training record; see evidence/phase2/scoring/README.md.)
+            excluded[f"x{len(excluded) + 1}"] = {"arm": r["arm"], "seed": r["seed"], "reason": "run failure twice"}
+            continue
         rid = ex.new_id()
         while rid in key:
             rid = ex.new_id()
@@ -136,7 +144,7 @@ def export_and_seal(work, pubkey, blind_dir):
     ex.write_table(rows, feat)
     keyfile = os.path.join(work, "key.json")
     with open(keyfile, "w") as f:
-        json.dump({"robots": key}, f, indent=1)
+        json.dump({"robots": key, "excluded": excluded}, f, indent=1)
     run_dirs = sorted({rec["run_dir"] for rec in state["robots"].values() if rec.get("run_dir")})
     labelled = [keyfile, os.path.join(work, "state.json"), os.path.join(work, "robots"),
                 os.path.join(work, "controls")] + [d for d in run_dirs if os.path.exists(d)]
@@ -147,7 +155,7 @@ def export_and_seal(work, pubkey, blind_dir):
             shutil.rmtree(p)
         elif os.path.exists(p):
             os.remove(p)
-    report = {"robots": len(rows), "features_sha256": phase1.sha256(feat), "sealed": hashes,
+    report = {"robots": len(rows), "excluded_run_failures": len(excluded), "features_sha256": phase1.sha256(feat), "sealed": hashes,
               "missing_training_records": missing_records, "rho": counts,
               "columns": len(json.load(open(feat))["columns"])}
     with open(os.path.join(blind_dir, "report.json"), "w") as f:
@@ -162,7 +170,8 @@ def run(work, phase1_work, pubkey, blind_dir, runner):
     remeasure_controls(work, phase1_work, runner)
     rep = export_and_seal(work, pubkey, blind_dir)
     _say(f"STUDY COMPLETE: {rep['robots']} robots exported, {rep['columns']} feature columns, features sha256 "
-         f"{rep['features_sha256']}; sealed {json.dumps(rep['sealed'])}; missing training records "
+         f"{rep['features_sha256']}; sealed {json.dumps(rep['sealed'])}; run failures excluded "
+         f"{rep['excluded_run_failures']}; missing training records "
          f"{rep['missing_training_records']}; rho undefined {rep['rho']['rho_undefined']}, invalid "
          f"{rep['rho']['rho_invalid']} of {rep['rho']['rho_checks']}")
     return 0

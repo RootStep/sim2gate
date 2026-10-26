@@ -29,7 +29,7 @@ def test_plan_is_the_frozen_seed_table():
     assert plan[0][3] == "Sim2Gate-Velocity-Flat-Go2-P2-R-slip-k0.1"
 
 
-def fake_world(tmp_path, monkeypatch, fail_first=()):
+def fake_world(tmp_path, monkeypatch, fail_first=(), fail_always=()):
     work, p1 = tmp_path / "work", tmp_path / "phase1"
     calls = []
 
@@ -38,7 +38,7 @@ def fake_world(tmp_path, monkeypatch, fail_first=()):
         d = os.path.join(work_, "robots", name)
         if os.path.exists(d):
             shutil.rmtree(d)
-        if seed in fail_first and calls.count(seed) == 1:
+        if seed in fail_always or (seed in fail_first and calls.count(seed) == 1):
             return {"name": name, "seed": seed, "problems": ["training exited 1; 0 new run folder(s)"],
                     "finished": "t"}
         ev, y = make_robot(tmp_path / "gen", f"{name}_{len(calls)}", BASE_W, behaviour_seed=seed)
@@ -48,6 +48,7 @@ def fake_world(tmp_path, monkeypatch, fail_first=()):
         shutil.copy(y, run / "params" / "env.yaml")
         os.makedirs(os.path.join(d, "measure"), exist_ok=True)
         return {"name": name, "seed": seed, "problems": [], "finished": "t", "run_dir": str(run),
+                "checkpoint": {"path": str(run / "model_1999.pt"), "sha256": "c"},
                 "summary": {"nominal": {"success_rate": 0.95}, "check2_metrics": {"foot_slip_p95_mps": 0.1 + seed / 1e4}}}
     monkeypatch.setattr(phase1, "train_and_measure", fake_tm)
     # phase 1 controls with records and checkpoints
@@ -114,3 +115,20 @@ def test_resumes_without_retraining(tmp_path, monkeypatch, keys):
     n = len(calls)
     st.train_study(str(work), None)
     assert n == 15 and len(calls) == n
+
+
+def test_a_run_that_fails_twice_is_left_out_of_every_approach(tmp_path, monkeypatch, keys, capsys):
+    priv, pub = keys
+    work, p1, calls = fake_world(tmp_path, monkeypatch, fail_always=(313,))
+    blind = tmp_path / "blind"
+    assert st.run(str(work), str(p1), pub, str(blind), runner=lambda cmd, log: (0, "")) == 0
+    assert calls.count(313) == 2
+    out = capsys.readouterr().out
+    assert "STUDY COMPLETE: 19 robots" in out and "run failures excluded 1" in out and "313" not in out
+    t = json.load(open(blind / "features.json"))
+    assert len(t["rows"]) == 19
+    testset.unseal(priv, str(blind / "sealed"), str(tmp_path / "opened"))
+    k = json.load(open(next((tmp_path / "opened").rglob("key.json"))))
+    assert set(k["robots"]) == set(t["rows"]) and list(k["excluded"].values()) == [
+        {"arm": "Phi-delay", "seed": 313, "reason": "run failure twice"}]
+    assert 313 not in {v["seed"] for v in sc.load_key(next((tmp_path / "opened").rglob("key.json"))).values()}
