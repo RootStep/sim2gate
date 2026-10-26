@@ -39,8 +39,11 @@ Control.
 
 - **Seed 313 has no behaviour measurements.** Every A feature (walking, check 1, check 2, check 5) is missing in the
   feature table, while its training features are present. That is why it is the "unqualified" robot in the secondary
-  analysis, and why it is missing from the early-warning correlations (19 pairs). The study printout reported counts
-  only, and the cause has not yet been read from the sealed records. Part B says a run failure is retrained once and,
+  analysis, and why it is missing from the early-warning correlations (19 pairs). **Cause (read from the unsealed
+  records after stage 2):** training ran twice. The first attempt's folder was set aside at 11:30 UTC
+  (`study_s313.incomplete-20261026113050`). The second crashed after about 2,500 s with a PhysX GPU error ("CUDA error:
+  device-side assert triggered", in PhysX's GPU memory allocator and articulation views), leaving no final checkpoint,
+  so nothing was measured. Under part B that is a run failure, not an outcome. Part B says a run failure is retrained once and,
   if it fails again, the robot is missing **for every approach**. The driver instead exported its training features,
   so it entered scoring with behaviour features filled by training-fold means. This is a deviation between the driver
   and the frozen protocol, recorded here.
