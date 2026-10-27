@@ -63,7 +63,8 @@ class TestCpuConfigAudit(unittest.TestCase):
         after = snapshot(cfg)
         self.assertEqual(changed(before, after), {"friction.static", "friction.dynamic"})
         self.assertEqual(after["friction.static"], (0.3, 0.6))
-        self.assertEqual(after["friction.dynamic"], (0.225, 0.44999999999999996))
+        for actual, expected in zip(after["friction.dynamic"], (0.225, 0.45)):
+            self.assertAlmostEqual(actual, expected, places=12)
         self.assertLess(after["friction.static"][1]-after["friction.static"][0], before["friction.static"][1]-before["friction.static"][0])
 
     def test_d2_no_delay_only(self):
