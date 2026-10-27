@@ -8,7 +8,7 @@ import datetime
 import hashlib
 import json
 import os
-import subprocess
+import signal
 import sys
 import time
 from pathlib import Path
@@ -26,11 +26,33 @@ def main():
     report = {"gate": 6, "status": "BLOCKED", "started_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
               "num_envs": args.num_envs, "steps_requested": args.steps, "checks": {}, "observations": {},
               "limitations": ["No PPO training", "No checkpoint writes", "Not a diagnostic benchmark performance test"]}
+    path = Path(args.out)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    def checkpoint(stage):
+        report["stage"] = stage
+        report["updated_utc"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        report["elapsed_seconds"] = round(time.monotonic() - started, 2)
+        tmp = path.with_name(path.name + ".tmp")
+        tmp.write_text(json.dumps(report, indent=2) + "\n")
+        os.replace(tmp, path)
+        print("[GATE6] " + stage, flush=True)
+
+    def interrupted(signum, frame):
+        report["status"] = "INTERRUPTED"
+        report["signal"] = signum
+        checkpoint("signal_received")
+        raise SystemExit(128 + signum)
+
+    signal.signal(signal.SIGTERM, interrupted)
+    signal.signal(signal.SIGINT, interrupted)
+    checkpoint("script_started")
     app = None
     env = None
     try:
+        checkpoint("before_app_launcher")
         from isaaclab.app import AppLauncher
         app = AppLauncher(headless=True, enable_cameras=False).app
+        checkpoint("app_initialized")
         import torch
         from isaaclab.utils.buffers import DelayBuffer
         from isaaclab.actuators import DCMotor
@@ -38,18 +60,24 @@ def main():
         from sim2gate.v2 import tasks
         import gymnasium as gym
         tasks.register()
+        torch.manual_seed(17)
+        checkpoint("imports_and_seed_complete")
         Motor, _ = delayed_dc_motor()
         names = {"H0": "Go2FlatP0EnvCfgV5b", "D2": tasks._p2_names("Phi-delay", "nodelay")[0]}
         report["observations"]["torch"] = torch.__version__
         report["observations"]["source_commit"] = os.environ.get("ROOTSTEP_GATE6_COMMIT", "unknown")
         for arm, name in names.items():
+            checkpoint(arm + "_before_config")
             cfg = getattr(tasks, name)()
             cfg.scene.num_envs = args.num_envs
+            cfg.seed = 17
             cfg.scene.env_spacing = 2.5
             # Task IDs are registered by tasks.register(); create via cfg's own class
             # rather than passing training runner or checkpoint paths.
             from isaaclab.envs import ManagerBasedRLEnv
+            checkpoint(arm + "_before_env_creation")
             env = ManagerBasedRLEnv(cfg=cfg)
+            checkpoint(arm + "_env_created")
             robot = env.scene["robot"]
             motor = robot.actuators["base_legs"]
             actual = type(motor)
@@ -64,7 +92,9 @@ def main():
             report["checks"][arm+"_ramp"] = (motor.cfg.delay_ramp_start_steps, motor.cfg.delay_ramp_end_steps) == (48000, 76800)
             # Sample reset lags via observed target behavior in Gate 5; here
             # verify actual actuator reset and physics stepping in a live scene.
+            checkpoint(arm + "_before_reset")
             obs, info = env.reset()
+            checkpoint(arm + "_reset_complete")
             report["checks"][arm+"_reset"] = obs is not None
             action_dim = env.action_manager.total_action_dim
             for i in range(args.steps):
@@ -73,8 +103,10 @@ def main():
             report["checks"][arm+"_live_steps"] = obs is not None and torch.isfinite(reward).all().item()
             report["observations"][arm]["completed_steps"] = args.steps
             report["observations"][arm]["physics_step_counter"] = motor.sim2gate_physics_steps
+            checkpoint(arm + "_steps_complete")
             env.close()
             env = None
+            checkpoint(arm + "_closed")
         # These live smoke checks do NOT yet instrument internal lag values,
         # three target traces, or partial reset isolation. Never call this full Gate 6 PASS.
         report["status"] = "PARTIAL" if all(report["checks"].values()) else "FAIL"
@@ -83,7 +115,9 @@ def main():
     except Exception as exc:
         report["status"] = "BLOCKED"
         report["error"] = type(exc).__name__ + ": " + str(exc)
+        checkpoint("exception")
     finally:
+        checkpoint("before_cleanup")
         if env is not None:
             try: env.close()
             except Exception: pass
@@ -91,9 +125,7 @@ def main():
             try: app.close()
             except Exception: pass
         report["elapsed_seconds"] = round(time.monotonic() - started, 2)
-        path = Path(args.out)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(report, indent=2) + "\n")
+        checkpoint("finished")
         print(json.dumps(report, indent=2), flush=True)
     return 0 if report["status"] == "PARTIAL" else 2
 
