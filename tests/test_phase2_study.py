@@ -79,7 +79,9 @@ def test_full_run_exports_20_blind_rows_and_seals_every_labelled_record(tmp_path
     assert st.run(str(work), str(p1), pub, str(blind), runner=lambda cmd, log: (0, "")) == 0
     out = capsys.readouterr().out
     assert calls.count(307) == 2 and len(calls) == 16                     # one run failure, retrained once
-    for word in ("R-slip", "Phi-slip-mild", "Phi-delay", "s301", "307", "study_s"):
+    # Encrypted artifact digests may coincidentally contain seed digits (e.g. "307").
+    # Check for labelled identifiers, not arbitrary substrings of random hashes.
+    for word in ("R-slip", "Phi-slip-mild", "Phi-delay", "study_s", "seed 307", "s307"):
         assert word not in out
     assert "STUDY COMPLETE: 20 robots" in out
     # plain labelled records are gone; only the blind outputs remain
