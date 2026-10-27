@@ -223,7 +223,10 @@ def main():
             motor.compute = traced_motor_compute
             action_dim = env.action_manager.total_action_dim
             for i in range(args.steps):
-                actions = torch.zeros((args.num_envs, action_dim), device=env.device)
+                # Small alternating actions create observable target changes.
+                # This is a bounded test stimulus, not a trained policy.
+                amplitude = 0.05 if i % 2 == 0 else -0.05
+                actions = torch.full((args.num_envs, action_dim), amplitude, device=env.device)
                 obs, reward, terminated, truncated, info = env.step(actions)
             report["checks"][arm+"_live_steps"] = obs is not None and torch.isfinite(reward).all().item()
             report["observations"][arm]["completed_steps"] = args.steps
@@ -240,6 +243,28 @@ def main():
                 len(trace) > 0 and all(
                     item["lag"] == [forced_lag] * 3 for item in trace
                 )
+            )
+            # Behavioral proof requires a changed input and a corresponding
+            # stale output for H0, while D2 remains immediate.
+            def differs(left, right, tol=1e-6):
+                return left is not None and right is not None and any(
+                    abs(a - b) > tol for a, b in zip(left, right)
+                )
+            position_trace = [entry["channels"]["position"] for entry in trace]
+            report["observations"][arm]["position_input_changes"] = sum(
+                differs(position_trace[j]["input"], position_trace[j-1]["input"])
+                for j in range(1, len(position_trace))
+            )
+            report["observations"][arm]["position_delay_mismatches"] = sum(
+                differs(entry["input"], entry["delayed"]) for entry in position_trace
+            )
+            report["checks"][arm+"_varying_position_stimulus"] = (
+                report["observations"][arm]["position_input_changes"] > 0
+            )
+            report["checks"][arm+"_delay_behavior"] = (
+                report["observations"][arm]["position_delay_mismatches"] > 0
+                if arm == "H0" else
+                report["observations"][arm]["position_delay_mismatches"] == 0
             )
             motor.compute = original_compute
             for buf, original in zip(motor._delay_bufs, original_buffers):
