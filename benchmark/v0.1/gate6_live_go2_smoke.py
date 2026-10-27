@@ -69,6 +69,31 @@ def main():
         for arm, name in names.items():
             checkpoint(arm + "_before_config")
             cfg = getattr(tasks, name)()
+            # Resolve all task presets, not only physics. The Arena task config
+            # contains declarative physics and event placeholders that cannot be
+            # passed directly to ManagerBasedRLEnv.
+            from isaaclab_tasks.utils.hydra import resolve_presets
+            from isaaclab.physics.physics_manager_cfg import PhysicsCfg
+            from isaaclab.managers import EventTermCfg
+            result = resolve_presets(cfg, selected=("isaacsim_physx",))
+            cfg = cfg if result is None else result
+            assert isinstance(cfg.sim.physics, PhysicsCfg)
+            assert type(cfg.sim.physics).__name__ == "PhysxCfg"
+            assert isinstance(cfg.events.base_com, EventTermCfg)
+            assert cfg.sim.physics.gpu_max_rigid_patch_count == 327680
+            physics_dict = cfg.sim.physics.to_dict()
+            if arm == "H0":
+                reference_physics = physics_dict
+            else:
+                assert physics_dict == reference_physics, "H0 and D2 physics configurations differ"
+            report["observations"][arm + "_physics"] = {
+                "resolver": "resolve_presets",
+                "selected_preset": "isaacsim_physx",
+                "selected_type": type(cfg.sim.physics).__name__,
+                "gpu_max_rigid_patch_count": cfg.sim.physics.gpu_max_rigid_patch_count,
+                "matches_H0": physics_dict == reference_physics,
+            }
+            checkpoint(arm + "_presets_resolved")
             cfg.scene.num_envs = args.num_envs
             cfg.seed = 17
             cfg.scene.env_spacing = 2.5
