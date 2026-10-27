@@ -38,3 +38,26 @@ Drive v2 clean folder: https://drive.google.com/drive/folders/1QkJ73HXsR5Dh5kL5z
 6. Record which required evidence is on Drive versus instance/PC and identify the custodian.
 
 **No Gate 1 approval, held-out policy generation or threshold reuse until these are resolved.**
+
+## Local WSL byte-verification addendum — Oct 27, 2026
+
+**Evidence source:** user-executed read-only SHA-256 and tar inspection commands in WSL; outputs reviewed in conversation. This is a reported local verification, not an independent rerun by the repository CI.
+
+- `phase1-clean.tgz`: computed SHA-256 `36bb9b75caf2ab7d37482bf7dc79c5ddd48cacfd2bde3f3aac834ef5c23b712a` — matches previously recorded expected digest.
+- `phase1-clean-measurements.tgz`: computed SHA-256 `9e1be1705da1073e1bd5a68cc2fe5469846ead13cae5663390b4d081be5fb38e` — matches recorded digest.
+- `phase1-clean-curves.tgz`: computed SHA-256 `3e50c16b1c950226f33cb23aaeb534a019b97da6d5c7f60880206389726cba65` — matches recorded digest.
+- `phase1-pilot-v5.tgz`: computed SHA-256 `acda5d8cd4bc6560f64eba317c9cc5fd804b6e6dd195233574a8a83ac0693f2e`; no independently recorded expected digest compared.
+- The main Phase 1 archive contains `phase1_clean/robots/p0v5b_s101` through `s122` final checkpoint entries (22 entries; qualification is separate).
+- Direct streaming SHA-256 of the five original Phase 1 `checkpoint/model_1999.pt` members matched the checkpoint fingerprints recorded consistently in the Phase 2 control `nominal.json`, `sweep.json`, and `newton.json` records:
+
+| Reused control | Verified checkpoint SHA-256 | Result |
+|---|---|---|
+| p0v5b_s101 | `14e03fab96f671e5b45c43ffefe947ea11754c6a07634d232c58b67745befe62` | MATCH |
+| p0v5b_s102 | `dcd188cbf70d0c9c0a94cd1dd2165e714c977c9db67382563900f96358e0989b` | MATCH |
+| p0v5b_s103 | `612ea5b6f092e44b338fa74d88b2d9c8befb3481e0202c9026295edc7d941343` | MATCH |
+| p0v5b_s104 | `7c3061069ae3571e8b11c1719db4a578f24844e156745c66968a2c34d7ea2215` | MATCH |
+| p0v5b_s105 | `4891931732af39e55fee00cd9ea7aa5c99b664969837b3fccadd4d19f579e46e` | MATCH |
+
+**Phase 2 raw inventory (reported local inspection):** 21 folders; 426 checkpoint-file entries, 402 distinct checkpoint digests. The 24 duplicate entries come from the two seed-313 incomplete/retry folders, which share their 24 checkpoint hashes; seed 313 is not a completed measured study robot. Fourteen completed study robots have final checkpoints and measurement records. Five controls have evaluation records but reference original Phase 1 checkpoints rather than embedding them.
+
+**Scope:** This closes the specific five-control checkpoint-byte identity check. It does not independently authenticate when earlier expected archive hashes were recorded, validate evaluation results, establish checkpoint runtime reproducibility, or qualify any historical policy as fresh held-out benchmark data. Previous 'hash not verified' statements above describe the earlier inspection state and are superseded **only for the three locally hashed Phase 1 archives**. Gate 0 remains PARTIAL; no protocol freeze or Gate 1 approval.
