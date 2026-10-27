@@ -138,6 +138,32 @@ def main():
             report["checks"][arm+"_lag_channel_alignment_after_reset"] = all(
                 channel == sampled_lags[0] for channel in sampled_lags
             )
+            # Controlled counter probes on the real motor, without advancing physics.
+            # These verify ramp sampling but do not replace command trace evidence.
+            original_counter = motor.sim2gate_physics_steps
+            ramp_probes = []
+            try:
+                for counter, expected_max in ((0, 0), (62400, 3), (76800, 6)):
+                    motor.sim2gate_physics_steps = counter
+                    motor.reset(None)
+                    observed = capture_lags()
+                    current_max = motor.current_max_delay()
+                    ramp_probes.append({
+                        "counter": counter,
+                        "expected_max": expected_max,
+                        "actual_max": current_max,
+                        "sampled_lags": observed,
+                    })
+                    report["checks"][arm+"_ramp_"+str(counter)] = (
+                        current_max == (expected_max if arm == "H0" else 0)
+                        and all(ch == observed[0] for ch in observed)
+                        and all(0 <= lag <= current_max for ch in observed for lag in ch)
+                    )
+            finally:
+                motor.sim2gate_physics_steps = original_counter
+                motor.reset(None)
+            report["observations"][arm]["ramp_probes"] = ramp_probes
+            checkpoint(arm + "_ramp_probes_complete")
             report["checks"][arm+"_sampled_lag_in_bounds"] = all(
                 motor.cfg.min_delay <= lag <= motor.current_max_delay()
                 for channel in sampled_lags for lag in channel
