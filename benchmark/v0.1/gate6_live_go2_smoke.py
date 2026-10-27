@@ -115,12 +115,34 @@ def main():
             report["checks"][arm+"_real_buffers"] = len(motor._delay_bufs) == 3 and all(isinstance(b, DelayBuffer) for b in motor._delay_bufs)
             report["checks"][arm+"_delay_range"] = (motor.cfg.min_delay, motor.cfg.max_delay) == ((0, 6) if arm == "H0" else (0, 0))
             report["checks"][arm+"_ramp"] = (motor.cfg.delay_ramp_start_steps, motor.cfg.delay_ramp_end_steps) == (48000, 76800)
+            # Capture real DelayBuffer state on the articulated actuator.
+            # The three channels must share a sampled lag for each environment.
+            def capture_lags():
+                return [buf.time_lags.detach().cpu().tolist() for buf in motor._delay_bufs]
+            report["observations"][arm]["lags_before_explicit_reset"] = capture_lags()
+            report["checks"][arm+"_lag_channel_alignment_initial"] = (
+                all(lags == capture_lags()[0] for lags in capture_lags())
+            )
+            report["checks"][arm+"_buffer_capacity"] = all(
+                buf.history_length == motor.cfg.max_delay for buf in motor._delay_bufs
+            )
+
             # Sample reset lags via observed target behavior in Gate 5; here
             # verify actual actuator reset and physics stepping in a live scene.
             checkpoint(arm + "_before_reset")
             obs, info = env.reset()
             checkpoint(arm + "_reset_complete")
             report["checks"][arm+"_reset"] = obs is not None
+            sampled_lags = capture_lags()
+            report["observations"][arm]["lags_after_env_reset"] = sampled_lags
+            report["checks"][arm+"_lag_channel_alignment_after_reset"] = all(
+                channel == sampled_lags[0] for channel in sampled_lags
+            )
+            report["checks"][arm+"_sampled_lag_in_bounds"] = all(
+                motor.cfg.min_delay <= lag <= motor.current_max_delay()
+                for channel in sampled_lags for lag in channel
+            )
+
             action_dim = env.action_manager.total_action_dim
             for i in range(args.steps):
                 actions = torch.zeros((args.num_envs, action_dim), device=env.device)
