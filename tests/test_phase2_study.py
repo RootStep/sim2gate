@@ -124,7 +124,10 @@ def test_a_run_that_fails_twice_is_left_out_of_every_approach(tmp_path, monkeypa
     assert st.run(str(work), str(p1), pub, str(blind), runner=lambda cmd, log: (0, "")) == 0
     assert calls.count(313) == 2
     out = capsys.readouterr().out
-    assert "STUDY COMPLETE: 19 robots" in out and "run failures excluded 1" in out and "313" not in out
+    assert "STUDY COMPLETE: 19 robots" in out and "run failures excluded 1" in out
+    # Hashes of encrypted artifacts are random and can contain digits such as "313".
+    # Check only labelled output, not arbitrary substrings of ciphertext digests.
+    assert not any(token in out for token in ("study_s313", "seed 313", "study robot 13 of 15: seed 313"))
     t = json.load(open(blind / "features.json"))
     assert len(t["rows"]) == 19
     testset.unseal(priv, str(blind / "sealed"), str(tmp_path / "opened"))
