@@ -169,6 +169,58 @@ def main():
                 for channel in sampled_lags for lag in channel
             )
 
+            # Gate 6C: observational wrappers on this instance only. No changes
+            # to production actuator code, and no optimizer/checkpoint writes.
+            # Force lag=2 on H0 and lag=0 on D2 after reset to exercise the
+            # buffer at a controlled test condition, independent of the ramp.
+            forced_lag = 2 if arm == "H0" else 0
+            for buf in motor._delay_bufs:
+                buf.set_time_lag(forced_lag)
+                buf.reset()
+            report["observations"][arm]["trace_forced_lag"] = forced_lag
+            trace = []
+            trace_step = {"index": 0}
+            channel_records = {}
+            original_compute = motor.compute
+            original_buffers = [b.compute for b in motor._delay_bufs]
+
+            def sample(tensor):
+                if tensor is None:
+                    return None
+                return tensor.detach().flatten()[:4].cpu().tolist()
+
+            def trace_buffer(channel, original):
+                def wrapped(data):
+                    incoming = sample(data)
+                    delayed = original(data)
+                    channel_records[channel] = {
+                        "input": incoming, "delayed": sample(delayed)
+                    }
+                    return delayed
+                return wrapped
+
+            for channel, buf in enumerate(motor._delay_bufs):
+                buf.compute = trace_buffer(("position", "velocity", "effort")[channel],
+                                           original_buffers[channel])
+
+            def traced_motor_compute(control_action, joint_pos, joint_vel):
+                channel_records.clear()
+                output = original_compute(control_action, joint_pos, joint_vel)
+                if len(trace) < 32:
+                    trace.append({
+                        "physics_call": trace_step["index"],
+                        "lag": [int(b.time_lags[0].item()) for b in motor._delay_bufs],
+                        "channels": dict(channel_records),
+                        "computed_effort": sample(motor.computed_effort),
+                        "applied_effort": sample(motor.applied_effort),
+                        "output_effort": sample(output.joint_efforts),
+                        "joint_position": sample(joint_pos),
+                        "joint_velocity": sample(joint_vel),
+                    })
+                trace_step["index"] += 1
+                return output
+
+            motor.compute = traced_motor_compute
             action_dim = env.action_manager.total_action_dim
             for i in range(args.steps):
                 actions = torch.zeros((args.num_envs, action_dim), device=env.device)
@@ -176,6 +228,23 @@ def main():
             report["checks"][arm+"_live_steps"] = obs is not None and torch.isfinite(reward).all().item()
             report["observations"][arm]["completed_steps"] = args.steps
             report["observations"][arm]["physics_step_counter"] = motor.sim2gate_physics_steps
+            report["observations"][arm]["motor_trace"] = trace
+            report["checks"][arm+"_trace_recorded"] = len(trace) > 0
+            report["checks"][arm+"_trace_channels_present"] = (
+                len(trace) > 0 and all(
+                    set(item["channels"]) == {"position", "velocity", "effort"}
+                    for item in trace
+                )
+            )
+            report["checks"][arm+"_trace_lag"] = (
+                len(trace) > 0 and all(
+                    item["lag"] == [forced_lag] * 3 for item in trace
+                )
+            )
+            motor.compute = original_compute
+            for buf, original in zip(motor._delay_bufs, original_buffers):
+                buf.compute = original
+
             checkpoint(arm + "_steps_complete")
             env.close()
             env = None
