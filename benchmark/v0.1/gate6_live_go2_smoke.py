@@ -307,11 +307,15 @@ def main():
             env.close()
             env = None
             checkpoint(arm + "_closed")
-        # These live smoke checks do NOT yet instrument internal lag values,
-        # three target traces, or partial reset isolation. Never call this full Gate 6 PASS.
+        # These checks cover live actuator behavior, not the full benchmark or
+        # end-to-end selective environment reset-manager integration.
         report["status"] = "PARTIAL" if all(report["checks"].values()) else "FAIL"
-        report["missing_for_full_gate6"] = ["Live sampled-lag evidence at ramp milestones",
-             "Input/output command and motor-effort traces", "Partial environment reset isolation"]
+        report["remaining_qualifications"] = [
+            "Ramp milestones are controlled counter probes, not natural 76800-step simulation",
+            "Selective reset tested on real actuator buffers, not environment reset manager",
+            "Final app.close completion not independently verified",
+            "No training or diagnostic benchmark scoring performed",
+        ]
     except Exception as exc:
         report["status"] = "BLOCKED"
         report["error"] = type(exc).__name__ + ": " + str(exc)
