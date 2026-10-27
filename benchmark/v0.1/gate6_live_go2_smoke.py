@@ -274,7 +274,7 @@ def main():
                 for channel, buf in enumerate(motor._delay_bufs):
                     buf.reset()
                     buf.set_time_lag(2)
-                    width = int(motor._num_joints)
+                    width = int(motor._joint_vel.shape[1])  # actual live actuator joint tensor
                     for value in (10.0, 20.0, 30.0, 40.0):
                         buf.compute(torch.full((2, width), value, device=env.device))
                     lag_before = buf.time_lags.detach().cpu().tolist()
