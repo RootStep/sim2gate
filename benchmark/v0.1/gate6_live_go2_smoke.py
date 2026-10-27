@@ -321,9 +321,16 @@ def main():
         if env is not None:
             try: env.close()
             except Exception: pass
+        # Kit shutdown may terminate the Python process before the final
+        # checkpoint. Record an accurate pre-shutdown state first; do not
+        # mislabel it as verified shutdown completion.
+        checkpoint("before_app_close")
         if app is not None:
-            try: app.close()
-            except Exception: pass
+            try:
+                app.close()
+            except Exception as cleanup_exc:
+                report["cleanup_error"] = type(cleanup_exc).__name__ + ": " + str(cleanup_exc)
+                checkpoint("app_close_exception")
         report["elapsed_seconds"] = round(time.monotonic() - started, 2)
         checkpoint("finished")
         print(json.dumps(report, indent=2), flush=True)
