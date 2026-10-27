@@ -266,6 +266,39 @@ def main():
                 if arm == "H0" else
                 report["observations"][arm]["position_delay_mismatches"] == 0
             )
+            # Gate 6D: two-environment selective reset, using the three real
+            # delay buffers owned by the live articulated Go2 actuator.
+            # Run after live stepping; synthetic inputs are confined to buffers.
+            if args.num_envs == 2 and arm == "H0":
+                isolation = []
+                for channel, buf in enumerate(motor._delay_bufs):
+                    buf.reset()
+                    buf.set_time_lag(2)
+                    width = int(motor._num_joints)
+                    for value in (10.0, 20.0, 30.0, 40.0):
+                        buf.compute(torch.full((2, width), value, device=env.device))
+                    lag_before = buf.time_lags.detach().cpu().tolist()
+                    motor.reset(torch.tensor([0], device=env.device, dtype=torch.long))
+                    # motor.reset resets all three buffers for env 0 only.
+                    lag_after = buf.time_lags.detach().cpu().tolist()
+                    output = buf.compute(torch.tensor(
+                        [[99.0] * width, [50.0] * width], device=env.device
+                    ))
+                    env0 = float(output[0, 0].item())
+                    env1 = float(output[1, 0].item())
+                    isolation.append({
+                        "channel": channel, "lag_before": lag_before,
+                        "lag_after": lag_after, "env0_output": env0,
+                        "env1_output": env1,
+                        "pass": lag_before == [2, 2] and lag_after == [0, 2]
+                                and abs(env0 - 99.0) < 1e-5
+                                and abs(env1 - 30.0) < 1e-5,
+                    })
+                report["observations"][arm]["partial_reset_isolation"] = isolation
+                report["checks"][arm+"_partial_reset_isolation"] = all(
+                    item["pass"] for item in isolation
+                )
+                checkpoint(arm + "_partial_reset_checked")
             motor.compute = original_compute
             for buf, original in zip(motor._delay_bufs, original_buffers):
                 buf.compute = original
