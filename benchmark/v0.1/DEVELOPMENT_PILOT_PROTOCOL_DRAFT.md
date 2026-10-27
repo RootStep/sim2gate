@@ -1,6 +1,8 @@
 # Diagnostic Benchmark v0.1 — Development Pilot Protocol
 
-**Status: DRAFT FOR APPROVAL — October 27, 2026. Not a training authorization, protocol freeze, or confirmatory study.**
+**Status: DRAFT — pilot planning decisions recorded October 27, 2026. Not a training authorization, protocol freeze, or confirmatory study.**
+
+**Recorded user decisions (planning approval only):** (1) allocation is **H0×1, T1×1, D1×1, D2×1**; (2) **GPU budget remains TBD until runtime profiling** and requires separate explicit approval; (3) **live Go2 actuator integration is a mandatory pretraining gate**. No GPU training may begin under this document.
 
 ## 1. Objective and boundary
 
@@ -27,7 +29,7 @@ Source protocols: PROTOCOL.md, PROTOCOL_DECISIONS.md, FLAW_RECIPES_DRAFT.md. All
 
 ## 4. Size and assignment
 
-**Proposed minimum screening allocation:** four independent fresh training runs: H0×1, T1×1, D1×1, D2×1. Preassign unique random seeds before training, with no reuse of historical development/confirmatory seeds. One run per arm is a smoke test only: it cannot estimate across-seed effects or provide robust causal comparisons. If budget allows after reviewing the first four, prioritize a second H0 and paired additional seeds, under a separately approved amendment. Do not silently expand or substitute runs.
+**Approved planning allocation (not execution authorization):** four independent fresh training runs: H0×1, T1×1, D1×1, D2×1. Preassign unique random seeds before training, with no reuse of historical development/confirmatory seeds. One run per arm is a smoke test only: it cannot estimate across-seed effects or provide robust causal comparisons. If budget allows after reviewing the first four, prioritize a second H0 and paired additional seeds, under a separately approved amendment. Do not silently expand or substitute runs.
 
 Use common training code, iteration cap, evaluation schedules, hardware and base hyperparameters, except intentional recipe changes and harmless experiment identifiers. Record all deviations. Treat training run as the independent unit; do not count episodes as independent policies.
 
@@ -67,8 +69,10 @@ No confirmatory cohort, no sealed test-set access, no claim of superiority over 
 
 ## 10. Decisions needed before execution
 
-1. Approve four-run allocation or replace with the original two-H0/two-flawed design (which cannot screen all three flawed recipes).
-2. Select exact seeds, training iteration cap, compute/storage ceilings and retry policy.
-3. Freeze **pilot-only** nominal qualification and independent manifestation grid/thresholds (distinct from confirmatory freeze).
-4. Confirm nontraining live Go2 actuator integration evidence and separate custody of intervention labels.
-5. Explicitly authorize GPU pilot after the above evidence is reviewed.
+1. **DECIDED (planning only):** H0×1, T1×1, D1×1, D2×1. No substitutions or expansion without an amendment.
+2. **DECIDED (planning only):** determine GPU budget after bounded runtime profiling. No GPU-hour ceiling or GPU training approved yet. Profiling that consumes GPU requires its own explicit scope and authorization.
+3. **DECIDED (hard prerequisite):** demonstrate live Go2 actuator integration, including runtime delay sampling and command effect, before any GPU training.
+4. **OPEN:** select exact fresh seeds, training iteration cap, compute/storage ceilings, profiling scope and retry policy.
+5. **OPEN:** freeze **pilot-only** nominal qualification and independent manifestation grid/thresholds (distinct from confirmatory freeze).
+6. **OPEN:** review live integration evidence and separate custody of intervention labels.
+7. **OPEN:** explicitly authorize the GPU pilot after the above evidence and budget are reviewed.
