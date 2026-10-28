@@ -1,0 +1,58 @@
+"""Synthetic process-separated custody canary; never handles real keys.
+
+Scorer child receives public JSON over stdin, with an isolated working directory.
+Custodian key stays in a different directory and is not passed in arguments,
+environment variables or stdin. This is a *logical* separation only: a child
+with the same OS identity can still read an accessible file by absolute path.
+"""
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
+import unittest
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from custodian_verify import synthetic_unseal, verify_prediction_commitment
+
+
+class ProcessSeparatedCanary(unittest.TestCase):
+    def test_process_handoff_and_label_invariance(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            private = Path(tmp) / "custodian_private"
+            public = Path(tmp) / "scorer_workspace"
+            private.mkdir()
+            public.mkdir()
+            key_path = private / "synthetic_truth.json"
+            key_path.write_text(json.dumps({"opaque01": True, "opaque02": False}))
+            public_data = {"schema_version": "v0.1-public-features-draft",
+                           "records": [
+                               {"opaque_id": "opaque01", "measurements": {
+                                   "fall_fraction": 0.2, "slip_p95_mps": 0.4,
+                                   "tracking_error_mps": 0.1, "actuator_limit_fraction": 0.1}},
+                               {"opaque_id": "opaque02", "measurements": {
+                                   "fall_fraction": 0.0, "slip_p95_mps": 0.1,
+                                   "tracking_error_mps": 0.1, "actuator_limit_fraction": 0.1}}]}
+            script = ROOT / "blinded_scorer_smoke.py"
+            # Child has no private key path in args, environment or input.
+            env = {"PATH": os.environ.get("PATH", ""), "PYTHONIOENCODING": "utf-8"}
+            cmd = [sys.executable, str(script)]
+            first = subprocess.run(cmd, input=json.dumps(public_data), text=True,
+                                   capture_output=True, cwd=public, env=env, check=True)
+            output = json.loads(first.stdout)
+            verify_prediction_commitment(output)
+            key = json.loads(key_path.read_text())
+            self.assertEqual(synthetic_unseal(output, key)["total"], 2)
+            key_path.write_text(json.dumps({"opaque01": False, "opaque02": True}))
+            second = subprocess.run(cmd, input=json.dumps(public_data), text=True,
+                                    capture_output=True, cwd=public, env=env, check=True)
+            self.assertEqual(first.stdout, second.stdout,
+                             "predictions changed when only sealed synthetic truth changed")
+            self.assertNotIn(str(key_path), first.stdout)
+            self.assertNotIn("custodian_private", first.stdout)
+
+
+if __name__ == "__main__":
+    unittest.main()
