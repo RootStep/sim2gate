@@ -6,6 +6,31 @@ import unittest
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+# Load the unchanged production scoring source in a dependency-free CPU harness.
+# The Isaac measurement module needs torch, but scoring itself needs only its
+# two declared constants. This avoids installing GPU dependencies in Gate 0 CI.
+import importlib.util
+import types
+root = Path(__file__).resolve().parents[3]
+package = types.ModuleType("sim2gate")
+package.__path__ = [str(root / "src" / "sim2gate")]
+checks = types.ModuleType("sim2gate.checks")
+checks.__path__ = [str(root / "src" / "sim2gate" / "checks")]
+measure = types.ModuleType("sim2gate.checks.isaaclab_exploits")
+measure.CALIBRATED_METRICS = (
+    "foot_slip_p95_mps", "ground_penetration_m", "contact_force_p99_bw",
+    "action_jitter_high_freq_power_share", "actuator_limit_step_share")
+measure.MEASUREMENT_KEYS = (
+    "dt", "contact_force_n", "foot_radius_m", "penetration_tol_m",
+    "jitter_window", "flat_ground", "measurement_version", "foot_geometry")
+sys.modules.update({"sim2gate": package, "sim2gate.checks": checks,
+                    "sim2gate.checks.isaaclab_exploits": measure})
+spec = importlib.util.spec_from_file_location(
+    "sim2gate.checks.exploits_score",
+    root / "src" / "sim2gate" / "checks" / "exploits_score.py")
+production_module = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = production_module
+spec.loader.exec_module(production_module)
 from check2_sanitized_adapter import export_check2, export_batch, validate_sanitized, METRICS
 from sim2gate.checks.exploits_score import score as production_score
 
