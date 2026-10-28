@@ -36,22 +36,26 @@ class ProcessSeparatedCanary(unittest.TestCase):
                                    "fall_fraction": 0.0, "slip_p95_mps": 0.1,
                                    "tracking_error_mps": 0.1, "actuator_limit_fraction": 0.1}}]}
             script = ROOT / "blinded_scorer_smoke.py"
+            input_path = public / "features.json"
+            output_path = public / "predictions.json"
+            input_path.write_text(json.dumps(public_data))
             # Child has no private key path in args, environment or input.
             env = {"PATH": os.environ.get("PATH", ""), "PYTHONIOENCODING": "utf-8"}
-            cmd = [sys.executable, str(script)]
-            first = subprocess.run(cmd, input=json.dumps(public_data), text=True,
+            cmd = [sys.executable, str(script), "--public-input", str(input_path), "--out", str(output_path)]
+            first = subprocess.run(cmd, text=True,
                                    capture_output=True, cwd=public, env=env, check=True)
-            output = json.loads(first.stdout)
+            first_predictions = output_path.read_text()
+            output = json.loads(first_predictions)
             verify_prediction_commitment(output)
             key = json.loads(key_path.read_text())
             self.assertEqual(synthetic_unseal(output, key)["total"], 2)
             key_path.write_text(json.dumps({"opaque01": False, "opaque02": True}))
             second = subprocess.run(cmd, input=json.dumps(public_data), text=True,
                                     capture_output=True, cwd=public, env=env, check=True)
-            self.assertEqual(first.stdout, second.stdout,
+            self.assertEqual(first_predictions, output_path.read_text(),
                              "predictions changed when only sealed synthetic truth changed")
-            self.assertNotIn(str(key_path), first.stdout)
-            self.assertNotIn("custodian_private", first.stdout)
+            self.assertNotIn(str(key_path), first_predictions)
+            self.assertNotIn("custodian_private", first_predictions)
 
 
 if __name__ == "__main__":
