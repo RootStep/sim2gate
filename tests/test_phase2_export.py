@@ -56,7 +56,10 @@ def test_unweighted_components_ignore_a_rescaled_weight(tmp_path):
     f2, _ = ex.export_robot(ev2, y2)
     for c in f1:
         if c.startswith("B:unw:"):
-            assert f1[c] == pytest.approx(f2[c], rel=1e-12) or (f1[c] is None and f2[c] is None)
+            assert (f1[c] is None and f2[c] is None) or (
+                f1[c] is not None and f2[c] is not None
+                and f1[c] == pytest.approx(f2[c], rel=1e-12)
+            )
     assert f1["W:wt:feet_slide:w1"] == pytest.approx(10 * f2["W:wt:feet_slide:w1"])   # the weighted ones do move
     assert f1["B:unw:dof_pos_limits:w1"] is None                                       # zero weight: not recorded
 
