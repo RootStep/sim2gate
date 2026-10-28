@@ -1,0 +1,60 @@
+"""Custodian-side verification, kept OUT of the blinded scorer process.
+
+Synthetic dry-run only. Production custody requires independent private key storage,
+access logs, pre-unseal timestamps and a named independent custodian.
+"""
+import hashlib
+import json
+
+
+def verify_prediction_commitment(result):
+    if set(result) != {"predictions", "prediction_sha256"}:
+        raise ValueError("unexpected prediction envelope")
+    body = result["predictions"]
+    if set(body) != {"schema_version", "scorer_version", "input_sha256", "predictions"}:
+        raise ValueError("unexpected prediction fields")
+    if body["schema_version"] != "v0.1-predictions-draft":
+        raise ValueError("wrong schema")
+    if not isinstance(body["input_sha256"], str) or len(body["input_sha256"]) != 64:
+        raise ValueError("invalid input commitment")
+    rows = body["predictions"]
+    if not isinstance(rows, list) or not rows:
+        raise ValueError("empty predictions")
+    ids = []
+    for row in rows:
+        if set(row) != {"opaque_id", "detect_score", "status"}:
+            raise ValueError("unexpected prediction record")
+        if not isinstance(row["opaque_id"], str) or not row["opaque_id"]:
+            raise ValueError("invalid ID")
+        ids.append(row["opaque_id"])
+        if row["status"] not in ("scored", "missing_features"):
+            raise ValueError("invalid status")
+        if row["status"] == "scored":
+            import math
+            if type(row["detect_score"]) not in (int, float) or not math.isfinite(row["detect_score"]):
+                raise ValueError("invalid score")
+        elif row["detect_score"] is not None:
+            raise ValueError("missing-feature score must be null")
+    if len(ids) != len(set(ids)) or ids != sorted(ids):
+        raise ValueError("duplicate or unsorted IDs")
+    canonical = json.dumps(body, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    digest = hashlib.sha256(canonical.encode()).hexdigest()
+    if digest != result["prediction_sha256"]:
+        raise ValueError("prediction commitment mismatch")
+    return digest
+
+
+def synthetic_unseal(result, sealed_labels):
+    """Evaluate only after commitment check; never import from scorer."""
+    verify_prediction_commitment(result)
+    predictions = result["predictions"]["predictions"]
+    ids = {r["opaque_id"] for r in predictions}
+    if not isinstance(sealed_labels, dict) or set(sealed_labels) != ids:
+        raise ValueError("key IDs must match predictions exactly")
+    if any(type(v) is not bool for v in sealed_labels.values()):
+        raise ValueError("synthetic truth must be boolean")
+    scored = [r for r in predictions if r["status"] == "scored"]
+    return {"prediction_sha256": result["prediction_sha256"],
+            "total": len(predictions), "scored": len(scored),
+            "missing": len(predictions) - len(scored),
+            "synthetic_only": True}
