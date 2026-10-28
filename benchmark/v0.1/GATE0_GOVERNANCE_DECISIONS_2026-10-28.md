@@ -3,7 +3,7 @@
 **Authorized by RootStep representative:** proceed with technical Gate 0 closure only. **No benchmark freeze, held-out policy generation, training, GPU profiling, or confirmatory scoring is authorized.**
 
 ## Decision 1 — held-out label custody
-The designated role is **Parent / RootStep company manager**. The named individual and custody handoff are **not yet recorded**. This person must remain independent of scorer implementation, score tuning, and prediction generation.
+The designated role is **Parent / RootStep company manager**. **Named custodian: Vijendra Kulkarni (parent / RootStep company manager), designated by user on 2026-10-28.** Private custody location, access boundary, and actual handoff are **not yet verified**. Vihaan Kulkarni remains technical lead and must not access the sealed held-out answer key during scorer development or tuning. This person must remain independent of scorer implementation, score tuning, and prediction generation.
 
 - Custodian holds intervention assignments, run lineage, and any sealed answer key in a separate access-controlled location.
 - The scorer receives only opaque random IDs and approved diagnostic measurements, not the key or its storage path.
