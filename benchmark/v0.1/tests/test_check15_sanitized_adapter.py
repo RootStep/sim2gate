@@ -5,6 +5,13 @@ from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import types
+package = types.ModuleType("sim2gate")
+package.__path__ = [str(Path(__file__).resolve().parents[3] / "src" / "sim2gate")]
+checks = types.ModuleType("sim2gate.checks")
+checks.__path__ = [str(Path(__file__).resolve().parents[3] / "src" / "sim2gate" / "checks")]
+sys.modules["sim2gate"] = package
+sys.modules["sim2gate.checks"] = checks
 from check15_sanitized_adapter import export_check1, export_check5, CHECK1_NAMES, CHECK5_NAMES
 
 
