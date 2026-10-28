@@ -11,9 +11,11 @@ on:
       - "benchmark/v0.1/commit_public_inputs.py"
       - "benchmark/v0.1/blinded_scorer_smoke.py"
       - "benchmark/v0.1/custodian_verify.py"
+      - "benchmark/v0.1/check2_sanitized_adapter.py"
       - "benchmark/v0.1/tests/test_public_feature_boundary.py"
       - "benchmark/v0.1/tests/test_commit_public_inputs.py"
       - "benchmark/v0.1/tests/test_end_to_end_smoke.py"
+      - "benchmark/v0.1/tests/test_check2_sanitized_adapter.py"
       - ".github/workflows/benchmark-gate0.yml"
   pull_request:
     paths:
@@ -39,5 +41,7 @@ jobs:
         run: python -m unittest discover -s benchmark/v0.1/tests -p test_commit_public_inputs.py -v
       - name: Exercise end-to-end synthetic custody and leakage canaries
         run: python -m unittest discover -s benchmark/v0.1/tests -p test_end_to_end_smoke.py -v
+      - name: Exercise real Check 2 sanitized adapter parity tests
+        run: PYTHONPATH=src python -m unittest discover -s benchmark/v0.1/tests -p test_check2_sanitized_adapter.py -v
       - name: Mark scope of checks
         run: echo "Static checks only. Not an end-to-end leakage certification, custodian approval, or benchmark freeze."
