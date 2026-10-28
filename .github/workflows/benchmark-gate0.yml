@@ -1,0 +1,34 @@
+name: Benchmark Gate 0 static checks
+
+on:
+  push:
+    branches:
+      - benchmark/v0.1-foundation
+    paths:
+      - "benchmark/v0.1/SEEN_POLICIES_PROVISIONAL.csv"
+      - "benchmark/v0.1/validate_seen_policies.py"
+      - "benchmark/v0.1/public_feature_boundary.py"
+      - "benchmark/v0.1/tests/test_public_feature_boundary.py"
+      - ".github/workflows/benchmark-gate0.yml"
+  pull_request:
+    paths:
+      - "benchmark/v0.1/**"
+      - ".github/workflows/benchmark-gate0.yml"
+  workflow_dispatch:
+
+jobs:
+  static-gate0:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate historical exclusion register
+        run: python benchmark/v0.1/validate_seen_policies.py
+      - name: Exercise synthetic metadata boundary tests
+        run: python -m unittest discover -s benchmark/v0.1/tests -p test_public_feature_boundary.py -v
+      - name: Mark scope of checks
+        run: echo "Static checks only. Not an end-to-end leakage certification, custodian approval, or benchmark freeze."
