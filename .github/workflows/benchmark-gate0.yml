@@ -9,8 +9,11 @@ on:
       - "benchmark/v0.1/validate_seen_policies.py"
       - "benchmark/v0.1/public_feature_boundary.py"
       - "benchmark/v0.1/commit_public_inputs.py"
+      - "benchmark/v0.1/blinded_scorer_smoke.py"
+      - "benchmark/v0.1/custodian_verify.py"
       - "benchmark/v0.1/tests/test_public_feature_boundary.py"
       - "benchmark/v0.1/tests/test_commit_public_inputs.py"
+      - "benchmark/v0.1/tests/test_end_to_end_smoke.py"
       - ".github/workflows/benchmark-gate0.yml"
   pull_request:
     paths:
@@ -34,5 +37,7 @@ jobs:
         run: python -m unittest discover -s benchmark/v0.1/tests -p "test_*public*.py" -v
       - name: Exercise deterministic input commitment tests
         run: python -m unittest discover -s benchmark/v0.1/tests -p test_commit_public_inputs.py -v
+      - name: Exercise end-to-end synthetic custody and leakage canaries
+        run: python -m unittest discover -s benchmark/v0.1/tests -p test_end_to_end_smoke.py -v
       - name: Mark scope of checks
         run: echo "Static checks only. Not an end-to-end leakage certification, custodian approval, or benchmark freeze."
