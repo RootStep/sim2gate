@@ -22,4 +22,16 @@
 - No scorer threshold, calibration or method revision occurs after held-out key exposure.
 
 ## Limitations
-The synthetic smoke scorer is not the frozen scientific method. Check 2 adapter is implemented, but full Check 1/5 production adapter, runtime key isolation, independently witnessed handoff, calibration applicability review and protocol approval are still outstanding. The documented procedure is **not** evidence of a completed operational handoff.
+The synthetic smoke scorer is not the frozen scientific method. Check 1/2/5 adapters and unmocked synthetic production-scored parity tests are implemented and passed CI on commit 0cd4ce71. Synthetic custody regressions now test label invariance, metadata injection, tampering, exact key membership, and the limitation that a digest can be recomputed by a writer. Runtime key isolation, independently witnessed handoff, calibration applicability review and protocol approval remain outstanding. The documented procedure is **not** evidence of a completed operational handoff.
+
+## Required operational access-isolation gate (NOT YET EXECUTED)
+
+The existing separate-process test uses the same OS identity. It is not proof of key inaccessibility. Before a real sealed-key handoff:
+
+1. The custodian must create and retain the real key in a private account/storage location inaccessible to the scorer operator and its runtime identity. Do not share the key or storage path in GitHub, logs or chat.
+2. The scorer must run under a different, least-privileged identity or an independently enforced container/credential boundary. Record the identity and permissions in a private custody audit; avoid putting key paths in scorer logs.
+3. A custodian-supervised **synthetic** negative-access test must demonstrate that the scorer identity cannot read the synthetic private key (permission denied), while the custodian can. Mere absence of the path from arguments is insufficient.
+4. Independently store the input and prediction digests, scorer commit, configuration digest and timestamp in a write-protected or externally witnessed record **before** any key access. A self-consistent digest inside an editable prediction JSON is not authentication.
+5. Have an independent reviewer witness the synthetic test and attest to separation and commitment order. Abort on any access or digest discrepancy.
+
+**Current result:** automated regressions verify logical/data boundaries only. Operational credential isolation and witnessed handoff are pending; no claim of complete blindness or readiness for confirmatory evaluation is made.
