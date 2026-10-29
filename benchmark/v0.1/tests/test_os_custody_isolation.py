@@ -17,7 +17,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from custodian_verify import synthetic_unseal, verify_prediction_commitment
+from custodian_verify import synthetic_unseal, verify_prediction_commitment, verify_against_protected_digest
 
 
 @unittest.skipUnless(sys.platform.startswith("linux") and os.geteuid() == 0,
@@ -39,6 +39,7 @@ class SyntheticOsIsolation(unittest.TestCase):
             key.write_text(json.dumps({"opaque01": True, "opaque02": False}))
             key.chmod(0o600)
             self.assertEqual(json.loads(key.read_text())["opaque01"], True)
+            commitment = private / "protected_prediction_sha256.txt"
             input_path = public / "public_features.json"
             output_path = public / "predictions.json"
             input_path.write_text(json.dumps({
@@ -68,6 +69,12 @@ class SyntheticOsIsolation(unittest.TestCase):
                 "    pass\n"
                 "else:\n"
                 "    raise RuntimeError('synthetic answer key leaked to scorer')\n"
+                "try:\n"
+                "    pathlib.Path(sys.argv[5]).read_bytes()\n"
+                "except PermissionError:\n"
+                "    pass\n"
+                "else:\n"
+                "    raise RuntimeError('protected digest leaked to scorer')\n"
                 "sys.argv = [sys.argv[2], '--public-input', sys.argv[3], '--out', sys.argv[4]]\n"
                 "runpy.run_path(sys.argv[0], run_name='__main__')\n"
             )
@@ -82,12 +89,35 @@ class SyntheticOsIsolation(unittest.TestCase):
                    "PYTHONIOENCODING": "utf-8"}
             cmd = [sys.executable, str(child), str(key),
                    str(public / "blinded_scorer_smoke.py"),
-                   str(input_path), str(output_path)]
+                   str(input_path), str(output_path), str(commitment)]
             proc = subprocess.run(cmd, cwd=public, env=env,
                                   preexec_fn=drop_privileges,
                                   text=True, capture_output=True, timeout=30)
             self.assertEqual(proc.returncode, 0, proc.stderr)
             result = json.loads(output_path.read_text())
+            commitment.write_text(result["prediction_sha256"])
+            commitment.chmod(0o600)
+            self.assertEqual(verify_against_protected_digest(
+                result, commitment.read_text()), result["prediction_sha256"])
+            # A scorer with the exact protected path must still receive permission denied.
+            access_probe = subprocess.run(
+                [sys.executable, "-c",
+                 "import pathlib,sys; pathlib.Path(sys.argv[1]).read_bytes()",
+                 str(commitment)], cwd=public, env=env,
+                preexec_fn=drop_privileges, text=True, capture_output=True, timeout=30)
+            self.assertNotEqual(access_probe.returncode, 0)
+            self.assertIn("PermissionError", access_probe.stderr)
+            import copy
+            import hashlib
+            modified = copy.deepcopy(result)
+            modified["predictions"]["predictions"][0]["detect_score"] += 1
+            modified["prediction_sha256"] = hashlib.sha256(json.dumps(
+                modified["predictions"], sort_keys=True, separators=(",", ":"),
+                allow_nan=False).encode()).hexdigest()
+            self.assertEqual(verify_prediction_commitment(modified),
+                             modified["prediction_sha256"])
+            with self.assertRaisesRegex(ValueError, "protected pre-unseal"):
+                verify_against_protected_digest(modified, commitment.read_text())
             self.assertEqual(verify_prediction_commitment(result),
                              result["prediction_sha256"])
             self.assertEqual(synthetic_unseal(
