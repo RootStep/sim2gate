@@ -75,3 +75,13 @@ def verify_against_protected_digest(result, protected_digest):
     if not hmac.compare_digest(actual, protected_digest):
         raise ValueError("prediction differs from protected pre-unseal commitment")
     return actual
+
+
+def synthetic_unseal_with_protected_commitment(result, sealed_labels, protected_digest):
+    """Synthetic-only unseal; require trusted custodian commitment first.
+
+    The caller must obtain protected_digest from independently protected custody
+    storage, not from the scorer output. This cannot attest storage provenance.
+    """
+    verify_against_protected_digest(result, protected_digest)
+    return synthetic_unseal(result, sealed_labels)
