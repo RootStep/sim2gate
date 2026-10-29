@@ -97,6 +97,7 @@ class SyntheticOsIsolation(unittest.TestCase):
             result = json.loads(output_path.read_text())
             commitment.write_text(result["prediction_sha256"])
             commitment.chmod(0o600)
+            self.assertEqual(commitment.stat().st_mode & 0o777, 0o600)
             self.assertEqual(verify_against_protected_digest(
                 result, commitment.read_text()), result["prediction_sha256"])
             # A scorer with the exact protected path must still receive permission denied.
@@ -107,6 +108,24 @@ class SyntheticOsIsolation(unittest.TestCase):
                 preexec_fn=drop_privileges, text=True, capture_output=True, timeout=30)
             self.assertNotEqual(access_probe.returncode, 0)
             self.assertIn("PermissionError", access_probe.stderr)
+            # The scorer also must not replace the custodian-owned commitment.
+            write_probe = subprocess.run(
+                [sys.executable, "-c",
+                 "import pathlib,sys; pathlib.Path(sys.argv[1]).write_text('0'*64)",
+                 str(commitment)], cwd=public, env=env,
+                preexec_fn=drop_privileges, text=True, capture_output=True, timeout=30)
+            self.assertNotEqual(write_probe.returncode, 0)
+            self.assertIn("PermissionError", write_probe.stderr)
+            self.assertEqual(commitment.read_text(), result["prediction_sha256"])
+            # Cannot unlink/replace via the inaccessible parent directory either.
+            unlink_probe = subprocess.run(
+                [sys.executable, "-c",
+                 "import pathlib,sys; pathlib.Path(sys.argv[1]).unlink()",
+                 str(commitment)], cwd=public, env=env,
+                preexec_fn=drop_privileges, text=True, capture_output=True, timeout=30)
+            self.assertNotEqual(unlink_probe.returncode, 0)
+            self.assertIn("PermissionError", unlink_probe.stderr)
+            self.assertTrue(commitment.is_file())
             import copy
             import hashlib
             modified = copy.deepcopy(result)
