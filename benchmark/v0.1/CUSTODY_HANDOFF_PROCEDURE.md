@@ -37,3 +37,7 @@ The existing separate-process test uses the same OS identity. It is not proof of
 **Current result:** synthetic Linux OS credential isolation passed (commit 4fe14edd; Gate 0 run 40884596568), along with logical/data boundary regressions. This is an automated development test, not a custodian-supervised test of the future production identities. Real operational credential isolation, protected external commitment and independent witnessed handoff remain pending. No claim of complete blindness or readiness for confirmatory evaluation is made.
 
 See `INDEPENDENT_CUSTODY_REVIEW_PACKET.md` for the reviewer checklist and evidence requirements. No real answer key is needed for the synthetic review.
+
+## Synthetic protected-record threat model
+
+The Linux synthetic custody test exercises an unprivileged scorer against a custodian-owned 0700 directory and 0600 commitment file. The scorer is deliberately given the exact path and must fail to **read, overwrite, or unlink** the commitment. The custodian then checks the original digest and rejects rehashed tampering. This is an OS discretionary-access-control test only: it does not protect against root, the custodian identity, compromised CI infrastructure, or a scorer that can alter data **before** the custodian records the digest. A separate externally witnessed, pre-unseal commitment remains mandatory for confirmatory use. The test does not create a signed, immutable or remotely timestamped record.
