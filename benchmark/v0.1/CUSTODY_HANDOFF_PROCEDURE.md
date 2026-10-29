@@ -22,9 +22,9 @@
 - No scorer threshold, calibration or method revision occurs after held-out key exposure.
 
 ## Limitations
-The synthetic smoke scorer is not the frozen scientific method. Check 1/2/5 adapters and unmocked synthetic production-scored parity tests are implemented and passed CI on commit 0cd4ce71. Synthetic custody regressions now test label invariance, metadata injection, tampering, exact key membership, and the limitation that a digest can be recomputed by a writer. Runtime key isolation, independently witnessed handoff, calibration applicability review and protocol approval remain outstanding. The documented procedure is **not** evidence of a completed operational handoff.
+The synthetic smoke scorer is not the frozen scientific method. Check 1/2/5 adapters and unmocked synthetic production-scored parity tests are implemented and passed CI on commit 0cd4ce71. Synthetic custody regressions now test label invariance, metadata injection, tampering, exact key membership, and the limitation that a digest can be recomputed by a writer. Synthetic Linux OS-identity isolation passed in GitHub Actions on commit 4fe14edd (Gate 0 run 40884596568); real operational identity isolation, independently witnessed handoff, calibration applicability review and protocol approval remain outstanding. The documented procedure is **not** evidence of a completed operational handoff.
 
-## Required operational access-isolation gate (NOT YET EXECUTED)
+## Required real operational access-isolation gate (NOT YET EXECUTED)
 
 The existing separate-process test uses the same OS identity. It is not proof of key inaccessibility. Before a real sealed-key handoff:
 
@@ -34,4 +34,6 @@ The existing separate-process test uses the same OS identity. It is not proof of
 4. Independently store the input and prediction digests, scorer commit, configuration digest and timestamp in a write-protected or externally witnessed record **before** any key access. A self-consistent digest inside an editable prediction JSON is not authentication.
 5. Have an independent reviewer witness the synthetic test and attest to separation and commitment order. Abort on any access or digest discrepancy.
 
-**Current result:** automated regressions verify logical/data boundaries only. Operational credential isolation and witnessed handoff are pending; no claim of complete blindness or readiness for confirmatory evaluation is made.
+**Current result:** synthetic Linux OS credential isolation passed (commit 4fe14edd; Gate 0 run 40884596568), along with logical/data boundary regressions. This is an automated development test, not a custodian-supervised test of the future production identities. Real operational credential isolation, protected external commitment and independent witnessed handoff remain pending. No claim of complete blindness or readiness for confirmatory evaluation is made.
+
+See `INDEPENDENT_CUSTODY_REVIEW_PACKET.md` for the reviewer checklist and evidence requirements. No real answer key is needed for the synthetic review.
