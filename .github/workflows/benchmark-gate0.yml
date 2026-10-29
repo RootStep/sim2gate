@@ -57,5 +57,7 @@ jobs:
         run: python -m unittest discover -s benchmark/v0.1/tests -p test_process_custody_canary.py -v
       - name: Exercise synthetic custody boundary regressions
         run: python -m unittest discover -s benchmark/v0.1/tests -p test_custody_boundary_regressions.py -v
-      - name: Exercise synthetic Linux OS credential isolation\n        run: sudo python -m unittest discover -s benchmark/v0.1/tests -p test_os_custody_isolation.py -v\n      - name: Mark scope of checks
+      - name: Exercise synthetic Linux OS credential isolation
+        run: sudo python -m unittest discover -s benchmark/v0.1/tests -p test_os_custody_isolation.py -v
+      - name: Mark scope of checks
         run: echo "Static checks only. Not an end-to-end leakage certification, custodian approval, or benchmark freeze."
