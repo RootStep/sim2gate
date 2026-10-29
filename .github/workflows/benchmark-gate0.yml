@@ -20,6 +20,7 @@ on:
       - "benchmark/v0.1/tests/test_check15_sanitized_adapter.py"
       - "benchmark/v0.1/tests/test_real_production_parity.py"
       - "benchmark/v0.1/tests/test_process_custody_canary.py"
+      - "benchmark/v0.1/tests/test_custody_boundary_regressions.py"
       - ".github/workflows/benchmark-gate0.yml"
   pull_request:
     paths:
@@ -53,5 +54,7 @@ jobs:
         run: PYTHONPATH=src python -m unittest discover -s benchmark/v0.1/tests -p test_real_production_parity.py -v
       - name: Exercise separate-process synthetic custody canary
         run: python -m unittest discover -s benchmark/v0.1/tests -p test_process_custody_canary.py -v
+      - name: Exercise synthetic custody boundary regressions
+        run: python -m unittest discover -s benchmark/v0.1/tests -p test_custody_boundary_regressions.py -v
       - name: Mark scope of checks
         run: echo "Static checks only. Not an end-to-end leakage certification, custodian approval, or benchmark freeze."
