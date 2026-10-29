@@ -11,7 +11,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from blinded_scorer_smoke import score_public_features
-from custodian_verify import synthetic_unseal, verify_prediction_commitment, verify_against_protected_digest
+from custodian_verify import synthetic_unseal, verify_prediction_commitment, verify_against_protected_digest, synthetic_unseal_with_protected_commitment
 
 
 def run():
@@ -84,6 +84,25 @@ class CustodyBoundaryRegressions(unittest.TestCase):
             with self.subTest(injected=injected):
                 with self.assertRaises(ValueError):
                     score_public_features(json.dumps(payload))
+
+    def test_protected_commitment_required_before_synthetic_unseal(self):
+        import hashlib
+        original = run()
+        labels = {"opaque01": True, "opaque02": False}
+        protected = original["prediction_sha256"]
+        self.assertEqual(synthetic_unseal_with_protected_commitment(
+            original, labels, protected)["total"], 2)
+        tampered = copy.deepcopy(original)
+        tampered["predictions"]["predictions"][0]["detect_score"] += 2
+        tampered["prediction_sha256"] = hashlib.sha256(json.dumps(
+            tampered["predictions"], sort_keys=True, separators=(",", ":"),
+            allow_nan=False).encode()).hexdigest()
+        with self.assertRaisesRegex(ValueError, "protected pre-unseal"):
+            synthetic_unseal_with_protected_commitment(tampered, labels, protected)
+        with self.assertRaises(ValueError):
+            synthetic_unseal_with_protected_commitment(original, labels, "0" * 64)
+        with self.assertRaisesRegex(ValueError, "key IDs"):
+            synthetic_unseal_with_protected_commitment(original, {"opaque01": True}, protected)
 
     def test_protected_external_digest_rejects_recomputed_local_digest(self):
         import hashlib
