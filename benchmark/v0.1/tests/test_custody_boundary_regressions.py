@@ -11,7 +11,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from blinded_scorer_smoke import score_public_features
-from custodian_verify import synthetic_unseal, verify_prediction_commitment
+from custodian_verify import synthetic_unseal, verify_prediction_commitment, verify_against_protected_digest
 
 
 def run():
@@ -84,6 +84,23 @@ class CustodyBoundaryRegressions(unittest.TestCase):
             with self.subTest(injected=injected):
                 with self.assertRaises(ValueError):
                     score_public_features(json.dumps(payload))
+
+    def test_protected_external_digest_rejects_recomputed_local_digest(self):
+        import hashlib
+        original = run()
+        protected = original["prediction_sha256"]
+        self.assertEqual(verify_against_protected_digest(original, protected), protected)
+        modified = copy.deepcopy(original)
+        modified["predictions"]["predictions"][0]["detect_score"] += 1.0
+        modified["prediction_sha256"] = hashlib.sha256(json.dumps(
+            modified["predictions"], sort_keys=True, separators=(",", ":"),
+            allow_nan=False).encode()).hexdigest()
+        self.assertEqual(verify_prediction_commitment(modified), modified["prediction_sha256"])
+        with self.assertRaisesRegex(ValueError, "protected pre-unseal"):
+            verify_against_protected_digest(modified, protected)
+        for bad in ("", "x" * 64, 123, None):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                verify_against_protected_digest(original, bad)
 
     def test_digest_is_not_authentication(self):
         # A malicious actor with write access can replace both the predictions
