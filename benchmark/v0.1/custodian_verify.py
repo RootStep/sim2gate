@@ -44,7 +44,7 @@ def verify_prediction_commitment(result):
     return digest
 
 
-def synthetic_unseal(result, sealed_labels):
+def _synthetic_unseal_after_verification(result, sealed_labels):
     """Evaluate only after commitment check; never import from scorer."""
     verify_prediction_commitment(result)
     predictions = result["predictions"]["predictions"]
@@ -84,4 +84,12 @@ def synthetic_unseal_with_protected_commitment(result, sealed_labels, protected_
     storage, not from the scorer output. This cannot attest storage provenance.
     """
     verify_against_protected_digest(result, protected_digest)
-    return synthetic_unseal(result, sealed_labels)
+    return _synthetic_unseal_after_verification(result, sealed_labels)
+
+
+def synthetic_unseal(*args, **kwargs):
+    """Legacy entry point disabled: fail closed rather than bypass protected digest."""
+    raise RuntimeError(
+        "legacy synthetic_unseal is disabled; use "
+        "synthetic_unseal_with_protected_commitment with a custodian-protected digest"
+    )
