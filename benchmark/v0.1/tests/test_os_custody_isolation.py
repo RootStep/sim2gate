@@ -17,7 +17,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from custodian_verify import synthetic_unseal, verify_prediction_commitment, verify_against_protected_digest
+from custodian_verify import synthetic_unseal_with_protected_commitment, verify_prediction_commitment, verify_against_protected_digest
 
 
 @unittest.skipUnless(sys.platform.startswith("linux") and os.geteuid() == 0,
@@ -120,8 +120,8 @@ class SyntheticOsIsolation(unittest.TestCase):
                 verify_against_protected_digest(modified, commitment.read_text())
             self.assertEqual(verify_prediction_commitment(result),
                              result["prediction_sha256"])
-            self.assertEqual(synthetic_unseal(
-                result, json.loads(key.read_text()))["total"], 2)
+            self.assertEqual(synthetic_unseal_with_protected_commitment(
+                result, json.loads(key.read_text()), commitment.read_text())["total"], 2)
             self.assertNotIn("synthetic_answer_key", json.dumps(result))
             self.assertNotIn("custodian_private", json.dumps(result))
 
