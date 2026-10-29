@@ -11,7 +11,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from blinded_scorer_smoke import score_public_features
-from custodian_verify import synthetic_unseal, verify_prediction_commitment, verify_against_protected_digest, synthetic_unseal_with_protected_commitment
+from custodian_verify import synthetic_unseal_with_protected_commitment, verify_prediction_commitment, verify_against_protected_digest
 
 
 def run():
@@ -34,7 +34,7 @@ class CustodyBoundaryRegressions(unittest.TestCase):
             {"opaque01": True, "opaque02": True},
         ):
             with self.subTest(labels=labels):
-                self.assertEqual(synthetic_unseal(result, labels)["total"], 2)
+                self.assertEqual(synthetic_unseal_with_protected_commitment(result, labels, result['prediction_sha256'])["total"], 2)
                 self.assertEqual(json.dumps(result, sort_keys=True), original)
 
     def test_tamper_predictions_digest_and_ids(self):
@@ -58,7 +58,7 @@ class CustodyBoundaryRegressions(unittest.TestCase):
         for mutation in mutations:
             with self.subTest(mutation=mutation):
                 with self.assertRaises(ValueError):
-                    synthetic_unseal(mutation, {"opaque01": True, "opaque02": False})
+                    synthetic_unseal_with_protected_commitment(mutation, {"opaque01": True, "opaque02": False}, run()['prediction_sha256'])
 
     def test_extra_missing_and_nonboolean_key_rejected(self):
         result = run()
@@ -70,7 +70,7 @@ class CustodyBoundaryRegressions(unittest.TestCase):
         ):
             with self.subTest(key=key):
                 with self.assertRaises(ValueError):
-                    synthetic_unseal(result, key)
+                    synthetic_unseal_with_protected_commitment(result, key, result['prediction_sha256'])
 
     def test_input_metadata_injection_rejected(self):
         for injected in (
@@ -85,7 +85,7 @@ class CustodyBoundaryRegressions(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     score_public_features(json.dumps(payload))
 
-    def test_protected_commitment_required_before_synthetic_unseal(self):
+    def test_protected_commitment_required_before_synthetic_unseal_with_protected_commitment(self):
         import hashlib
         original = run()
         labels = {"opaque01": True, "opaque02": False}
