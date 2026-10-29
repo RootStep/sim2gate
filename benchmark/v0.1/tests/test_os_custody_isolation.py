@@ -52,7 +52,13 @@ class SyntheticOsIsolation(unittest.TestCase):
             public.chmod(0o777)  # temporary synthetic scorer output location
             # A child script attempts the private path *explicitly* and
             # executes the scorer only after access is denied.
-            # Copy only allowlisted scorer modules into the accessible sandbox.\n            # The runner checkout is intentionally inaccessible to the nobody account.\n            for filename in ("blinded_scorer_smoke.py", "public_feature_boundary.py",\n                             "commit_public_inputs.py"):\n                shutil.copyfile(ROOT / filename, public / filename)\n                (public / filename).chmod(0o644)\n            child = public / "scorer_child.py"
+            # Copy only allowlisted scorer modules into the accessible sandbox. 
+            # The runner checkout is intentionally inaccessible to the nobody account. 
+            for filename in ("blinded_scorer_smoke.py", "public_feature_boundary.py", 
+                             "commit_public_inputs.py"): 
+                shutil.copyfile(ROOT / filename, public / filename) 
+                (public / filename).chmod(0o644) 
+            child = public / "scorer_child.py"
             child.write_text(
                 "import pathlib, runpy, sys\n"
                 "private = pathlib.Path(sys.argv[1])\n"
