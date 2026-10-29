@@ -9,7 +9,7 @@
 2. The scorer operator receives only allowlisted, synthetic public features. Any production Check 2 reports must first pass the evaluation-side sanitized adapter. The operator cannot receive report paths, checkpoint hashes, intervention recipes, seeds or key paths.
 3. Run the scorer in a separate process with a restricted working directory and credentials. Verify its environment cannot read the key; separate Python modules alone are not access isolation.
 4. Commit the input SHA-256, prediction SHA-256, scorer source commit, configuration digest, UTC timestamp and operator before unsealing. The current development-only code commits input and predictions but does not yet implement signed timestamp or configuration attestation.
-5. Custodian verifies the commitment and exact opaque-ID membership before releasing the synthetic truth. Any mismatch aborts evaluation.
+5. Custodian retrieves the pre-unseal digest from an independently protected record and calls `synthetic_unseal_with_protected_commitment(result, sealed_labels, protected_digest)`. This first checks the independently supplied digest, then validates exact opaque-ID membership. A digest copied from the scorer output is not an independent commitment. Any mismatch aborts evaluation. Any mismatch aborts evaluation.
 6. Log who accessed the key, when, why, commitment IDs, deviations and whether a key was unsealed. Keep the key in parent-controlled private storage.
 7. For confirmatory use, an independent reviewer verifies the sealed-key generation and custody procedure, not merely the parent role.
 
@@ -22,7 +22,7 @@
 - No scorer threshold, calibration or method revision occurs after held-out key exposure.
 
 ## Limitations
-The synthetic smoke scorer is not the frozen scientific method. Check 1/2/5 adapters and unmocked synthetic production-scored parity tests are implemented and passed CI on commit 0cd4ce71. Synthetic custody regressions now test label invariance, metadata injection, tampering, exact key membership, and the limitation that a digest can be recomputed by a writer. Synthetic Linux OS-identity isolation passed in GitHub Actions on commit 4fe14edd (Gate 0 run 40884596568); real operational identity isolation, independently witnessed handoff, calibration applicability review and protocol approval remain outstanding. The documented procedure is **not** evidence of a completed operational handoff.
+The synthetic smoke scorer is not the frozen scientific method. Check 1/2/5 adapters and unmocked synthetic production-scored parity tests are implemented and passed CI on commit 0cd4ce71. Synthetic custody regressions now test label invariance, metadata injection, tampering, exact key membership, and the limitation that a digest can be recomputed by a writer. Synthetic Linux OS-identity isolation passed in GitHub Actions on commit 4fe14edd (Gate 0 run 40884596568); later synthetic protected-digest access-denial and rehash-tamper tests passed at commit f6c09a80 (Gate 0 run 40944702211); real operational identity isolation, independently witnessed handoff, calibration applicability review and protocol approval remain outstanding. The documented procedure is **not** evidence of a completed operational handoff.
 
 ## Required real operational access-isolation gate (NOT YET EXECUTED)
 
