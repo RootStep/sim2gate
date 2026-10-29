@@ -15,7 +15,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from custodian_verify import synthetic_unseal, verify_prediction_commitment
+from custodian_verify import synthetic_unseal_with_protected_commitment, verify_prediction_commitment
 
 
 class ProcessSeparatedCanary(unittest.TestCase):
@@ -48,7 +48,7 @@ class ProcessSeparatedCanary(unittest.TestCase):
             output = json.loads(first_predictions)
             verify_prediction_commitment(output)
             key = json.loads(key_path.read_text())
-            self.assertEqual(synthetic_unseal(output, key)["total"], 2)
+            self.assertEqual(synthetic_unseal_with_protected_commitment(output, key, output['prediction_sha256'])["total"], 2)
             key_path.write_text(json.dumps({"opaque01": False, "opaque02": True}))
             second = subprocess.run(cmd, input=json.dumps(public_data), text=True,
                                     capture_output=True, cwd=public, env=env, check=True)
