@@ -11,7 +11,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from blinded_scorer_smoke import score_public_features
-from custodian_verify import synthetic_unseal_with_protected_commitment, verify_prediction_commitment, verify_against_protected_digest
+from custodian_verify import synthetic_unseal_with_protected_commitment, verify_prediction_commitment, verify_against_protected_digest, synthetic_unseal
 
 
 def run():
@@ -25,6 +25,10 @@ def run():
 
 
 class CustodyBoundaryRegressions(unittest.TestCase):
+    def test_legacy_unseal_fails_closed(self):
+        with self.assertRaisesRegex(RuntimeError, "legacy synthetic_unseal is disabled"):
+            synthetic_unseal(run(), {"opaque01": True, "opaque02": False})
+
     def test_prediction_invariant_under_sealed_truth_changes(self):
         result = run()
         original = json.dumps(result, sort_keys=True)
