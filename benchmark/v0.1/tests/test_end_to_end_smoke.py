@@ -6,7 +6,7 @@ import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from blinded_scorer_smoke import score_public_features
-from custodian_verify import synthetic_unseal, verify_prediction_commitment
+from custodian_verify import synthetic_unseal_with_protected_commitment, verify_prediction_commitment
 
 
 def payload(records):
@@ -23,7 +23,7 @@ class EndToEndDryRun(unittest.TestCase):
                        rec("opaque02", {})])
         result = score_public_features(raw)
         self.assertEqual(verify_prediction_commitment(result), result["prediction_sha256"])
-        report = synthetic_unseal(result, {"opaque01": True, "opaque02": False})
+        report = synthetic_unseal_with_protected_commitment(result, {"opaque01": True, "opaque02": False}, result["prediction_sha256"])
         self.assertEqual((report["scored"], report["missing"]), (1, 1))
         self.assertNotIn("True", json.dumps(result))
         self.assertNotIn("False", json.dumps(result))
@@ -41,12 +41,12 @@ class EndToEndDryRun(unittest.TestCase):
         result = score_public_features(payload([rec("opaque01", {"fall_fraction": 0.3})]))
         result["predictions"]["predictions"][0]["detect_score"] = 0.99
         with self.assertRaises(ValueError):
-            synthetic_unseal(result, {"opaque01": True})
+            synthetic_unseal_with_protected_commitment(result, {"opaque01": True}, result["prediction_sha256"])
 
     def test_incorrect_key_membership_rejected(self):
         result = score_public_features(payload([rec("opaque01", {"fall_fraction": 0.3})]))
         with self.assertRaises(ValueError):
-            synthetic_unseal(result, {"other": True})
+            synthetic_unseal_with_protected_commitment(result, {"other": True}, result["prediction_sha256"])
 
     def test_missing_measurements_are_not_zero_evidence(self):
         result = score_public_features(payload([rec("opaque01", {})]))
