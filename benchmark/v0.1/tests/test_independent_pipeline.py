@@ -695,9 +695,9 @@ class ManifestTests(unittest.TestCase):
         self.assertAlmostEqual(tot["gpu_hours"], sum(s["gpu_hour_cap"] for s in st.values()))
         self.assertAlmostEqual(tot["cost_usd"], tot["gpu_hours"] * rate)
         self.assertEqual(tot["runs"], 1 + len(everything))
-        per_run_h = MANIFEST["cost_model"]["per_run_minutes_assumed"] / 60
+        per_run_h = MANIFEST["cost_model"]["per_run_minutes_assumed"] / 60      # measured in S0
         for sid in ("S1", "S2"):
-            self.assertGreaterEqual(st[sid]["gpu_hour_cap"], len(st[sid]["runs"]) * per_run_h)
+            self.assertGreaterEqual(st[sid]["gpu_hour_cap"], 1.5 * len(st[sid]["runs"]) * per_run_h)  # >= 50% margin
 
     def test_power_table_reproduces(self):
         """Spot-check the manifest's power numbers with an exact computation (control rate 0, +0.15)."""
