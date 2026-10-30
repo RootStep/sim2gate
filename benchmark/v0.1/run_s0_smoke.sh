@@ -7,7 +7,7 @@
 # v2_runs/phase2_tier_r_smoke/s0_evidence.txt. It runs nothing else: no other policy, cell or stage.
 set -euo pipefail
 
-COMMIT=7881a3e330c117a82833e23b07fb1a7c9a0c208a
+COMMIT=2eb1b033deb9a46302e471d9eee87c6db7aea8ae
 HOST_ROOT=/home/ubuntu/IsaacLab-Arena            # = /workspaces/isaaclab_arena in the container
 CONTAINER=isaac-arena-vscode
 TOOLS=v2_runs/phase2_eval_tools
@@ -17,6 +17,15 @@ OUT=$SMOKE/p0v5b_s101__N080.jsonl.gz
 cd "$HOST_ROOT"
 if [ -e "$OUT" ]; then echo "STOP: $OUT already exists; runs are written once"; exit 1; fi
 mkdir -p "$TOOLS/configs" "$SMOKE"
+# keep an earlier aborted attempt's evidence instead of overwriting it
+if ls "$SMOKE"/s0_evidence.txt "$SMOKE"/s0_run.log "$OUT".diagnostic.json >/dev/null 2>&1; then
+  PREV="$SMOKE/attempt_$(date -u +%Y%m%dT%H%M%SZ)_previous"
+  mkdir -p "$PREV"
+  for f in s0_evidence.txt s0_run.log p0v5b_s101__N080.jsonl.gz.diagnostic.json; do
+    [ -e "$SMOKE/$f" ] && mv "$SMOKE/$f" "$PREV/"
+  done
+  echo "== earlier attempt's files moved to $PREV"
+fi
 
 echo "== fetch tools at $COMMIT"
 BASE=https://raw.githubusercontent.com/RootStep/sim2gate/$COMMIT/benchmark/v0.1
@@ -25,10 +34,10 @@ for f in independent_collector.py independent_truth.py independent_analysis.py G
   curl -fsSL "$BASE/$f" -o "$TOOLS/$f"
 done
 ( cd "$TOOLS" && sha256sum -c - ) <<'SUMS'
-cb6671841a3ece66717630a99fea494a50161a4e648e030ac4b8a61a91e6aa8c  independent_collector.py
+95aed16b0f83be4007a6ce27c3fea441b4e925fcf7ecb05570844bf9acb6c12a  independent_collector.py
 19f7e3d222151e4fb4c7ec061acc655d2ae47c394873a3bd60667363e626d0a8  independent_truth.py
 cc765b8695f300cf40ff6a2bd0b3996d57b563c554cdbaacb78df777ea12231d  independent_analysis.py
-decd3c6102db9ff55dcdb2772d320ef4074e38f4d38dbb7109f7f7c0d1e2d7b8  G2_TIER_R_MANIFEST.json
+dd8dc8fadd4266cb2d3737d0c0f0d3b00076fd525390371a5887ca1355755fe8  G2_TIER_R_MANIFEST.json
 3e0f2053d9ae6d644c392c14dc49012de8f5065373e7be88fa8e95765ec79440  configs/tier_r_commands_64.json
 SUMS
 
