@@ -267,7 +267,7 @@
    "attempts": [
     {
      "attempt": 1,
-     "utc": "2026-10-30T20:1xZ (evening of authorization; exact wall time in s0_evidence.txt on the host)",
+     "utc": "2026-10-30T20:10:24Z start (end 20:11:06Z, from s0_evidence.txt)",
      "tools_commit": "7881a3e330c117a82833e23b07fb1a7c9a0c208a",
      "result": "ABORTED at runtime verification; no run output written",
      "cause": "collector bug: the robot prim pattern is /World/envs/env_[^/]+/Robot in Isaac Lab 3; the env-0 path conversion handled only env_.*, so the contact-material evidence could not be read",
@@ -280,7 +280,9 @@
       "configured ground material 1.0/1.0, multiply (terrain and sim default)",
       "actor is a non-recurrent MLP (48-128-128-128-12)"
      ],
-     "fix": "resolve_env0_path(): match the Isaac Lab pattern as a regex against real prims under env_0; traverse instance proxies when collecting collision prims"
+     "fix": "resolve_env0_path(): match the Isaac Lab pattern as a regex against real prims under env_0; traverse instance proxies when collecting collision prims",
+     "collector_exit": 1,
+     "wall_seconds": 42
     },
     {
      "attempt": 2,
@@ -315,9 +317,17 @@
       ]
      },
      "reading": "Both problems come from one fact: no robot collision prim has a USD physics material, so all 27 fall back to the scene default material. The ground has its own bound material, so the robot and ground do not share one. The first problem is a reporting artifact: the check counted only bound shapes.",
-     "next": "Reviewer accepted the revised criterion (with the runtime-mode condition) and the probe as diagnostic only. Implemented before attempt 3."
+     "next": "Reviewer accepted the revised criterion (with the runtime-mode condition) and the probe as diagnostic only. Implemented before attempt 3.",
+     "utc": "2026-10-30T20:21:29Z start (end 20:21:57Z, from s0_evidence.txt)",
+     "collector_exit": 1,
+     "wall_seconds": 28
     }
-   ]
+   ],
+   "budget_used": {
+    "run_wall_seconds_total": 70,
+    "run_wall_hours_total": 0.0194,
+    "note": "Wall time of the collector process per attempt, as measured by the runbook. Under the manifest's literal cap unit (instance time from the first run's start to the last run's end) the stage window since 20:10:24Z already exceeds 0.5 h; the manager must choose how S0 budget is counted before attempt 3."
+   }
   },
   {
    "id": "S1",
