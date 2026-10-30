@@ -3,7 +3,7 @@
  "review_status": {
   "G1": "provisional",
   "G2": "provisionally accepted (revision 2, 2026-10-30)",
-  "S0": "attempt 4 met every S0 exit criterion by its own evidence (2026-10-30T21:13Z); closure pending independent re-check of the run file and reviewer confirmation",
+  "S0": "PASSED (attempt 4), independently verified 2026-10-30; awaiting reviewer confirmation to close",
   "S1": "not authorized",
   "S2": "not authorized",
   "open_runtime_uncertainties": [
@@ -351,7 +351,7 @@
      "attempt": 4,
      "purpose": "demonstrate exit code 0 with the exit fix; all S0 criteria re-checked",
      "authorization": "manager ran the attempt-4 runbook, 2026-10-30T21:12Z",
-     "result": "ALL S0 EXIT CRITERIA MET (per the run's own evidence); independent re-check of the file pending",
+     "result": "ALL S0 EXIT CRITERIA MET; independently re-checked off the instance (results/s0_independent_check_2026-10-30.json)",
      "tools_commit": "d7e88a6521173e0cbfdb2899783a534091faf7a7",
      "utc": "2026-10-30T21:12:30Z start, 21:13:39Z end",
      "collector_exit": 0,
@@ -398,7 +398,16 @@
     "manager_decision": "2026-10-30T20:56Z: the manager waived the S0 budget question ('dont worry about budget') and directed attempt 3. Recorded accounting: summed collector wall time per attempt (70 s so far), each attempt still bounded by the runbook's 25-minute timeout. Remaining under the 0.5 h cap on that basis: about 0.48 h."
    },
    "measured_per_run_seconds": 69,
-   "note_for_S1": "Measured 69 s per run (one Isaac Sim launch, 128 envs x 1000 steps). At that rate S1's 40 runs take about 46 min, against its 3.0 h cap; the cap is re-derived as an S1 approval item."
+   "note_for_S1": "Measured 69 s per run (one Isaac Sim launch, 128 envs x 1000 steps). At that rate S1's 40 runs take about 46 min, against its 3.0 h cap; the cap is re-derived as an S1 approval item.",
+   "independent_check": {
+    "archive": "phase2_tier_r_smoke.tgz, sha256 8bdfe408699773404f8b00cf9926faaf6c8a51d9af81e5debe1bc464b6ab04a3 (matches the custodian's checksum on the instance)",
+    "attempt3_file_sha256": "099427a2f25d33782de3683aba576a5b11cc19edbdd449e5b1bfe8c5d353e53b",
+    "attempt4_file_sha256": "1ef19ccacee9a01922b2e048ae8aacab6617924007614529d614882f9870ab2e",
+    "checks": "read_run against the manifest version each run used: no problems; 128 episodes, env ids 0-127, each exactly 1000 samples; command within 5e-6 (5-decimal rounding) of the command set; no identical consecutive samples; max base step 2.35 cm per 20 ms and max height step 1.5 cm (no teleport, so no reset state recorded); header sync and runtime checks ok",
+    "reproducibility": "attempt 3 and attempt 4 (different collector versions, same seed/policy/cell/commands) produced bit-identical trajectories for all 128 episodes",
+    "not_done": "no failure, fall or tracking outcome was computed: S0 output is never analysed"
+   },
+   "status_note": "S0 exit criteria met by attempt 4 and independently verified 2026-10-30; closure needs reviewer confirmation"
   },
   {
    "id": "S1",

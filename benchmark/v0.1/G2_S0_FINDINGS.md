@@ -1,6 +1,6 @@
 # G2 stage S0: findings from attempts 1 and 2 (2026-10-30)
 
-**Status:** S0 is not passed. Both attempts stopped at runtime verification before any step was recorded, and no run output was written. No scientific run has taken place. This note asks the reviewer to decide on one verification criterion before attempt 3.
+**Status (latest):** attempt 4 met every S0 exit criterion, and both completed runs were independently re-checked off the instance (see the end of this note). **Reviewer confirmation is requested to close S0.** The sections below record attempts 1 to 4 in order.
 
 ## Attempt 1: collector bug, fixed
 
@@ -147,3 +147,22 @@ The runbook's PASS/FAIL printer crashed on a variable-name bug of its own, after
 **Proposed status:** S0 is closable. Before asking the reviewer to close it, the attempt 3 and attempt 4 run files will be re-checked independently, off the instance.
 
 Measured cost: 69 s per run. S1 is not authorized; its cap is re-derived from this measurement as part of its approval.
+
+## Independent off-instance check of attempts 3 and 4
+
+The run files were copied off the instance in `phase2_tier_r_smoke.tgz`, whose SHA-256 (`8bdfe408…ab04a3`) matches the custodian's checksum taken on the instance. They were checked with [s0_independent_check.py](s0_independent_check.py). The result is in [results/s0_independent_check_2026-10-30.json](results/s0_independent_check_2026-10-30.json).
+
+| Check | Attempt 3 | Attempt 4 |
+|---|---|---|
+| `read_run`, against the manifest version the run used | no problems | no problems |
+| Episodes; env IDs; samples per episode | 128; 0–127; 1000 each | same |
+| Command vs the command set, recomputed from the data | within 5 × 10⁻⁶ (the 5-decimal rounding) | same |
+| Identical consecutive samples (stale reads) | 0 | 0 |
+| Largest base step per 20 ms; largest height step | 2.35 cm; 1.5 cm. No teleport, so no reset state is recorded | same |
+| Header step-synchronization and runtime checks | ok | ok |
+
+**Reproducibility.** The two runs used different collector versions; the changes were in the exit path and the header writer. The seed, policy, cell and commands were the same. All 128 trajectories are **bit-identical** across the two runs.
+
+The smallest net displacements over an episode are 0.14–0.22 m. Those robots were commanded to turn while walking, and each completes roughly one circle in 20 s, so a small net displacement is expected. The step continuity above is what rules out a reset.
+
+**Not done:** no failure, fall or tracking outcome was computed, because S0 output is never analysed.

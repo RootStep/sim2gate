@@ -1,0 +1,42 @@
+{
+ "attempt3": {
+  "file_sha256": "099427a2f25d33782de3683aba576a5b11cc19edbdd449e5b1bfe8c5d353e53b",
+  "read_run_problems": [],
+  "header_manifest_sha_matches": true,
+  "episodes": 128,
+  "episode_lengths": [
+   1000
+  ],
+  "env_ids": true,
+  "max_command_deviation_vs_command_set": 5.000000000032756e-06,
+  "max_base_xy_step_m": 0.02349766371365427,
+  "max_base_height_step_m": 0.015339999999999965,
+  "identical_consecutive_samples": 0,
+  "min_start_to_end_displacement_m": 0.14257126919544474,
+  "header_sync_ok": true,
+  "header_runtime_ok": true,
+  "header_tool_sha256": "92110869ae8c66d0099a8101b8478ab47b85ed050e50416799bad43c1d66e6d8"
+ },
+ "attempt4": {
+  "file_sha256": "1ef19ccacee9a01922b2e048ae8aacab6617924007614529d614882f9870ab2e",
+  "read_run_problems": [],
+  "header_manifest_sha_matches": true,
+  "episodes": 128,
+  "episode_lengths": [
+   1000
+  ],
+  "env_ids": true,
+  "max_command_deviation_vs_command_set": 5.000000000032756e-06,
+  "max_base_xy_step_m": 0.02349766371365427,
+  "max_base_height_step_m": 0.015339999999999965,
+  "identical_consecutive_samples": 0,
+  "min_start_to_end_displacement_m": 0.14257126919544474,
+  "header_sync_ok": true,
+  "header_runtime_ok": true,
+  "header_tool_sha256": "e10b20ccbeca92992f48c82dff13901662c7d689885e608caa57a33b0be8c20f"
+ },
+ "reproducibility": {
+  "identical_episodes_attempt3_vs_4": 128,
+  "max_abs_difference_if_any": 0.0
+ }
+}
