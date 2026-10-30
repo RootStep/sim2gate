@@ -44,10 +44,11 @@ The arms were kept after earlier pilots because they showed symptoms while keepi
 - All 14 study files are 983,989 bytes, taken from the archive listing and recorded in the verification file.
 - These records are both operator-run on 2026-10-30, using `verify_checkpoints.py` at `f63c55e`.
 
+**Transfer and load: done (CPU only).** Recorded in [phase2_eval_g0_load_check_2026-10-30.json](phase2_eval_g0_load_check_2026-10-30.json). On 2026-10-30 the 14 study checkpoints were copied to Brev and re-hashed against their register digests. All 19 then loaded inside the Arena container (`isaac-arena-vscode`) with `load_check_checkpoints.py` at `838bce0`. Every one passed: one shared network structure, training iteration 1999, 68 tensors, 80,281 parameters, all finite, loaded with `weights_only=True`. Selection is confirmed as each run's final `model_1999.pt`, as in Phase 2.
+
 **Still open before any new trajectory:**
-- copy the 14 study checkpoints to the evaluation machine, then re-hash them there;
-- load each checkpoint under the recorded environment (Isaac Lab 3.0.0, Isaac Lab-Arena `2cc9e97`, rsl-rl-lib 5.4.1, sim2gate `e502dae`) and record the result;
-- confirm checkpoint selection: the final `model_1999.pt` of each run, as in Phase 2.
+- runtime confirmation that the historical nominal, sweep and Newton reports share one `profile_record` (section 4);
+- a simulator smoke run: load each policy into the Isaac Lab runner in the common task and step it briefly. This uses the GPU and **requires explicit approval**.
 
 **Stop rule G0:** no new trajectory until every item above is recorded. Missing files are missing, not guessed. Partial recovery supports at most a labelled subset feasibility study, never a 19-policy result.
 
