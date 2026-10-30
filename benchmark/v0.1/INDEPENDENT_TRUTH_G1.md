@@ -46,7 +46,14 @@
 - **Φ-slip-mild was trained on low friction (0.3–0.6).** It may do as well as or better than controls on the low-friction cells. Its historical Check 2 slip was measured on that same low friction, so its "flaw" may not exist as a consequence at nominal or high friction either. Every friction cell is reported, so this stays visible.
 - **The independent slip magnitude** is a different formulation of the same physical quantity Check 2 measures. That reduces circularity but doesn't remove it, which is why it is secondary.
 
-## Not yet done (outside G1)
+## Follow-on pieces (written 2026-10-30, not yet run)
 
-- **The trajectory collector.** This is Isaac Lab code that runs every policy in the common P0 v5b task under manifest conditions and writes `independent-truth-episode-v1` records. It can be written now, but running it, even as a smoke test, uses the GPU and needs approval with G2.
-- **The G2 manifest** and the manager's approval.
+- [`independent_collector.py`](independent_collector.py) is the Isaac Lab trajectory collector. It reuses Sim2Gate's environment plumbing (`apply_profile`, command pinning, `install`) and no scoring code. It sets per-cell friction, removes every termination except the time limit, injects latency, and writes `independent-truth-episode-v1` records. It refuses to run unless the G2 manifest is `APPROVED`. Its Isaac-facing parts are untested until a GPU smoke run.
+- [`independent_analysis.py`](independent_analysis.py) labels each policy offline from the raw runs, using only `independent_truth.py`.
+- [`G2_TIER_R_MANIFEST.json`](G2_TIER_R_MANIFEST.json) and its summary [`G2_TIER_R_MANIFEST.md`](G2_TIER_R_MANIFEST.md) are a DRAFT awaiting decisions and approval.
+- [`tests/test_independent_pipeline.py`](tests/test_independent_pipeline.py) holds 12 tests:
+  - the episode log;
+  - the collector's refusal rules;
+  - collector and analysis independence;
+  - end-to-end analysis on synthetic runs: manifestation, cross-symptoms, missing runs, wrong manifest;
+  - manifest consistency with the byte-verified records.

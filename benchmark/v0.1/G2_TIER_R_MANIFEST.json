@@ -1,0 +1,216 @@
+{
+ "status": "DRAFT",
+ "purpose": "G2 execution manifest for the Phase 2 tier-R corrected retrospective evaluation (HISTORICAL_PHASE2_INDEPENDENT_EVAL_SPEC.md). Development only, post hoc.",
+ "approval": {
+  "approved_by": null,
+  "approved_utc": null,
+  "gpu_hour_cap": null,
+  "cost_cap_usd": null
+ },
+ "common_task": "Sim2Gate-Velocity-Flat-Go2-P0-v5b",
+ "play_args_fixed": [
+  "physics=isaacsim_physx",
+  "env.sim.use_newton_actuators=false",
+  "--external_callback",
+  "sim2gate.v2.tasks.register",
+  "--seed",
+  "20261031"
+ ],
+ "environment": {
+  "isaaclab_commit": "91a0906f93802eb859192dcb0bca879f891e92d6",
+  "arena_commit": "2cc9e9766f1f62a500b85c92207192d8c60fcce5",
+  "rsl_rl_lib": "5.4.1",
+  "container": "isaac-arena-vscode",
+  "machine": "sim2gate-arena-2 (L40S)"
+ },
+ "command_set": {
+  "path": "configs/tier_r_commands_64.json",
+  "sha256": "e56f394b4725673efc373c24ea723497c44bff2be511291f1951299bedb23e64"
+ },
+ "episodes_per_cell_repeat": 2,
+ "cells": [
+  {
+   "id": "N080",
+   "static_friction": 0.8,
+   "latency_steps": 0,
+   "latency_side": "none",
+   "role": "nominal reference"
+  },
+  {
+   "id": "F040",
+   "static_friction": 0.4,
+   "latency_steps": 0,
+   "latency_side": "none",
+   "role": "low friction (off Check 1 grid)"
+  },
+  {
+   "id": "F045",
+   "static_friction": 0.45,
+   "latency_steps": 0,
+   "latency_side": "none",
+   "role": "low friction (off Check 1 grid)"
+  },
+  {
+   "id": "F110",
+   "static_friction": 1.1,
+   "latency_steps": 0,
+   "latency_side": "none",
+   "role": "high friction"
+  },
+  {
+   "id": "L1",
+   "static_friction": 0.8,
+   "latency_steps": 1,
+   "latency_side": "observation",
+   "role": "observation latency 20 ms"
+  },
+  {
+   "id": "L2",
+   "static_friction": 0.8,
+   "latency_steps": 2,
+   "latency_side": "observation",
+   "role": "observation latency 40 ms"
+  },
+  {
+   "id": "L3",
+   "static_friction": 0.8,
+   "latency_steps": 3,
+   "latency_side": "observation",
+   "role": "secondary: 60 ms, outside the 0-30 ms plausible envelope; reported separately"
+  }
+ ],
+ "primary_cells": {
+  "R-slip": [
+   "F040",
+   "F045"
+  ],
+  "Phi-slip-mild": [
+   "F040",
+   "F045"
+  ],
+  "Phi-delay": [
+   "L1",
+   "L2"
+  ]
+ },
+ "truth_rules": {
+  "contact_force_n": 10.0,
+  "min_stance_steps": 3,
+  "stance_trim_steps": 1,
+  "fall_height_m": 0.2,
+  "fall_tilt_deg": 60.0,
+  "fall_persist_steps": 5,
+  "tracking_warmup_steps": 50,
+  "tracking_loss_mps": 0.25,
+  "alpha": 0.01,
+  "min_rate_difference": 0.1
+ },
+ "policies": {
+  "p0v5b_s101": {
+   "arm": "control",
+   "checkpoint_sha256": "14e03fab96f671e5b45c43ffefe947ea11754c6a07634d232c58b67745befe62",
+   "checkpoint": "logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_20-28-49/model_1999.pt"
+  },
+  "p0v5b_s102": {
+   "arm": "control",
+   "checkpoint_sha256": "dcd188cbf70d0c9c0a94cd1dd2165e714c977c9db67382563900f96358e0989b",
+   "checkpoint": "logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_21-25-39/model_1999.pt"
+  },
+  "p0v5b_s103": {
+   "arm": "control",
+   "checkpoint_sha256": "612ea5b6f092e44b338fa74d88b2d9c8befb3481e0202c9026295edc7d941343",
+   "checkpoint": "logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_22-18-59/model_1999.pt"
+  },
+  "p0v5b_s104": {
+   "arm": "control",
+   "checkpoint_sha256": "7c3061069ae3571e8b11c1719db4a578f24844e156745c66968a2c34d7ea2215",
+   "checkpoint": "logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_23-14-16/model_1999.pt"
+  },
+  "p0v5b_s105": {
+   "arm": "control",
+   "checkpoint_sha256": "4891931732af39e55fee00cd9ea7aa5c99b664969837b3fccadd4d19f579e46e",
+   "checkpoint": "logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_00-08-49/model_1999.pt"
+  },
+  "s301": {
+   "arm": "R-slip",
+   "checkpoint_sha256": "980169c651e5229203c8507c5780caf6f74cc3bf98e290150d99c1503ff542c8",
+   "checkpoint": "v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-25_23-40-15/model_1999.pt"
+  },
+  "s302": {
+   "arm": "R-slip",
+   "checkpoint_sha256": "d600d35b98f0af606812b7a53ba3681ec51992c7e870981a20fb7d9debb3cf9d",
+   "checkpoint": "v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_00-39-37/model_1999.pt"
+  },
+  "s303": {
+   "arm": "R-slip",
+   "checkpoint_sha256": "f49cf328ae2c215d2f96973ea6bdb14fa3a8482f8976bdc25194d2f2d42fb17a",
+   "checkpoint": "v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_01-34-00/model_1999.pt"
+  },
+  "s304": {
+   "arm": "R-slip",
+   "checkpoint_sha256": "f12069235bf244497b91145a7a5f3244d2318b0dbcdf139ab81df9a6941cfe42",
+   "checkpoint": "v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_02-29-56/model_1999.pt"
+  },
+  "s305": {
+   "arm": "R-slip",
+   "checkpoint_sha256": "242a2cf058270d5f8774ea0c78f01998d233584320250d82fe95978bcedd8a8a",
+   "checkpoint": "v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_03-24-40/model_1999.pt"
+  },
+  "s306": {
+   "arm": "Phi-slip-mild",
+   "checkpoint_sha256": "bff7d25ae730621e3389e3a24328fa32477d1d636bc6e692e88ee433cd43afe6",
+   "checkpoint": "v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_04-24-53/model_1999.pt"
+  },
+  "s307": {
+   "arm": "Phi-slip-mild",
+   "checkpoint_sha256": "05959e9161e3b52848ec422a0965360e34d2a4e3664559e22ef85a172ea72b55",
+   "checkpoint": "v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_05-18-10/model_1999.pt"
+  },
+  "s308": {
+   "arm": "Phi-slip-mild",
+   "checkpoint_sha256": "c66c79b9ab4c78f28c7a5b9999014ee1172d825af9abe87bcd0f4972cdc5712c",
+   "checkpoint": "v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_06-12-35/model_1999.pt"
+  },
+  "s309": {
+   "arm": "Phi-slip-mild",
+   "checkpoint_sha256": "0bb84992a1855a5fd9e54204eae72e76bd26f80bc326f5941124b4c2988627bd",
+   "checkpoint": "v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_07-06-43/model_1999.pt"
+  },
+  "s310": {
+   "arm": "Phi-slip-mild",
+   "checkpoint_sha256": "2343f1872f5e8a3bec944f5ffc07b5ba2b4b9412ec03291e2f27c162692b2657",
+   "checkpoint": "v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_08-02-46/model_1999.pt"
+  },
+  "s311": {
+   "arm": "Phi-delay",
+   "checkpoint_sha256": "0b5f64992656f0c1d8921fb2ca8f8587ecfdee24a09442aa569f4d5ddb7ec7ac",
+   "checkpoint": "v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_08-57-50/model_1999.pt"
+  },
+  "s312": {
+   "arm": "Phi-delay",
+   "checkpoint_sha256": "49508d134223c13fcd5fa02c3134c5f414569bc56e1c87dbc15cef381319b30b",
+   "checkpoint": "v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_09-54-34/model_1999.pt"
+  },
+  "s314": {
+   "arm": "Phi-delay",
+   "checkpoint_sha256": "bbaf8258dbce5e679a73b9479198563181e5fb62c781f2b7999ce0bea96c0b12",
+   "checkpoint": "v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_12-12-57/model_1999.pt"
+  },
+  "s315": {
+   "arm": "Phi-delay",
+   "checkpoint_sha256": "9cb30174033a157904bb74501cb8b58d900bba98d18b70c01ebc3e71c1b92b88",
+   "checkpoint": "v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_13-09-26/model_1999.pt"
+  }
+ },
+ "decisions_open": [
+  "latency mechanism: observation-side control-step latency (option a) amends spec section 5 'values not on Check 1's frozen grid' to 'a different delay mechanism'",
+  "truth_rules values (all currently the G1 proposals)",
+  "episodes_per_cell_repeat (2 -> 128 episodes per cell; 640 pooled control episodes per cell)",
+  "GPU-hour and cost caps; estimated 133 runs at about 2-3 min each, about 5-7 GPU-hours"
+ ],
+ "stop_rules": [
+  "any run whose header has checkpoint_matches_manifest != true is invalid and re-run, not analysed",
+  "a crashed run is retried once from scratch; a second failure is reported as missing",
+  "no change to cells, rules, commands or policies after the first run without a new manifest version"
+ ]
+}
