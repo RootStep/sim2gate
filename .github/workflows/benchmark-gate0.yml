@@ -64,6 +64,17 @@ jobs:
       - name: Exercise reviewer F1-F5 synthetic custody regressions
         run: python -m unittest discover -s benchmark/v0.1/tests -p test_review_f1_f5_synthetic.py -v
       - name: Exercise synthetic Linux OS credential isolation
-        run: sudo python -m unittest discover -s benchmark/v0.1/tests -p test_os_custody_isolation.py -v
+        run: |
+          sudo python -c 'import os,sys; assert sys.platform.startswith("linux") and os.geteuid()==0'
+          set -o pipefail
+          sudo python -m unittest discover -s benchmark/v0.1/tests -p test_os_custody_isolation.py -v 2>&1 | tee os-custody-test.log
+          if grep -Eq 'skipped=|Ran 0 tests' os-custody-test.log; then exit 1; fi
+      - name: Retain OS custody test output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-os-custody-test-log
+          path: os-custody-test.log
+          if-no-files-found: warn
       - name: Mark scope of checks
         run: echo "Static checks only. Not an end-to-end leakage certification, custodian approval, or benchmark freeze."
