@@ -1,6 +1,6 @@
 # Gate G1 — independent behavioural-truth code (Phase 2 tier R)
 
-**Status: G1 CODE AND UNIT TESTS COMPLETE (CPU) — 2026-10-30.** Implements spec section 5 ([HISTORICAL_PHASE2_INDEPENDENT_EVAL_SPEC.md](HISTORICAL_PHASE2_INDEPENDENT_EVAL_SPEC.md)). It authorizes no trajectory, GPU run or rule freeze: every numeric value below is a **proposal for the G2 manifest**.
+**Status: G1 CODE AND UNIT TESTS COMPLETE (CPU) — 2026-10-30; reviewer status: provisional.** Implements spec section 5 ([HISTORICAL_PHASE2_INDEPENDENT_EVAL_SPEC.md](HISTORICAL_PHASE2_INDEPENDENT_EVAL_SPEC.md)). It authorizes no trajectory, GPU run or rule freeze: every numeric value below is a **proposal for the G2 manifest**.
 
 ## What exists
 
@@ -34,6 +34,7 @@
 
 1. **Latency values.** At 5 ms physics and 20 ms control steps, no delay inside 0–30 ms is off Check 1's grid except through Check 1's own mechanism. Options:
    - **(a)** Observation latency of 1 and 2 control steps (20 and 40 ms). Numerically these are grid points, but the mechanism and resolution differ. This needs the spec's "values not on Check 1's frozen grid" amended to "a different delay mechanism".
+   - **G2 revision 2 (2026-10-30):** after review, action/command delay of 1 and 2 control steps is primary for Φ-delay, and observation delay is a secondary generalization test only. See [G2_REVISION2_RESPONSE.md](G2_REVISION2_RESPONSE.md).
    - **(b)** 3 control steps (60 ms). Numerically off the grid, but outside the 0–30 ms plausible envelope.
 
    Proposal: (a) as primary, (b) reported separately.
@@ -48,7 +49,7 @@
 
 ## Follow-on pieces (written 2026-10-30, not yet run)
 
-- [`independent_collector.py`](independent_collector.py) is the Isaac Lab trajectory collector. It reuses Sim2Gate's environment plumbing (`apply_profile`, command pinning, `install`) and no scoring code. It sets per-cell friction, removes every termination except the time limit, injects latency, and writes `independent-truth-episode-v1` records. It refuses to run unless the G2 manifest is `APPROVED`. Its Isaac-facing parts are untested until a GPU smoke run.
+- [`independent_collector.py`](independent_collector.py) is the Isaac Lab trajectory collector. It reuses Sim2Gate's environment plumbing (`apply_profile`, command pinning, `install`) and no scoring code. It sets per-cell friction, removes every termination except the time limit, injects latency, and writes `independent-truth-episode-v1` records. It refuses to run unless the G2 manifest and the requested stage are `APPROVED`. Revision 2 adds runtime verification, pre-reset capture of terminal steps and explicit completion. Its Isaac-facing parts are untested until the S0 smoke run.
 - [`independent_analysis.py`](independent_analysis.py) labels each policy offline from the raw runs, using only `independent_truth.py`.
 - [`G2_TIER_R_MANIFEST.json`](G2_TIER_R_MANIFEST.json) and its summary [`G2_TIER_R_MANIFEST.md`](G2_TIER_R_MANIFEST.md) are a DRAFT awaiting decisions and approval.
 - [`tests/test_independent_pipeline.py`](tests/test_independent_pipeline.py) holds 12 tests:

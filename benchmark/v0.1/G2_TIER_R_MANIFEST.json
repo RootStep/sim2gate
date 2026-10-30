@@ -1,11 +1,12 @@
 {
  "status": "DRAFT",
+ "revision": 2,
+ "revision_note": "G2 revision 2 (2026-10-30) after reviewer decision: action delay primary, observation delay secondary, L3 dropped, staged execution with caps, run-validity rules. See G2_REVISION2_RESPONSE.md.",
  "purpose": "G2 execution manifest for the Phase 2 tier-R corrected retrospective evaluation (HISTORICAL_PHASE2_INDEPENDENT_EVAL_SPEC.md). Development only, post hoc.",
  "approval": {
   "approved_by": null,
   "approved_utc": null,
-  "gpu_hour_cap": null,
-  "cost_cap_usd": null
+  "note": "Manifest approval does not authorize any stage. Each stage in `stages` needs its own approval."
  },
  "common_task": "Sim2Gate-Velocity-Flat-Go2-P0-v5b",
  "play_args_fixed": [
@@ -25,7 +26,8 @@
  },
  "command_set": {
   "path": "configs/tier_r_commands_64.json",
-  "sha256": "e56f394b4725673efc373c24ea723497c44bff2be511291f1951299bedb23e64"
+  "sha256": "e56f394b4725673efc373c24ea723497c44bff2be511291f1951299bedb23e64",
+  "n_commands": 64
  },
  "episodes_per_cell_repeat": 2,
  "cells": [
@@ -41,42 +43,49 @@
    "static_friction": 0.4,
    "latency_steps": 0,
    "latency_side": "none",
-   "role": "low friction (off Check 1 grid)"
+   "role": "low friction (off Check 1 grid); primary for R-slip and Phi-slip-mild"
   },
   {
    "id": "F045",
    "static_friction": 0.45,
    "latency_steps": 0,
    "latency_side": "none",
-   "role": "low friction (off Check 1 grid)"
+   "role": "low friction (off Check 1 grid); primary for R-slip and Phi-slip-mild"
   },
   {
    "id": "F110",
    "static_friction": 1.1,
    "latency_steps": 0,
    "latency_side": "none",
-   "role": "high friction"
+   "role": "high friction (cross-symptom)"
   },
   {
-   "id": "L1",
+   "id": "A1",
+   "static_friction": 0.8,
+   "latency_steps": 1,
+   "latency_side": "action",
+   "role": "action/command delay 20 ms (policy action held one control step before the action term); primary for Phi-delay"
+  },
+  {
+   "id": "A2",
+   "static_friction": 0.8,
+   "latency_steps": 2,
+   "latency_side": "action",
+   "role": "action/command delay 40 ms; primary for Phi-delay"
+  },
+  {
+   "id": "O1",
    "static_friction": 0.8,
    "latency_steps": 1,
    "latency_side": "observation",
-   "role": "observation latency 20 ms"
+   "role": "secondary generalization: observation delay 20 ms; never decides truth"
   },
   {
-   "id": "L2",
+   "id": "O2",
    "static_friction": 0.8,
    "latency_steps": 2,
    "latency_side": "observation",
-   "role": "observation latency 40 ms"
-  },
-  {
-   "id": "L3",
-   "static_friction": 0.8,
-   "latency_steps": 3,
-   "latency_side": "observation",
-   "role": "secondary: 60 ms, outside the 0-30 ms plausible envelope; reported separately"
+   "role": "secondary generalization: observation delay 40 ms; never decides truth"
   }
  ],
  "primary_cells": {
@@ -89,10 +98,16 @@
    "F045"
   ],
   "Phi-delay": [
-   "L1",
-   "L2"
+   "A1",
+   "A2"
   ]
  },
+ "secondary_cells": [
+  "N080",
+  "F110",
+  "O1",
+  "O2"
+ ],
  "truth_rules": {
   "contact_force_n": 10.0,
   "min_stance_steps": 3,
@@ -105,6 +120,7 @@
   "alpha": 0.01,
   "min_rate_difference": 0.1
  },
+ "thresholds_status": "PROVISIONAL: truth_rules may be used for the S0 smoke test only. They must be confirmed (or changed in a new manifest revision) before S1 is approved; no change after S1 starts.",
  "policies": {
   "p0v5b_s101": {
    "arm": "control",
@@ -202,15 +218,746 @@
    "checkpoint": "v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_13-09-26/model_1999.pt"
   }
  },
+ "stages": [
+  {
+   "id": "S0",
+   "name": "GPU smoke test",
+   "status": "NOT_APPROVED",
+   "approved_by": null,
+   "approved_utc": null,
+   "runs": [
+    [
+     "p0v5b_s101",
+     "N080"
+    ]
+   ],
+   "output_dir": "v2_runs/phase2_tier_r_smoke",
+   "analysed": false,
+   "gpu_hour_cap": 0.5,
+   "cost_cap_usd": 1.75,
+   "purpose": "Verify in Isaac Lab: runtime checks pass and are recorded, terminal steps recorded, no early dones, all 128 episodes 1000 steps, footer and completion flag valid, action- and observation-delay buffers engage; measure wall time per run.",
+   "exit_criteria": [
+    "exit code 0 and header completed true",
+    "runtime_checks.ok true with active terminations ['time_out'] and friction readback 0.8/0.6",
+    "unexpected_early_dones 0; episode lengths min = max = 1000",
+    "independent_analysis read_run reports no problems",
+    "measured wall time per run recorded"
+   ],
+   "note": "Smoke output is kept but never analysed or pooled."
+  },
+  {
+   "id": "S1",
+   "name": "pilot: 5 policies x 8 cells",
+   "status": "NOT_APPROVED",
+   "approved_by": null,
+   "approved_utc": null,
+   "runs": [
+    [
+     "p0v5b_s101",
+     "N080"
+    ],
+    [
+     "p0v5b_s101",
+     "F040"
+    ],
+    [
+     "p0v5b_s101",
+     "F045"
+    ],
+    [
+     "p0v5b_s101",
+     "F110"
+    ],
+    [
+     "p0v5b_s101",
+     "A1"
+    ],
+    [
+     "p0v5b_s101",
+     "A2"
+    ],
+    [
+     "p0v5b_s101",
+     "O1"
+    ],
+    [
+     "p0v5b_s101",
+     "O2"
+    ],
+    [
+     "p0v5b_s102",
+     "N080"
+    ],
+    [
+     "p0v5b_s102",
+     "F040"
+    ],
+    [
+     "p0v5b_s102",
+     "F045"
+    ],
+    [
+     "p0v5b_s102",
+     "F110"
+    ],
+    [
+     "p0v5b_s102",
+     "A1"
+    ],
+    [
+     "p0v5b_s102",
+     "A2"
+    ],
+    [
+     "p0v5b_s102",
+     "O1"
+    ],
+    [
+     "p0v5b_s102",
+     "O2"
+    ],
+    [
+     "s301",
+     "N080"
+    ],
+    [
+     "s301",
+     "F040"
+    ],
+    [
+     "s301",
+     "F045"
+    ],
+    [
+     "s301",
+     "F110"
+    ],
+    [
+     "s301",
+     "A1"
+    ],
+    [
+     "s301",
+     "A2"
+    ],
+    [
+     "s301",
+     "O1"
+    ],
+    [
+     "s301",
+     "O2"
+    ],
+    [
+     "s306",
+     "N080"
+    ],
+    [
+     "s306",
+     "F040"
+    ],
+    [
+     "s306",
+     "F045"
+    ],
+    [
+     "s306",
+     "F110"
+    ],
+    [
+     "s306",
+     "A1"
+    ],
+    [
+     "s306",
+     "A2"
+    ],
+    [
+     "s306",
+     "O1"
+    ],
+    [
+     "s306",
+     "O2"
+    ],
+    [
+     "s311",
+     "N080"
+    ],
+    [
+     "s311",
+     "F040"
+    ],
+    [
+     "s311",
+     "F045"
+    ],
+    [
+     "s311",
+     "F110"
+    ],
+    [
+     "s311",
+     "A1"
+    ],
+    [
+     "s311",
+     "A2"
+    ],
+    [
+     "s311",
+     "O1"
+    ],
+    [
+     "s311",
+     "O2"
+    ]
+   ],
+   "output_dir": "v2_runs/phase2_tier_r",
+   "analysed": "only after S2 completes; S1 review is limited to run validity, timing and cost",
+   "gpu_hour_cap": 3.0,
+   "cost_cap_usd": 10.5,
+   "estimate": "40 runs x 3 min = 2.0 h, plus one retry allowance and setup",
+   "prerequisites": [
+    "S0 passed its exit criteria",
+    "truth_rules confirmed",
+    "cap re-derived from the S0 wall time"
+   ]
+  },
+  {
+   "id": "S2",
+   "name": "remaining 14 policies x 8 cells",
+   "status": "NOT_APPROVED",
+   "approved_by": null,
+   "approved_utc": null,
+   "runs": [
+    [
+     "p0v5b_s103",
+     "N080"
+    ],
+    [
+     "p0v5b_s103",
+     "F040"
+    ],
+    [
+     "p0v5b_s103",
+     "F045"
+    ],
+    [
+     "p0v5b_s103",
+     "F110"
+    ],
+    [
+     "p0v5b_s103",
+     "A1"
+    ],
+    [
+     "p0v5b_s103",
+     "A2"
+    ],
+    [
+     "p0v5b_s103",
+     "O1"
+    ],
+    [
+     "p0v5b_s103",
+     "O2"
+    ],
+    [
+     "p0v5b_s104",
+     "N080"
+    ],
+    [
+     "p0v5b_s104",
+     "F040"
+    ],
+    [
+     "p0v5b_s104",
+     "F045"
+    ],
+    [
+     "p0v5b_s104",
+     "F110"
+    ],
+    [
+     "p0v5b_s104",
+     "A1"
+    ],
+    [
+     "p0v5b_s104",
+     "A2"
+    ],
+    [
+     "p0v5b_s104",
+     "O1"
+    ],
+    [
+     "p0v5b_s104",
+     "O2"
+    ],
+    [
+     "p0v5b_s105",
+     "N080"
+    ],
+    [
+     "p0v5b_s105",
+     "F040"
+    ],
+    [
+     "p0v5b_s105",
+     "F045"
+    ],
+    [
+     "p0v5b_s105",
+     "F110"
+    ],
+    [
+     "p0v5b_s105",
+     "A1"
+    ],
+    [
+     "p0v5b_s105",
+     "A2"
+    ],
+    [
+     "p0v5b_s105",
+     "O1"
+    ],
+    [
+     "p0v5b_s105",
+     "O2"
+    ],
+    [
+     "s302",
+     "N080"
+    ],
+    [
+     "s302",
+     "F040"
+    ],
+    [
+     "s302",
+     "F045"
+    ],
+    [
+     "s302",
+     "F110"
+    ],
+    [
+     "s302",
+     "A1"
+    ],
+    [
+     "s302",
+     "A2"
+    ],
+    [
+     "s302",
+     "O1"
+    ],
+    [
+     "s302",
+     "O2"
+    ],
+    [
+     "s303",
+     "N080"
+    ],
+    [
+     "s303",
+     "F040"
+    ],
+    [
+     "s303",
+     "F045"
+    ],
+    [
+     "s303",
+     "F110"
+    ],
+    [
+     "s303",
+     "A1"
+    ],
+    [
+     "s303",
+     "A2"
+    ],
+    [
+     "s303",
+     "O1"
+    ],
+    [
+     "s303",
+     "O2"
+    ],
+    [
+     "s304",
+     "N080"
+    ],
+    [
+     "s304",
+     "F040"
+    ],
+    [
+     "s304",
+     "F045"
+    ],
+    [
+     "s304",
+     "F110"
+    ],
+    [
+     "s304",
+     "A1"
+    ],
+    [
+     "s304",
+     "A2"
+    ],
+    [
+     "s304",
+     "O1"
+    ],
+    [
+     "s304",
+     "O2"
+    ],
+    [
+     "s305",
+     "N080"
+    ],
+    [
+     "s305",
+     "F040"
+    ],
+    [
+     "s305",
+     "F045"
+    ],
+    [
+     "s305",
+     "F110"
+    ],
+    [
+     "s305",
+     "A1"
+    ],
+    [
+     "s305",
+     "A2"
+    ],
+    [
+     "s305",
+     "O1"
+    ],
+    [
+     "s305",
+     "O2"
+    ],
+    [
+     "s307",
+     "N080"
+    ],
+    [
+     "s307",
+     "F040"
+    ],
+    [
+     "s307",
+     "F045"
+    ],
+    [
+     "s307",
+     "F110"
+    ],
+    [
+     "s307",
+     "A1"
+    ],
+    [
+     "s307",
+     "A2"
+    ],
+    [
+     "s307",
+     "O1"
+    ],
+    [
+     "s307",
+     "O2"
+    ],
+    [
+     "s308",
+     "N080"
+    ],
+    [
+     "s308",
+     "F040"
+    ],
+    [
+     "s308",
+     "F045"
+    ],
+    [
+     "s308",
+     "F110"
+    ],
+    [
+     "s308",
+     "A1"
+    ],
+    [
+     "s308",
+     "A2"
+    ],
+    [
+     "s308",
+     "O1"
+    ],
+    [
+     "s308",
+     "O2"
+    ],
+    [
+     "s309",
+     "N080"
+    ],
+    [
+     "s309",
+     "F040"
+    ],
+    [
+     "s309",
+     "F045"
+    ],
+    [
+     "s309",
+     "F110"
+    ],
+    [
+     "s309",
+     "A1"
+    ],
+    [
+     "s309",
+     "A2"
+    ],
+    [
+     "s309",
+     "O1"
+    ],
+    [
+     "s309",
+     "O2"
+    ],
+    [
+     "s310",
+     "N080"
+    ],
+    [
+     "s310",
+     "F040"
+    ],
+    [
+     "s310",
+     "F045"
+    ],
+    [
+     "s310",
+     "F110"
+    ],
+    [
+     "s310",
+     "A1"
+    ],
+    [
+     "s310",
+     "A2"
+    ],
+    [
+     "s310",
+     "O1"
+    ],
+    [
+     "s310",
+     "O2"
+    ],
+    [
+     "s312",
+     "N080"
+    ],
+    [
+     "s312",
+     "F040"
+    ],
+    [
+     "s312",
+     "F045"
+    ],
+    [
+     "s312",
+     "F110"
+    ],
+    [
+     "s312",
+     "A1"
+    ],
+    [
+     "s312",
+     "A2"
+    ],
+    [
+     "s312",
+     "O1"
+    ],
+    [
+     "s312",
+     "O2"
+    ],
+    [
+     "s314",
+     "N080"
+    ],
+    [
+     "s314",
+     "F040"
+    ],
+    [
+     "s314",
+     "F045"
+    ],
+    [
+     "s314",
+     "F110"
+    ],
+    [
+     "s314",
+     "A1"
+    ],
+    [
+     "s314",
+     "A2"
+    ],
+    [
+     "s314",
+     "O1"
+    ],
+    [
+     "s314",
+     "O2"
+    ],
+    [
+     "s315",
+     "N080"
+    ],
+    [
+     "s315",
+     "F040"
+    ],
+    [
+     "s315",
+     "F045"
+    ],
+    [
+     "s315",
+     "F110"
+    ],
+    [
+     "s315",
+     "A1"
+    ],
+    [
+     "s315",
+     "A2"
+    ],
+    [
+     "s315",
+     "O1"
+    ],
+    [
+     "s315",
+     "O2"
+    ]
+   ],
+   "output_dir": "v2_runs/phase2_tier_r",
+   "analysed": true,
+   "gpu_hour_cap": 7.5,
+   "cost_cap_usd": 26.25,
+   "estimate": "112 runs x 3 min = 5.6 h, plus one retry allowance and setup",
+   "prerequisites": [
+    "S1 all runs valid (or failures explained)",
+    "cap re-derived from S1 wall times"
+   ]
+  }
+ ],
+ "cost_model": {
+  "instance": "Brev sim2gate-arena-2, AWS g6e.2xlarge (1x L40S)",
+  "rate_usd_per_hour_assumed": 3.5,
+  "rate_basis": "conservative planning rate; AWS on-demand list price for g6e.2xlarge in us-east-1 is about 2.24 USD/h. To be replaced by the Brev billed rate, confirmed by the custodian, before S0 approval.",
+  "unit": "instance wall-clock hours from the start of a stage's first run (including container setup) to the end of its last run",
+  "per_run_minutes_assumed": 3.0,
+  "per_run_basis": "one Isaac Sim launch plus 1000 control steps x 128 environments; Phase 2 measurement blocks (several launches per robot) took 4-10 min per robot (state.json). S0 measures it."
+ },
+ "total_caps": {
+  "runs": 153,
+  "gpu_hours": 11.0,
+  "cost_usd": 38.5,
+  "cost_usd_at_aws_list": 24.66
+ },
+ "power": {
+  "design": "128 policy episodes vs 640 pooled control episodes per cell; one-sided Fisher exact at alpha 0.01/2 = 0.005, plus a minimum rate difference of 0.10; exact computation",
+  "table": {
+   "control_rate_0.00": {
+    "+0.10": 0.52,
+    "+0.15": 0.96,
+    "+0.20": 1.0,
+    "+0.30": 1.0
+   },
+   "control_rate_0.02": {
+    "+0.10": 0.5,
+    "+0.15": 0.94,
+    "+0.20": 1.0,
+    "+0.30": 1.0
+   },
+   "control_rate_0.05": {
+    "+0.10": 0.5,
+    "+0.15": 0.92,
+    "+0.20": 1.0,
+    "+0.30": 1.0
+   },
+   "control_rate_0.10": {
+    "+0.10": 0.5,
+    "+0.15": 0.9,
+    "+0.20": 0.99,
+    "+0.30": 1.0
+   }
+  },
+  "table_n64_for_comparison": {
+   "control_rate_0.00": {
+    "+0.10": 0.46,
+    "+0.15": 0.86,
+    "+0.20": 0.98
+   },
+   "control_rate_0.10": {
+    "+0.10": 0.28,
+    "+0.15": 0.62,
+    "+0.20": 0.87
+   }
+  },
+  "reading": "128 episodes detect a true excess of 0.15 or more with power >= 0.90; an excess near the 0.10 floor is detected about half the time. A 'not manifested' label therefore means 'no excess >= ~0.15 detected', not 'no flaw'. Doubling to 256 episodes is the option if the reviewer wants >= 0.8 power at +0.10; it doubles S1 and S2 cost."
+ },
  "decisions_open": [
-  "latency mechanism: observation-side control-step latency (option a) amends spec section 5 'values not on Check 1's frozen grid' to 'a different delay mechanism'",
-  "truth_rules values (all currently the G1 proposals)",
-  "episodes_per_cell_repeat (2 -> 128 episodes per cell; 640 pooled control episodes per cell)",
-  "GPU-hour and cost caps; estimated 133 runs at about 2-3 min each, about 5-7 GPU-hours"
+  "Brev billed rate (replaces the 3.50 USD/h planning rate) and approval of S0",
+  "truth_rules values: provisional, smoke test only, until confirmed before S1",
+  "episodes per cell: 128 (power above) or 256"
  ],
  "stop_rules": [
-  "any run whose header has checkpoint_matches_manifest != true is invalid and re-run, not analysed",
-  "a crashed run is retried once from scratch; a second failure is reported as missing",
-  "no change to cells, rules, commands or policies after the first run without a new manifest version"
+  "a stage stops when its cumulative instance hours reach its gpu_hour_cap; no run starts that the remaining cap cannot cover at the measured per-run time",
+  "caps are never raised inside a stage; a higher cap is a new approval",
+  "a run is INVALID if independent_analysis.read_run reports any problem (incomplete, footer mismatch, other manifest/checkpoint/cell/task/command set, runtime verification missing or failed, early episode end, wrong episode length, schema failure); invalid runs are never analysed or pooled",
+  "an invalid or crashed run is retried once from scratch within the stage cap; a second failure is reported as invalid or missing",
+  "if any required primary run is missing or invalid the analysis status is INCOMPLETE and no truth labels are issued",
+  "no change to cells, rules, commands or policies after S1 starts without a new manifest revision"
  ]
 }
