@@ -282,9 +282,38 @@
     },
     {
      "attempt": 2,
-     "tools_commit": "see run_s0_smoke.sh",
-     "result": null,
-     "authorization": "pending manager re-authorization (S0 on_failure rule)"
+     "tools_commit": "2eb1b033deb9a46302e471d9eee87c6db7aea8ae",
+     "authorization": "manager ran the attempt-2 runbook on 2026-10-30 (~20:2x UTC)",
+     "result": "ABORTED at runtime verification (contact-material check); no run output written",
+     "evidence": {
+      "robot_prim": "/World/envs/env_0/Robot",
+      "robot_collision_prims": 27,
+      "robot_tensor_shapes_per_env": 27,
+      "robot_unbound_shapes": 27,
+      "robot_materials_usd": [],
+      "ground_collision_prims": 1,
+      "ground_unbound_collision_prims": 0,
+      "ground_materials": [
+       {
+        "path": "/World/ground/terrain/physicsMaterial",
+        "static": 1.0,
+        "dynamic": 1.0,
+        "mode": "multiply"
+       }
+      ],
+      "scene_default_material": {
+       "path": "/physicsScene/defaultMaterial",
+       "static": 1.0,
+       "dynamic": 1.0,
+       "mode": "multiply"
+      },
+      "problems": [
+       "no robot collision shapes found",
+       "27 robot collision shapes have no bound physics material (they would use the scene default material, possibly shared with the ground)"
+      ]
+     },
+     "reading": "Both problems come from one fact: no robot collision prim has a USD physics material, so all 27 fall back to the scene default material. The ground has its own bound material, so the robot and ground do not share one. The first problem is a reporting artifact: the check counted only bound shapes.",
+     "next": "Proposed change to the contact-material criterion and an added physical friction probe: see G2_S0_FINDINGS.md. Not adopted; it needs reviewer agreement and manager authorization of attempt 3."
     }
    ]
   },
