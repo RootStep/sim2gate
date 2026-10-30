@@ -114,7 +114,7 @@ One row per assigned policy, with an explicit `missing` row for s313:
 ## 9. Gates and stop rules
 
 1. **G0 — bytes and environment:** section 3.
-2. **G1 — evaluator independence:** the independent slip and delay code passes unit tests. Verify that it makes no calls to Sim2Gate scoring code and uses none of its thresholds.
+2. **G1 — evaluator independence:** the independent slip and delay code passes unit tests. Verify that it makes no calls to Sim2Gate scoring code and uses none of its thresholds. **Code and unit tests done 2026-10-30:** see [INDEPENDENT_TRUTH_G1.md](INDEPENDENT_TRUTH_G1.md). The trajectory collector and the parameter values are still open (G2).
 3. **G2 — prospective manifest:** commit a separate manifest before any run. It fixes the common task and conditions, delay values, friction distribution, command sequences, episode budgets, seeds, failure definitions, missing-data rules, hardware, and the GPU-hour and cost cap.
 4. **G3 — comparator lock:** the tier-H verdict table, the baseline thresholds and the reference set are committed before any tier-R trajectory. The tier-R Sim2Gate table is committed before truth labels are computed.
 5. **G4 — completeness:** preserve every attempted evaluation, crash and invalid report. Never replace a policy because of its outcome.
