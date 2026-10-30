@@ -72,3 +72,23 @@ Whether to also make it a pass/fail criterion is the reviewer's call. A toleranc
 3. After that, the manager authorizes S0 attempt 3. Attempts 1 and 2 each used a few minutes, which is within the 0.5 GPU-hour S0 cap.
 
 **Option not proposed: binding an explicit material to the robot in the collector.** That would change the evaluated physics relative to the Phase 2 runs, which used the same task and robot asset and so, presumably, the same unbound setup. That could only be done in a new manifest revision.
+
+## Reviewer decisions (2026-10-30) and implementation
+
+1. **Revised criterion: accepted, with a condition.** The robot's runtime combine mode must be verified where possible; where it can't be observed, the limitation is recorded.
+
+   Implemented in `contact_problems()`. The robot's combine mode is taken from the first source available:
+   - a runtime observation;
+   - the bound material's mode;
+   - every mode the stack can produce for an unbound shape (the scene default's mode, and `average`).
+
+   In the third case, the limitation is written into `runtime_checks.contact.limitations`, and the check fails if any material on the stage uses `max`.
+
+   The collector looks for a combine-mode query on the simulator's tensor view and records what it finds. A runtime query is used if one exists. The reporting artifact ("no robot collision shapes found") is fixed.
+2. **Friction probe: accepted as diagnostic evidence only.**
+   - The `FrictionProbe` class records contact samples, sliding samples, the median, the interquartile range, the thresholds and the stated limitations under `friction_probe` in the header.
+   - It never affects validity; the analysis does not read it, and a test checks this.
+   - Probe failures are recorded, never fatal.
+3. **Attempt 3 needs explicit manager authorization.** The revised check is committed first. All other S0 exit criteria are unchanged, including the 1000-step trajectory and terminal-sample checks.
+
+The robot's physics materials are not changed.

@@ -10,7 +10,8 @@
    "first-call reset vs policy, command buffers, episode counters and first recorded state",
    "correspondence between the reward-computation snapshot and the step's termination flags",
    "runtime friction measures the effective robot-ground contact, not only the robot's material"
-  ]
+  ],
+  "S0_criterion_revision": "reviewer decisions 1-3 of 2026-10-30 on G2_S0_FINDINGS.md: revised contact-material criterion accepted with the runtime-mode condition; friction probe diagnostic only; attempt 3 needs explicit manager authorization, with the revised check committed and the remaining S0 budget recorded first"
  },
  "revision": 2,
  "revision_note": "G2 revision 2 (2026-10-30) after reviewer decision: action delay primary, observation delay secondary, L3 dropped, staged execution with caps, run-validity rules. See G2_REVISION2_RESPONSE.md. Revision 2b adds step-synchronization and effective-friction evidence; play_args_fixed gains the PhysX joint/body ordering overrides used by the runtime-confirmed nominal runs. S0 authorized 2026-10-30.",
@@ -257,7 +258,8 @@
     "sync_checks.reset_episode_length_max = 0 (the collector's reset took effect before the first recorded step); terminal_steps = [1000]; reset_moved_robot = 128 (each reset happened after, and outside, the recorded terminal sample)",
     "episode lengths min = max = 1000; unexpected_early_dones = 0",
     "runtime_checks.ok true: active terminations ['time_out']; no removed event active; robot shape friction readback 0.8 / 0.6; motor lag 0, strength 1.0",
-    "runtime_checks.contact: every ground material and robot collision material listed with its combine mode; effective_static = [0.8], effective_dynamic = [0.6]; robot and ground share no material; no unbound robot collision shape",
+    "runtime_checks.contact (reviewer decision 1, 2026-10-30): ground has its own bound material, distinct from the scene default; robot and ground share no material; unbound robot collision shapes allowed; robot combine mode observed at runtime if possible, otherwise every mode the stack can produce for them is evaluated and the limitation recorded, and no stage material uses 'max'; effective_static = [0.8] and effective_dynamic = [0.6]",
+    "friction_probe recorded (sample counts, median, IQR, limitations): diagnostic only (reviewer decision 2), never a pass/fail criterion",
     "measured wall time per run recorded"
    ],
    "note": "Smoke output is kept but never analysed or pooled.",
@@ -313,7 +315,7 @@
       ]
      },
      "reading": "Both problems come from one fact: no robot collision prim has a USD physics material, so all 27 fall back to the scene default material. The ground has its own bound material, so the robot and ground do not share one. The first problem is a reporting artifact: the check counted only bound shapes.",
-     "next": "Proposed change to the contact-material criterion and an added physical friction probe: see G2_S0_FINDINGS.md. Not adopted; it needs reviewer agreement and manager authorization of attempt 3."
+     "next": "Reviewer accepted the revised criterion (with the runtime-mode condition) and the probe as diagnostic only. Implemented before attempt 3."
     }
    ]
   },

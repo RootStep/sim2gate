@@ -119,7 +119,8 @@ Stop rules:
 | Final sample is the terminal transition | `termination_flag_mismatch` = 0; `terminal_steps` = [1000]; `unexpected_early_dones` = 0 |
 | No reset state in the trajectory | `done_without_reset_after_capture` = 0; `state_changed_after_capture` = 0; `reset_moved_robot` = 128 |
 | Configuration | `runtime_checks.ok`: terminations `['time_out']`; no removed event active; motor lag 0, strength 1.0 |
-| Effective friction | `runtime_checks.contact`: every ground and robot physics material with its combine mode; `effective_static` = [0.8] and `effective_dynamic` = [0.6]; no shared or unbound material |
+| Effective friction | `runtime_checks.contact`: the ground has its own bound material; no shared material; unbound robot shapes allowed (reviewer decision 1); the robot's combine mode is observed at runtime if possible, otherwise each mode the stack can produce is evaluated and the limitation recorded, with no `max` material on the stage; `effective_static` = [0.8] and `effective_dynamic` = [0.6] |
+| Friction probe | `friction_probe`: sliding-contact \|F_t\| / F_n with sample counts, median, interquartile range and limitations. **Diagnostic only** (reviewer decision 2); a close match is not proof of the coefficient |
 | Cost | wall time per run recorded |
 
 If S0 fails, no scientific run takes place. The output (exit 3, sync failure) or `<out>.diagnostic.json` (runtime-check failure) is reviewed, the collector is revised, and S0 is re-authorized.

@@ -112,6 +112,8 @@ class PreResetCaptureTests(unittest.TestCase):
         col.finished = False
         col._finish = lambda env: setattr(col, "finished", True)
         col.sync = ic.SyncTrace([[0.5, 0.0, 0.0]] * n, max_steps)
+        col.probe, col._pending_probe = ic.FrictionProbe(), None
+        col._probe_snapshot = lambda env: ([[[3.0, 4.0, 50.0]] * 4] * n, [[[0.1, 0.0]] * 4] * n)
         col.sync.on_reset([0] * n)
         state = {"h": 0.32, "t": 0, "len": 0, "x": 0.0}
         env = types.SimpleNamespace(reward_manager=types.SimpleNamespace(compute=lambda *a, **k: "rew"))
@@ -160,6 +162,7 @@ class PreResetCaptureTests(unittest.TestCase):
         self.assertTrue(sync["ok"], sync["problems"])
         self.assertEqual(sync["reset_moved_robot"], 2)                  # the reset was real, and not recorded
         self.assertEqual(sync["terminal_steps"], [3])
+        self.assertEqual(col.probe.sliding, 2 * 4 * 3)                  # every captured, open sample
 
     def test_early_done_counted(self):
         col, env, state = self.make(n=2, max_steps=5)
@@ -243,13 +246,26 @@ class SyncTraceTests(unittest.TestCase):
 
 
 class ContactMaterialTests(unittest.TestCase):
-    def ev(self, ground_mode="multiply", ground=1.0, robot_mode="average", **kw):
-        e = {"ground_materials": [{"path": "/World/ground/physicsMaterial", "static": ground, "dynamic": ground,
-                                   "mode": ground_mode}],
-             "robot_shapes": [{"prim": "/World/envs/env_0/Robot/FL_foot/collision", "material": "/Robot/mat",
-                               "mode": robot_mode}], "robot_unbound_shapes": 0}
+    GROUND = {"path": "/World/ground/terrain/physicsMaterial", "static": 1.0, "dynamic": 1.0, "mode": "multiply"}
+    DEFAULT = {"path": "/physicsScene/defaultMaterial", "static": 1.0, "dynamic": 1.0, "mode": "multiply"}
+
+    def attempt2(self, **kw):
+        """The stage as S0 attempt 2 found it: 27 unbound robot shapes, ground with its own material."""
+        e = {"ground_materials": [dict(self.GROUND)], "ground_collision_prims": 1, "ground_unbound_collision_prims": 0,
+             "scene_default_material": dict(self.DEFAULT), "robot_prim": "/World/envs/env_0/Robot",
+             "robot_collision_prims": 27, "robot_shapes": [], "robot_unbound_shapes": 27, "robot_materials_usd": [],
+             "stage_materials": [dict(self.GROUND), dict(self.DEFAULT)],
+             "robot_runtime_mode": {"observable": False, "reason": "no combine-mode query"}}
         e.update(kw)
         return e
+
+    def test_combine_rule(self):
+        self.assertAlmostEqual(ic.combine_friction(0.4, 1.0, "average", "multiply"), 0.4)
+        self.assertAlmostEqual(ic.combine_friction(0.4, 1.0, "average", "average"), 0.7)
+        self.assertAlmostEqual(ic.combine_friction(0.4, 1.0, "max", "multiply"), 1.0)
+        self.assertAlmostEqual(ic.combine_friction(0.4, 0.8, "min", "average"), 0.4)
+        with self.assertRaises(ValueError):
+            ic.combine_friction(0.4, 1.0, "geometric", "multiply")
 
     def test_env0_path_resolution(self):
         """S0 attempt 1 failed here: Isaac Lab 3 writes the pattern as env_[^/]+, not env_.*."""
@@ -260,27 +276,62 @@ class ContactMaterialTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "no prim under"):
             ic.resolve_env0_path("/World/envs/env_[^/]+/Dog", paths)
 
-    def test_combine_rule(self):
-        self.assertAlmostEqual(ic.combine_friction(0.4, 1.0, "average", "multiply"), 0.4)
-        self.assertAlmostEqual(ic.combine_friction(0.4, 1.0, "average", "average"), 0.7)
-        self.assertAlmostEqual(ic.combine_friction(0.4, 1.0, "max", "multiply"), 1.0)
-        self.assertAlmostEqual(ic.combine_friction(0.4, 0.8, "min", "average"), 0.4)
-        with self.assertRaises(ValueError):
-            ic.combine_friction(0.4, 1.0, "geometric", "multiply")
+    def test_attempt2_stage_passes_with_recorded_limitation(self):
+        for cid, mu in (("N080", 0.8), ("F040", 0.4), ("F110", 1.1)):
+            e = self.attempt2()
+            self.assertEqual(ic.contact_problems(e, ic.load_cell(MANIFEST, cid)), [], cid)
+            self.assertEqual(e["effective_static"], [mu])
+            self.assertEqual(e["effective_dynamic"], [round(0.75 * mu, 6)])
+            self.assertEqual(set(e["robot_modes_considered"]), {"average", "multiply"})
+            self.assertTrue(any("not observable" in x for x in e["limitations"]))
 
-    def test_effective_friction_checked_not_just_robot(self):
+    def test_observed_runtime_mode_used_when_available(self):
         c = ic.load_cell(MANIFEST, "F040")
-        self.assertEqual(ic.contact_problems(self.ev(), c), [])            # multiply x 1.0: cell is effective
-        bad = {"average ground": self.ev(ground_mode="average"),          # (0.4 + 1.0) / 2 = 0.7
-               "max robot": self.ev(robot_mode="max"),                    # max(0.4, 1.0)
-               "ground not 1.0": self.ev(ground=0.8),                     # 0.4 x 0.8
-               "no ground": self.ev(ground_materials=[]),
-               "unbound robot": self.ev(robot_unbound_shapes=3),
-               "shared": self.ev(robot_shapes=[{"prim": "x", "material": "/World/ground/physicsMaterial",
-                                                "mode": "average"}]),
-               "error": {"error": "ImportError: pxr"}}
+        e = self.attempt2(robot_runtime_mode={"observable": True, "modes": ["multiply"]})
+        self.assertEqual(ic.contact_problems(e, c), [])
+        self.assertEqual(e["robot_modes_considered"], {"multiply": "observed at runtime"})
+        self.assertEqual(e["limitations"], [])
+        e = self.attempt2(robot_runtime_mode={"observable": True, "modes": ["max"]})   # observed max: 1.0, not 0.4
+        self.assertTrue(any("differs from the cell" in x for x in ic.contact_problems(e, c)))
+
+    def test_failures_still_detected(self):
+        c = ic.load_cell(MANIFEST, "F040")
+        bad = {
+            "ground on default": self.attempt2(ground_materials=[dict(self.DEFAULT)]),
+            "ground unbound": self.attempt2(ground_unbound_collision_prims=1),
+            "average ground": self.attempt2(ground_materials=[dict(self.GROUND, mode="average")]),
+            "ground not 1.0": self.attempt2(ground_materials=[dict(self.GROUND, static=0.8, dynamic=0.8)]),
+            "max on stage": self.attempt2(stage_materials=[dict(self.GROUND), dict(self.DEFAULT, mode="max")]),
+            "modes not recorded": self.attempt2(stage_materials=None),
+            "no robot prims": self.attempt2(robot_collision_prims=0, robot_unbound_shapes=0),
+            "no ground": self.attempt2(ground_materials=[]),
+            "bound max robot": self.attempt2(robot_unbound_shapes=0, robot_shapes=[
+                {"prim": "x", "material": "/Robot/mat", "mode": "max"}]),
+            "shared": self.attempt2(robot_unbound_shapes=0, robot_shapes=[
+                {"prim": "x", "material": self.GROUND["path"], "mode": "average"}]),
+            "error": {"error": "ImportError: pxr"},
+        }
         for name, e in bad.items():
             self.assertNotEqual(ic.contact_problems(e, c), [], name)
+
+
+class FrictionProbeTests(unittest.TestCase):
+    def test_ratio_of_sliding_contacts_only(self):
+        pr = ic.FrictionProbe()
+        forces = [[[3.0, 4.0, 10.0], [3.0, 4.0, 50.0], [0.0, 6.0, 20.0], [1.0, 1.0, 5.0]]]   # 4 feet, 1 env
+        vel = [[[0.2, 0.0], [0.01, 0.0], [0.0, 0.1], [0.3, 0.0]]]
+        pr.add(forces, vel, [True])
+        pr.add(forces, vel, [False])                                       # closed env: ignored
+        r = pr.result(0.6)
+        self.assertEqual(r["contact_samples"], 2)                          # fn > 10 N: feet 1 and 2
+        self.assertEqual(r["sliding_samples"], 1)                          # foot 1 is not sliding
+        self.assertAlmostEqual(r["median"], 0.3)                           # foot 2: 6 / 20
+        self.assertIn("diagnostic only", r["role"])
+        self.assertTrue(r["limitations"])
+
+    def test_probe_is_not_a_validity_criterion(self):
+        src = (HERE / "independent_analysis.py").read_text()
+        self.assertNotIn("friction_probe", src)
 
 
 class Act:

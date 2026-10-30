@@ -28,7 +28,10 @@ Runtime verification (revision 2), before the first recorded step; any failure a
   - every actuator is the swept DC motor with zero lag and full strength (latency comes only from the cell);
   - the EFFECTIVE robot-ground friction (robot readback combined with every ground material under PhysX's
     combine-mode rule, materials and modes read from the stage) equals the cell; robot and ground must not share
-    a material. On failure a `<out>.diagnostic.json` with everything observed is written, and no run output.
+    a material; unbound robot shapes are allowed only if the ground has its own material, and when their runtime
+    combine mode cannot be observed that limitation is recorded (contact_problems).
+A diagnostic friction probe (|F_t| / F_n of sliding foot contacts) is recorded in the header; it never decides
+validity. On failure a `<out>.diagnostic.json` with everything observed is written, and no run output.
 Step synchronization (revision 2b), checked at every step for every environment (SyncTrace) and stored in the
 header as `sync_checks`: capture-time episode length is consecutive from 1 after the collector's own reset; the
 capture-time termination flag equals the done flag the step returns; a done environment's episode length is 0
@@ -55,6 +58,7 @@ import argparse
 import gzip
 import hashlib
 import json
+import math
 import os
 import sys
 from pathlib import Path
@@ -156,38 +160,111 @@ def combine_friction(a, b, mode_a, mode_b):
 
 
 def contact_problems(ev, cell, tol=1e-4):
-    """ev: robot shape materials (USD, env 0) and every ground material, with combine modes. The robot's values
-    come from the simulator readback (already checked equal to the cell); this checks the EFFECTIVE robot-ground
-    coefficients, which is what the cell is meant to set."""
-    probs = []
+    """Effective robot-ground friction (reviewer decision 1, 2026-10-30). ev: stage materials with combine modes,
+    plus any runtime observation of the robot's combine mode. The robot's friction VALUES come from the simulator
+    readback (checked equal to the cell elsewhere); this checks the effective coefficients of the contact pair.
+
+    Robot collision shapes without a bound material are allowed if the ground has its own bound material, distinct
+    from the scene default. Robot combine mode, in order of preference: observed at runtime; the bound material's
+    mode; otherwise each mode the stack can produce for an unbound shape (the scene default's mode, and PhysX's
+    default 'average' if the material was re-created), recorded as a limitation and refused if any material on the
+    stage uses 'max'. Every resulting effective coefficient must equal the cell. Adds the derivation to ev."""
+    probs, lim = [], ev.setdefault("limitations", [])
     mu, mu_d = float(cell["static_friction"]), 0.75 * float(cell["static_friction"])
     if ev.get("error"):
         return [f"contact material evidence unavailable: {ev['error']}"]
     ground, robot = ev.get("ground_materials") or [], ev.get("robot_shapes") or []
+    unbound = int(ev.get("robot_unbound_shapes") or 0)
+    default = (ev.get("scene_default_material") or {})
     if not ground:
         probs.append("no ground material found")
-    if not robot:
-        probs.append("no robot collision shapes found")
-    if ev.get("robot_unbound_shapes"):
-        probs.append(f"{ev['robot_unbound_shapes']} robot collision shapes have no bound physics material "
-                     "(they would use the scene default material, possibly shared with the ground)")
+    if not ev.get("robot_collision_prims"):
+        probs.append("no robot collision prims found")
+    if ev.get("ground_unbound_collision_prims"):
+        probs.append(f"{ev['ground_unbound_collision_prims']} ground collision prims use the scene default material")
     shared = sorted({r["material"] for r in robot} & {g["path"] for g in ground})
     if shared:
         probs.append(f"robot and ground share physics material(s) {shared}")
+    if unbound and default.get("path") in {g["path"] for g in ground}:
+        probs.append("unbound robot shapes and the ground both use the scene default material")
+    modes, basis = {}, []
+    for r in robot:
+        modes.setdefault(r["mode"], "bound USD material")
+    if unbound:
+        obs = ev.get("robot_runtime_mode") or {}
+        if obs.get("observable") and obs.get("modes"):
+            for m_ in obs["modes"]:
+                modes[m_] = "observed at runtime"
+        else:
+            cands = sorted({default.get("mode") or "average", "average"})
+            for m_ in cands:
+                modes.setdefault(m_, "inferred for unbound shapes")
+            lim.append(f"the runtime combine mode of the {unbound} unbound robot shapes is not observable "
+                       f"({obs.get('reason', 'no runtime query available')}); effective friction is computed for "
+                       f"each mode the stack can produce for them: {cands}")
+            maxed = [x["path"] for x in ev.get("stage_materials") or [] if x.get("mode") == "max"]
+            if maxed:
+                probs.append(f"material(s) {maxed} use 'max'; the unbound robot shapes' mode cannot be bounded")
+            elif ev.get("stage_materials") is None:
+                probs.append("stage material modes not recorded; the unbound robot shapes' mode cannot be bounded")
+    ev["robot_modes_considered"] = modes
     eff_s, eff_d = set(), set()
     for g in ground:
-        for r in robot:
+        for m_ in modes:
             try:
-                eff_s.add(round(combine_friction(mu, g["static"], r["mode"], g["mode"]), 6))
-                eff_d.add(round(combine_friction(mu_d, g["dynamic"], r["mode"], g["mode"]), 6))
+                eff_s.add(round(combine_friction(mu, g["static"], m_, g["mode"]), 6))
+                eff_d.add(round(combine_friction(mu_d, g["dynamic"], m_, g["mode"]), 6))
             except (ValueError, TypeError, KeyError) as e:
-                probs.append(f"cannot combine {r.get('material')} with {g.get('path')}: {e}")
+                probs.append(f"cannot combine robot mode {m_!r} with {g.get('path')}: {e}")
     ev["effective_static"], ev["effective_dynamic"] = sorted(eff_s), sorted(eff_d)
+    if not eff_s:
+        probs.append("no effective coefficient could be computed")
     if any(abs(x - mu) > tol for x in eff_s):
         probs.append(f"effective robot-ground static friction {sorted(eff_s)} differs from the cell's {mu}")
     if any(abs(x - mu_d) > tol for x in eff_d):
         probs.append(f"effective robot-ground dynamic friction {sorted(eff_d)} differs from {mu_d}")
     return probs
+
+
+class FrictionProbe:
+    """Diagnostic only (reviewer decision 2): |F_t| / F_n of foot contacts while the foot slides. Never a pass/fail
+    criterion, and a close match to the dynamic coefficient is not proof of it."""
+    LIMITATIONS = [
+        "net contact force of the foot body: several contact points and any non-ground contact are summed",
+        "slip is detected from the foot body's horizontal velocity, which includes rolling of the spherical foot",
+        "transient and impact samples are included; the ratio equals the coefficient only in steady sliding",
+        "few sliding samples are expected on high-friction cells",
+    ]
+
+    def __init__(self, min_normal_n=10.0, min_slip_mps=0.05, max_keep=200000):
+        self.fn_min, self.v_min, self.max_keep = float(min_normal_n), float(min_slip_mps), int(max_keep)
+        self.contact = self.sliding = 0
+        self.ratios, self.error = [], None
+
+    def add(self, forces_xyz, vel_xy, open_):
+        """forces_xyz: [env][foot][3] world contact force; vel_xy: [env][foot][2] foot velocity; open_: [env]."""
+        for i, ok in enumerate(open_):
+            if not ok:
+                continue
+            for f, v in zip(forces_xyz[i], vel_xy[i]):
+                fn = float(f[2])
+                if fn <= self.fn_min:
+                    continue
+                self.contact += 1
+                if math.hypot(float(v[0]), float(v[1])) <= self.v_min:
+                    continue
+                self.sliding += 1
+                if len(self.ratios) < self.max_keep:
+                    self.ratios.append(math.hypot(float(f[0]), float(f[1])) / fn)
+
+    def result(self, mu_dynamic):
+        q = it._quantile
+        r = sorted(self.ratios)
+        return {"role": "diagnostic only; not a pass/fail criterion", "error": self.error,
+                "thresholds": {"min_normal_n": self.fn_min, "min_slip_mps": self.v_min},
+                "contact_samples": self.contact, "sliding_samples": self.sliding, "ratios_kept": len(r),
+                "median": q(r, 0.5), "q25": q(r, 0.25), "q75": q(r, 0.75),
+                "cell_dynamic_coefficient": mu_dynamic, "limitations": list(self.LIMITATIONS)}
 
 
 class SyncTrace:
@@ -372,7 +449,8 @@ class Collector:
         self.n_envs = len(self.command_doc["commands"]) * int(manifest["episodes_per_cell_repeat"])
         self.checkpoints, self.cfg_changes, self.started = [], {}, False
         self.obs_buf = self.act_buf = None
-        self._pending, self._pending_sync, self._in_step, self.early_dones = None, None, False, 0
+        self._pending, self._pending_sync, self._pending_probe, self._in_step, self.early_dones = None, None, None, False, 0
+        self.probe = FrictionProbe()
         self.sync_checks = None
 
     def record_checkpoint(self, path):
@@ -438,6 +516,8 @@ class Collector:
         self.sync.on_step(self.steps, list(self.log.open), self._pending_sync["len"], self._pending_sync["flag"],
                           self._pending_sync["pos"], self._pending_sync["cmd"], dones,
                           env.episode_length_buf.tolist(), t(env.scene["robot"].data.root_pos_w).tolist())
+        if self._pending_probe is not None:
+            self.probe.add(self._pending_probe[0], self._pending_probe[1], list(self.log.open))
         self.log.add(self._pending, done=dones)
         if self.log.all_closed or self.steps >= self.max_steps + 5:
             self._finish(env)
@@ -478,8 +558,22 @@ class Collector:
             if self._in_step:
                 self._pending = self._snapshot(env)
                 self._pending_sync = self._sync_snapshot(env)
+                self._pending_probe = self._probe_snapshot(env)
             return out
         mgr.compute = compute
+
+    def _probe_snapshot(self, env):
+        """Full foot contact force and foot horizontal velocity, for the diagnostic friction probe. Never fatal."""
+        if self.probe.error:
+            return None
+        try:
+            t = lambda x: x.torch if hasattr(x, "torch") else x  # noqa: E731
+            f = t(env.scene.sensors[CONTACT_SENSOR].data.net_forces_w)[:, self.foot_ids_sensor, :]
+            v = t(env.scene["robot"].data.body_lin_vel_w)[:, self.foot_ids_robot, :2]
+            return f.tolist(), v.tolist()
+        except Exception as e:
+            self.probe.error = f"{type(e).__name__}: {e}"
+            return None
 
     def _sync_snapshot(self, env):
         t = lambda x: x.torch if hasattr(x, "torch") else x  # noqa: E731
@@ -542,7 +636,18 @@ class Collector:
                     continue
                 info = rmats.setdefault(str(mp.GetPath()), mat_info(mp))
                 robot.append({"prim": str(q.GetPath()), "material": info["path"], "mode": info["mode"]})
-            return {"robot_prim_pattern": pattern, "ground_materials": ground,
+            stage_mats = [mat_info(q) for q in stage.Traverse() if q.HasAPI(UsdPhysics.MaterialAPI)]
+            runtime_mode = {"observable": False}
+            try:
+                view = env.scene["robot"].root_view
+                names = sorted(n for n in dir(view) if "combine" in n.lower())
+                runtime_mode["view_methods"] = names
+                if not names:
+                    runtime_mode["reason"] = "the simulator's tensor view exposes no combine-mode query"
+            except Exception as e:
+                runtime_mode["reason"] = f"{type(e).__name__}: {e}"
+            return {"robot_prim_pattern": pattern, "ground_materials": ground, "stage_materials": stage_mats,
+                    "robot_runtime_mode": runtime_mode,
                     "ground_collision_prims": len(collision_prims(env.scene.terrain.cfg.prim_path)),
                     "ground_unbound_collision_prims": g_unbound,
                     "scene_default_material": mat_info(default) if default is not None else None,
@@ -618,7 +723,8 @@ class Collector:
                 deps[mod] = {"path": f, "sha256": _sha_file(f)}
             except Exception as e:                                   # recorded, not fatal: provenance only
                 deps[mod] = {"error": f"{type(e).__name__}: {e}"}
-        header = {"sync_checks": self.sync_checks, "dependency_files": deps,"tool": "independent_collector", "tool_sha256": _sha_file(__file__), "stage": self.stage_id,
+        header = {"sync_checks": self.sync_checks, "dependency_files": deps,
+                  "friction_probe": self.probe.result(0.75 * float(self.cell["static_friction"])),"tool": "independent_collector", "tool_sha256": _sha_file(__file__), "stage": self.stage_id,
                   "runtime_checks": self.runtime_checks, "unexpected_early_dones": self.early_dones,
                   "episode_lengths": {"min": min(lengths), "max": max(lengths)},
                   "truth_lib_sha256": _sha_file(HERE / "independent_truth.py"),
