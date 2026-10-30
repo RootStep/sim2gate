@@ -46,7 +46,14 @@
     "nominal_success": 0.9609375
    },
    "sim2gate_any_flag": false,
-   "status": "scored"
+   "status": "scored",
+   "success_only": {
+    "cutoff_0.85_flag": false,
+    "leave_one_out_flag": false,
+    "leave_one_out_threshold": 0.91796875,
+    "min5_flag": false,
+    "primary_flag": false
+   }
   },
   {
    "arm": "control",
@@ -94,7 +101,14 @@
     "nominal_success": 0.9453125
    },
    "sim2gate_any_flag": false,
-   "status": "scored"
+   "status": "scored",
+   "success_only": {
+    "cutoff_0.85_flag": false,
+    "leave_one_out_flag": false,
+    "leave_one_out_threshold": 0.91796875,
+    "min5_flag": false,
+    "primary_flag": false
+   }
   },
   {
    "arm": "control",
@@ -142,7 +156,14 @@
     "nominal_success": 0.96875
    },
    "sim2gate_any_flag": false,
-   "status": "scored"
+   "status": "scored",
+   "success_only": {
+    "cutoff_0.85_flag": false,
+    "leave_one_out_flag": false,
+    "leave_one_out_threshold": 0.91796875,
+    "min5_flag": false,
+    "primary_flag": false
+   }
   },
   {
    "arm": "control",
@@ -190,7 +211,14 @@
     "nominal_success": 0.98828125
    },
    "sim2gate_any_flag": false,
-   "status": "scored"
+   "status": "scored",
+   "success_only": {
+    "cutoff_0.85_flag": false,
+    "leave_one_out_flag": false,
+    "leave_one_out_threshold": 0.91796875,
+    "min5_flag": false,
+    "primary_flag": false
+   }
   },
   {
    "arm": "control",
@@ -238,7 +266,14 @@
     "nominal_success": 0.9609375
    },
    "sim2gate_any_flag": false,
-   "status": "scored"
+   "status": "scored",
+   "success_only": {
+    "cutoff_0.85_flag": false,
+    "leave_one_out_flag": false,
+    "leave_one_out_threshold": 0.91796875,
+    "min5_flag": false,
+    "primary_flag": false
+   }
   },
   {
    "arm": "R-slip",
@@ -286,7 +321,14 @@
     "nominal_success": 1.0
    },
    "sim2gate_any_flag": true,
-   "status": "scored"
+   "status": "scored",
+   "success_only": {
+    "cutoff_0.85_flag": false,
+    "leave_one_out_flag": false,
+    "leave_one_out_threshold": 0.91796875,
+    "min5_flag": false,
+    "primary_flag": false
+   }
   },
   {
    "arm": "R-slip",
@@ -334,7 +376,14 @@
     "nominal_success": 1.0
    },
    "sim2gate_any_flag": true,
-   "status": "scored"
+   "status": "scored",
+   "success_only": {
+    "cutoff_0.85_flag": false,
+    "leave_one_out_flag": false,
+    "leave_one_out_threshold": 0.91796875,
+    "min5_flag": false,
+    "primary_flag": false
+   }
   },
   {
    "arm": "R-slip",
@@ -382,7 +431,14 @@
     "nominal_success": 0.9921875
    },
    "sim2gate_any_flag": true,
-   "status": "scored"
+   "status": "scored",
+   "success_only": {
+    "cutoff_0.85_flag": false,
+    "leave_one_out_flag": false,
+    "leave_one_out_threshold": 0.91796875,
+    "min5_flag": false,
+    "primary_flag": false
+   }
   },
   {
    "arm": "R-slip",
@@ -430,7 +486,14 @@
     "nominal_success": 0.98046875
    },
    "sim2gate_any_flag": true,
-   "status": "scored"
+   "status": "scored",
+   "success_only": {
+    "cutoff_0.85_flag": false,
+    "leave_one_out_flag": false,
+    "leave_one_out_threshold": 0.91796875,
+    "min5_flag": false,
+    "primary_flag": false
+   }
   },
   {
    "arm": "R-slip",
@@ -478,7 +541,14 @@
     "nominal_success": 1.0
    },
    "sim2gate_any_flag": true,
-   "status": "scored"
+   "status": "scored",
+   "success_only": {
+    "cutoff_0.85_flag": false,
+    "leave_one_out_flag": false,
+    "leave_one_out_threshold": 0.91796875,
+    "min5_flag": false,
+    "primary_flag": false
+   }
   },
   {
    "arm": "\u03a6-slip-mild",
@@ -526,7 +596,14 @@
     "nominal_success": 0.9453125
    },
    "sim2gate_any_flag": true,
-   "status": "scored"
+   "status": "scored",
+   "success_only": {
+    "cutoff_0.85_flag": false,
+    "leave_one_out_flag": false,
+    "leave_one_out_threshold": 0.91796875,
+    "min5_flag": false,
+    "primary_flag": false
+   }
   },
   {
    "arm": "\u03a6-slip-mild",
@@ -574,7 +651,14 @@
     "nominal_success": 0.95703125
    },
    "sim2gate_any_flag": true,
-   "status": "scored"
+   "status": "scored",
+   "success_only": {
+    "cutoff_0.85_flag": false,
+    "leave_one_out_flag": false,
+    "leave_one_out_threshold": 0.91796875,
+    "min5_flag": false,
+    "primary_flag": false
+   }
   },
   {
    "arm": "\u03a6-slip-mild",
@@ -622,7 +706,14 @@
     "nominal_success": 0.89453125
    },
    "sim2gate_any_flag": true,
-   "status": "scored"
+   "status": "scored",
+   "success_only": {
+    "cutoff_0.85_flag": false,
+    "leave_one_out_flag": true,
+    "leave_one_out_threshold": 0.91796875,
+    "min5_flag": true,
+    "primary_flag": true
+   }
   },
   {
    "arm": "\u03a6-slip-mild",
@@ -672,7 +763,14 @@
     "nominal_success": 0.9375
    },
    "sim2gate_any_flag": true,
-   "status": "scored"
+   "status": "scored",
+   "success_only": {
+    "cutoff_0.85_flag": false,
+    "leave_one_out_flag": false,
+    "leave_one_out_threshold": 0.91796875,
+    "min5_flag": true,
+    "primary_flag": false
+   }
   },
   {
    "arm": "\u03a6-slip-mild",
@@ -720,7 +818,14 @@
     "nominal_success": 0.9140625
    },
    "sim2gate_any_flag": true,
-   "status": "scored"
+   "status": "scored",
+   "success_only": {
+    "cutoff_0.85_flag": false,
+    "leave_one_out_flag": true,
+    "leave_one_out_threshold": 0.91796875,
+    "min5_flag": true,
+    "primary_flag": true
+   }
   },
   {
    "arm": "\u03a6-delay",
@@ -770,7 +875,14 @@
     "nominal_success": 0.984375
    },
    "sim2gate_any_flag": true,
-   "status": "scored"
+   "status": "scored",
+   "success_only": {
+    "cutoff_0.85_flag": false,
+    "leave_one_out_flag": false,
+    "leave_one_out_threshold": 0.91796875,
+    "min5_flag": false,
+    "primary_flag": false
+   }
   },
   {
    "arm": "\u03a6-delay",
@@ -820,7 +932,14 @@
     "nominal_success": 0.99609375
    },
    "sim2gate_any_flag": true,
-   "status": "scored"
+   "status": "scored",
+   "success_only": {
+    "cutoff_0.85_flag": false,
+    "leave_one_out_flag": false,
+    "leave_one_out_threshold": 0.91796875,
+    "min5_flag": false,
+    "primary_flag": false
+   }
   },
   {
    "arm": "\u03a6-delay",
@@ -875,7 +994,14 @@
     "nominal_success": 0.9921875
    },
    "sim2gate_any_flag": true,
-   "status": "scored"
+   "status": "scored",
+   "success_only": {
+    "cutoff_0.85_flag": false,
+    "leave_one_out_flag": false,
+    "leave_one_out_threshold": 0.91796875,
+    "min5_flag": false,
+    "primary_flag": false
+   }
   },
   {
    "arm": "\u03a6-delay",
@@ -925,7 +1051,14 @@
     "nominal_success": 1.0
    },
    "sim2gate_any_flag": true,
-   "status": "scored"
+   "status": "scored",
+   "success_only": {
+    "cutoff_0.85_flag": false,
+    "leave_one_out_flag": false,
+    "leave_one_out_threshold": 0.91796875,
+    "min5_flag": false,
+    "primary_flag": false
+   }
   }
  ],
  "rules": {
@@ -937,6 +1070,97 @@
   "success_threshold_mps": 0.11870108961379214
  },
  "state_sha256": "4f46fe47ec4a751a454fc99b6b28d39e1c73e8a101196cc0ef800b3b26dc8251",
+ "success_only": {
+  "reference": {
+   "p0v5b_s101": {
+    "source": "Phase 2 re-measure",
+    "success": 0.9609375
+   },
+   "p0v5b_s102": {
+    "source": "Phase 2 re-measure",
+    "success": 0.9453125
+   },
+   "p0v5b_s103": {
+    "source": "Phase 2 re-measure",
+    "success": 0.96875
+   },
+   "p0v5b_s104": {
+    "source": "Phase 2 re-measure",
+    "success": 0.98828125
+   },
+   "p0v5b_s105": {
+    "source": "Phase 2 re-measure",
+    "success": 0.9609375
+   },
+   "p0v5b_s107": {
+    "source": "Phase 1 (45895925a19c)",
+    "success": 0.98828125
+   },
+   "p0v5b_s108": {
+    "source": "Phase 1 (c71f83d4d904)",
+    "success": 0.95703125
+   },
+   "p0v5b_s109": {
+    "source": "Phase 1 (ed4011b6656b)",
+    "success": 0.984375
+   },
+   "p0v5b_s110": {
+    "source": "Phase 1 (eec3e967e599)",
+    "success": 0.9453125
+   },
+   "p0v5b_s111": {
+    "source": "Phase 1 (a55dc7409bff)",
+    "success": 0.9609375
+   },
+   "p0v5b_s113": {
+    "source": "Phase 1 (0aad8a968fb7)",
+    "success": 0.92578125
+   },
+   "p0v5b_s114": {
+    "source": "Phase 1 (d39763833217)",
+    "success": 0.95703125
+   },
+   "p0v5b_s115": {
+    "source": "Phase 1 (0eb605c661d7)",
+    "success": 0.9921875
+   },
+   "p0v5b_s116": {
+    "source": "Phase 1 (7d648c7ff21f)",
+    "success": 0.96484375
+   },
+   "p0v5b_s117": {
+    "source": "Phase 1 (02d33e4a572b)",
+    "success": 0.96484375
+   },
+   "p0v5b_s118": {
+    "source": "Phase 1 (f5b084a31e09)",
+    "success": 0.98828125
+   },
+   "p0v5b_s119": {
+    "source": "Phase 1 (e577eeb4383d)",
+    "success": 0.984375
+   },
+   "p0v5b_s120": {
+    "source": "Phase 1 (958b8e5e8493)",
+    "success": 0.9453125
+   },
+   "p0v5b_s121": {
+    "source": "Phase 1 (306aa8f9ecc9)",
+    "success": 0.984375
+   },
+   "p0v5b_s122": {
+    "source": "Phase 1 (079bf1dbc647)",
+    "success": 0.91796875
+   }
+  },
+  "reference_min_robot": "p0v5b_s122",
+  "rule": "flag when nominal success is strictly below the threshold (ties not flagged)",
+  "thresholds": {
+   "primary_min20": 0.91796875,
+   "sensitivity_cutoff_0.85": 0.85,
+   "sensitivity_min5_controls": 0.9453125
+  }
+ },
  "tier": "H (historical, recorded Phase 2 measurements; development only)",
- "tool_sha256": "2abead45e29cbc8a22a0bcb6697f93ca7c92004a443d3bb6458b80311aa480c3"
+ "tool_sha256": "93dcd3eb1987fc3b19eb03b384c38ebf9da227654bb79acbf0f98ed79e1f92d2"
 }

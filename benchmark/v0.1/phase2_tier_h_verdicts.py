@@ -11,7 +11,9 @@ and compares each with the summary the study driver recorded in state.json. Noth
 
 Usage:
     python phase2_tier_h_verdicts.py --measure-root DIR --out-json OUT.json --out-md OUT.md
-DIR holds state.json, robots/study_s3NN/measure/*.json and (when available) controls/p0v5b_s10N/*.json.
+DIR holds state.json, robots/study_s3NN/measure/*.json and controls/p0v5b_s10N/*.json.
+REF (optional) holds the Phase 1 reports robots/p0v5b_s1NN/measure/nominal.json for the success-only baseline
+(spec section 6): reference = the 20 qualified P0 v5b robots, the 5 controls taken from their Phase 2 re-measure.
 """
 import argparse
 import hashlib
@@ -103,11 +105,45 @@ def score_policy(name, arm, folder, recorded, success, limit_doc, mods):
     return row
 
 
+REFERENCE = [f"p0v5b_s{n}" for n in (101, 102, 103, 104, 105, 107, 108, 109, 110, 111,
+                                     113, 114, 115, 116, 117, 118, 119, 120, 121, 122)]
+CONTROLS = REFERENCE[:5]
+
+
+def success_only(rows, ref_root, success, robustness):
+    """Spec section 6: success-only flags against the 20-robot healthy reference, plus sensitivity rules."""
+    thr = success["threshold_mps"]
+    ref, prov = {}, {}
+    by_id = {r["policy_id"]: r for r in rows if r.get("status") == "scored"}
+    for n in REFERENCE:
+        if n in CONTROLS:
+            ref[n], prov[n] = by_id[n]["nominal_success"]["rate"], "Phase 2 re-measure"
+        else:
+            path = Path(ref_root) / "robots" / n / "measure" / "nominal.json"
+            raw = json.load(open(path))
+            robustness.check_compatible(raw, success, n)
+            ref[n], prov[n] = robustness.success_rate(raw["episodes"], thr), f"Phase 1 ({_sha(path)[:12]})"
+    t20 = min(ref.values())
+    t5 = min(ref[n] for n in CONTROLS)
+    rules = {"primary_min20": t20, "sensitivity_min5_controls": t5, "sensitivity_cutoff_0.85": 0.85}
+    for r in rows:
+        if r.get("status") != "scored":
+            continue
+        v = r["nominal_success"]["rate"]
+        loo = min(x for k, x in ref.items() if k != r["policy_id"])
+        r["success_only"] = {"primary_flag": v < t20, "min5_flag": v < t5, "cutoff_0.85_flag": v < 0.85,
+                             "leave_one_out_threshold": loo, "leave_one_out_flag": v < loo}
+    return {"rule": "flag when nominal success is strictly below the threshold (ties not flagged)",
+            "thresholds": rules, "reference": {n: {"success": ref[n], "source": prov[n]} for n in REFERENCE},
+            "reference_min_robot": min(ref, key=ref.get)}
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--measure-root", required=True)
     ap.add_argument("--out-json", required=True)
     ap.add_argument("--out-md")
+    ap.add_argument("--reference-root", help="folder with robots/p0v5b_s1NN/measure/nominal.json (Phase 1)")
     a = ap.parse_args(argv)
     mods = _import_checks()
     layer1_limits = mods[2]
@@ -126,25 +162,28 @@ def main(argv=None):
             continue
         rows.append(score_policy(pid, arm, str(root / "robots" / name / "measure"), r.get("summary"),
                                  success, limit_doc, mods))
+    so = success_only(rows, a.reference_root, success, mods[0]) if a.reference_root else None
     out = {"tier": "H (historical, recorded Phase 2 measurements; development only)",
            "rules": {"success_threshold_mps": success["threshold_mps"], "success_source": "src/sim2gate/v2/frozen_success_p0v5b.json",
                      "check2_limit": limit_doc["limit"], "check2_source": "src/sim2gate/v2/check2_limit_v2.json",
                      "check1": "sim2gate.checks.robustness.score, v2 envelope", "check5": "sim2gate.checks.transfer.score"},
-           "tool_sha256": _sha(__file__), "state_sha256": _sha(root / "state.json"), "rows": rows}
+           "tool_sha256": _sha(__file__), "state_sha256": _sha(root / "state.json"), "success_only": so, "rows": rows}
     Path(a.out_json).write_text(json.dumps(out, indent=1, sort_keys=True) + "\n")
-    lines = ["| policy | arm | nominal success | Check 1 | Check 2 (score / limit) | Check 2 measured under | Check 5 | any Sim2Gate flag |",
-             "|---|---|---|---|---|---|---|---|"]
+    lines = ["| policy | arm | nominal success | success-only flag | Check 1 | Check 2 (score / limit) | Check 2 measured under | Check 5 | any Sim2Gate flag |",
+             "|---|---|---|---|---|---|---|---|---|"]
     fmt = lambda f: "—" if f is None else ("FLAG" if f else "pass")
     for r in rows:
         if r["status"] != "scored":
-            lines.append(f"| {r['policy_id']} | {r['arm']} | {r['status']} |  |  |  |  |  |")
+            lines.append(f"| {r['policy_id']} | {r['arm']} | {r['status']} |  |  |  |  |  |  |")
             continue
         ns, c1, c2, c5 = r["nominal_success"], r["check1"], r["check2"], r["check5"]
         c1s = fmt(c1["flagged"]) + (f" ({', '.join(c1['flagged_params'])})" if c1["flagged_params"] else "")
         c2s = (f"{fmt(c2['flagged'])} ({c2['score']:.3f} / {c2['limit']:.4f}, {c2['driving_metric']})"
                if c2["status"] == "scored" else f"invalid: {'; '.join(c2['reasons'])[:60]}")
         c5s = fmt(c5["flagged"]) + (f" ({', '.join(c5['risks'])})" if c5["risks"] else "")
-        lines.append(f"| {r['policy_id']} | {r['arm']} | {ns['rate']:.3f} ({ns['episodes']} ep, {ns['falls']} falls) | "
+        so_r = r.get("success_only")
+        sos = "—" if not so_r else (fmt(so_r["primary_flag"]) + (" (min5: FLAG)" if so_r["min5_flag"] and not so_r["primary_flag"] else ""))
+        lines.append(f"| {r['policy_id']} | {r['arm']} | {ns['rate']:.3f} ({ns['episodes']} ep, {ns['falls']} falls) | {sos} | "
                      f"{c1s} | {c2s} | {c2['physics_label']} | {c5s} | {fmt(r['sim2gate_any_flag'])} |")
     if a.out_md:
         Path(a.out_md).write_text("\n".join(lines) + "\n")
