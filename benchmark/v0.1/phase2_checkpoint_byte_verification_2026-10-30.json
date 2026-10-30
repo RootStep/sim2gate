@@ -1,0 +1,142 @@
+{
+ "purpose": "Byte-level verification of the 14 completed v2 Phase 2 study checkpoints (seeds 301-315 except 313) for the seen-policy exclusion register. Seen development data; no new training or evaluation.",
+ "performed": "2026-10-30, operator-run on the shared RootStep PC (WSL user vihaan); outputs pasted into a Claude session and transcribed here. Not an independent third-party rerun.",
+ "tool": "benchmark/v0.1/verify_checkpoints.py at commit f63c55e (branch review/checkpoint-verifier)",
+ "archive_chain": {
+  "sealed_for_vihaan.tar.enc": {
+   "sha256": "60228f28e5254c00f345625f11a50eb2480f876a4a0a00d5548730780d36cff1",
+   "bytes": 2780938272,
+   "matches": "docs/v2/PHASE2_FREEZE.md:48-49 and docs/v2/evidence/phase2/scoring/study_report.json"
+  },
+  "sealed_for_vihaan.key.enc": {
+   "sha256": "d86d4ae6799b78554fc56da3f66bbd5af63c0e55d23c9d3db8871987991eadf8",
+   "bytes": 384,
+   "matches": "docs/v2/PHASE2_FREEZE.md:49-50 and study_report.json"
+  },
+  "unsealed.tar": {
+   "sha256": "52dfb97416cd99bd08b8bd3045c83960588f48b2b1006cac3f55e541d8b8df83",
+   "bytes": 2780938240,
+   "note": "decrypted by the key holder on 2026-10-26 from the sealed archive above; no previously recorded digest. Re-decrypting the sealed archive and hashing the output would independently confirm this link."
+  }
+ },
+ "state_json": "unsealed/workspaces/isaaclab_arena/v2_runs/phase2_study/state.json (robots.study_s<seed>.checkpoint.sha256 and summary.nominal.checkpoint_sha256; equal for all 14)",
+ "scan_summary": "1049 .pt members in unsealed.tar; every final model_1999.pt below found once at its state.json run_dir",
+ "robots": {
+  "s301": {
+   "seed": 301,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-R-slip-k0.1",
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-25_23-40-15",
+   "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-25_23-40-15/model_1999.pt",
+   "checkpoint_sha256": "980169c651e5229203c8507c5780caf6f74cc3bf98e290150d99c1503ff542c8",
+   "train_returncode": 0
+  },
+  "s302": {
+   "seed": 302,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-R-slip-k0.1",
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_00-39-37",
+   "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_00-39-37/model_1999.pt",
+   "checkpoint_sha256": "d600d35b98f0af606812b7a53ba3681ec51992c7e870981a20fb7d9debb3cf9d",
+   "train_returncode": 0
+  },
+  "s303": {
+   "seed": 303,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-R-slip-k0.1",
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_01-34-00",
+   "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_01-34-00/model_1999.pt",
+   "checkpoint_sha256": "f49cf328ae2c215d2f96973ea6bdb14fa3a8482f8976bdc25194d2f2d42fb17a",
+   "train_returncode": 1
+  },
+  "s304": {
+   "seed": 304,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-R-slip-k0.1",
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_02-29-56",
+   "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_02-29-56/model_1999.pt",
+   "checkpoint_sha256": "f12069235bf244497b91145a7a5f3244d2318b0dbcdf139ab81df9a6941cfe42",
+   "train_returncode": 0
+  },
+  "s305": {
+   "seed": 305,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-R-slip-k0.1",
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_03-24-40",
+   "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_03-24-40/model_1999.pt",
+   "checkpoint_sha256": "242a2cf058270d5f8774ea0c78f01998d233584320250d82fe95978bcedd8a8a",
+   "train_returncode": 0
+  },
+  "s306": {
+   "seed": 306,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-slip-mild-mild",
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_04-24-53",
+   "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_04-24-53/model_1999.pt",
+   "checkpoint_sha256": "bff7d25ae730621e3389e3a24328fa32477d1d636bc6e692e88ee433cd43afe6",
+   "train_returncode": 0
+  },
+  "s307": {
+   "seed": 307,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-slip-mild-mild",
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_05-18-10",
+   "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_05-18-10/model_1999.pt",
+   "checkpoint_sha256": "05959e9161e3b52848ec422a0965360e34d2a4e3664559e22ef85a172ea72b55",
+   "train_returncode": 0
+  },
+  "s308": {
+   "seed": 308,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-slip-mild-mild",
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_06-12-35",
+   "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_06-12-35/model_1999.pt",
+   "checkpoint_sha256": "c66c79b9ab4c78f28c7a5b9999014ee1172d825af9abe87bcd0f4972cdc5712c",
+   "train_returncode": 0
+  },
+  "s309": {
+   "seed": 309,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-slip-mild-mild",
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_07-06-43",
+   "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_07-06-43/model_1999.pt",
+   "checkpoint_sha256": "0bb84992a1855a5fd9e54204eae72e76bd26f80bc326f5941124b4c2988627bd",
+   "train_returncode": 0
+  },
+  "s310": {
+   "seed": 310,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-slip-mild-mild",
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_08-02-46",
+   "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_08-02-46/model_1999.pt",
+   "checkpoint_sha256": "2343f1872f5e8a3bec944f5ffc07b5ba2b4b9412ec03291e2f27c162692b2657",
+   "train_returncode": 0
+  },
+  "s311": {
+   "seed": 311,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-delay-nodelay",
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_08-57-50",
+   "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_08-57-50/model_1999.pt",
+   "checkpoint_sha256": "0b5f64992656f0c1d8921fb2ca8f8587ecfdee24a09442aa569f4d5ddb7ec7ac",
+   "train_returncode": 0
+  },
+  "s312": {
+   "seed": 312,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-delay-nodelay",
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_09-54-34",
+   "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_09-54-34/model_1999.pt",
+   "checkpoint_sha256": "49508d134223c13fcd5fa02c3134c5f414569bc56e1c87dbc15cef381319b30b",
+   "train_returncode": 1
+  },
+  "s314": {
+   "seed": 314,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-delay-nodelay",
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_12-12-57",
+   "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_12-12-57/model_1999.pt",
+   "checkpoint_sha256": "bbaf8258dbce5e679a73b9479198563181e5fb62c781f2b7999ce0bea96c0b12",
+   "train_returncode": 0
+  },
+  "s315": {
+   "seed": 315,
+   "task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-delay-nodelay",
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_13-09-26",
+   "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_13-09-26/model_1999.pt",
+   "checkpoint_sha256": "9cb30174033a157904bb74501cb8b58d900bba98d18b70c01ebc3e71c1b92b88",
+   "train_returncode": 0
+  }
+ },
+ "s313": "no final checkpoint (training exited 1, problems: 'training exited 1; 1 new run folder(s)'); remains INCOMPLETE_RUN",
+ "observations": [
+  "s303 and s312 have train_returncode 1 but a complete final checkpoint, matching the pilot pattern (s205, s210, s214); cause not established"
+ ]
+}

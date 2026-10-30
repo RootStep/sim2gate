@@ -55,6 +55,17 @@ for seed, data in cal["seeds"].items():
 assert all(by_key[("v1_mvp", r["policy_id"])]["checkpoint_sha256"]
            for r in rows if r["cohort"] == "v1_mvp")
 assert ("v2_phase2", "s313") in by_key
+
+# Phase 2 study checkpoints: operator-run byte verification record (2026-10-30).
+p2 = json.loads((HERE / "phase2_checkpoint_byte_verification_2026-10-30.json").read_text())["robots"]
+assert len(p2) == 14 and len({r["checkpoint_sha256"] for r in p2.values()}) == 14
+for policy_id, item in p2.items():
+    check("v2_phase2", policy_id, item["checkpoint_sha256"])
+    assert by_key[("v2_phase2", policy_id)]["hash_status"] == "BYTE_VERIFIED", policy_id
+assert by_key[("v2_phase2", "s313")]["hash_status"] == "INCOMPLETE_RUN"
+assert set(p2) | {"s313"} == {pid for c, pid in by_key if c == "v2_phase2"}
+
 print("PASS: 97 seen exclusions; 15 recovered Phase 1 hashes; "
-      "20 pilot and 3 calibration hashes match tracked sources")
-print("NOT VERIFIED: checkpoint bytes, external Phase 2 ledger, 14 archive-only hashes")
+      "20 pilot and 3 calibration hashes match tracked sources; "
+      "14 Phase 2 study hashes match the 2026-10-30 byte-verification record")
+print("NOT VERIFIED: other cohorts' checkpoint bytes, 16 rows without any digest")

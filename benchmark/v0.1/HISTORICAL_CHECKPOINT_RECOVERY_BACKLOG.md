@@ -1,4 +1,4 @@
-# Historical checkpoint follow-up backlog — deferred (2026-10-28)
+# Historical checkpoint follow-up backlog — deferred (2026-10-28; Phase 2 updated 2026-10-30)
 
 **Decision:** RootStep has approved conservative exclusion of all historical policies, with recorded-only hashes and provenance exceptions documented. Recovery of missing historical checkpoint bytes and full hashes is **deferred**, not waived as a requirement for making any future positive identity claim. This backlog is for later reconciliation, **not a reason to reuse these policies as confirmatory held-out data**.
 
@@ -8,8 +8,7 @@ Source of record: [SEEN_POLICIES_PROVISIONAL.csv](SEEN_POLICIES_PROVISIONAL.csv)
 |---|---|---|---|
 | v1 MVP | 23 policies (see source register) | Full SHA-256 recorded only, not independently byte-verified | Reopen original archive, independently hash checkpoints and reconcile identities |
 | v2 Phase 1 | p0v5b_s106 through p0v5b_s122 (17) | Full SHA-256 missing / unresolved | Recover final checkpoint bytes from phase1-clean archive; hash each member and verify lineage |
-| v2 Phase 2 | s301, s302, s303, s304, s305, s309, s310 (7) | Full SHA-256 recorded only | Verify original bytes against recorded digests |
-| v2 Phase 2 | s306, s307, s308, s311, s312, s314, s315 (7) | Byte-verified previously but register contains only SHA prefix status, not full digest | Recover full SHA-256 from existing phase2_study_exclusion_ledger.csv and reconcile; do not guess |
+| v2 Phase 2 | s301–s312, s314, s315 (14) | **Byte-verified 2026-10-30** against the decrypted sealed study archive; all 7 previously recorded digests matched, 7 missing digests recovered from bytes | Done. See [phase2_checkpoint_byte_verification_2026-10-30.json](phase2_checkpoint_byte_verification_2026-10-30.json). The external `phase2_study_exclusion_ledger.csv` is no longer needed |
 | v2 Phase 2 | s313 (1) | Incomplete run | Retain run-level exclusion; never count as completed policy |
 | v2 Phase 1 | p0v5b_s101 through p0v5b_s105 (5) | Full SHA-256 byte-verified | No immediate recovery required; these controls were reused in Phase 2 and must not be counted twice |
 

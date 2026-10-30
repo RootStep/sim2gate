@@ -34,5 +34,25 @@ class RegisterV2Tests(unittest.TestCase):
         finally:
             REGISTER.write_bytes(original)
 
+    def test_phase2_byte_verified_digest_tampering_fails(self):
+        original = REGISTER.read_bytes()
+        try:
+            for policy_id, field, value in (("s306", "checkpoint_sha256", "0" * 64),
+                                            ("s306", "hash_status", "RECORDED_ONLY"),
+                                            ("s301", "checkpoint_sha256", "f" * 64)):
+                with self.subTest(policy_id=policy_id, field=field):
+                    rows = list(csv.DictReader(original.decode().splitlines()))
+                    row = next(r for r in rows if r["cohort"] == "v2_phase2" and r["policy_id"] == policy_id)
+                    row[field] = value
+                    with REGISTER.open("w", newline="") as handle:
+                        writer = csv.DictWriter(handle, fieldnames=rows[0].keys())
+                        writer.writeheader()
+                        writer.writerows(rows)
+                    p = subprocess.run([sys.executable, str(SCRIPT)], cwd=ROOT,
+                                       capture_output=True, text=True)
+                    self.assertNotEqual(p.returncode, 0, p.stdout)
+        finally:
+            REGISTER.write_bytes(original)
+
 if __name__ == "__main__":
     unittest.main()
