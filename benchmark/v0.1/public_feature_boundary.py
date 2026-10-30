@@ -3,6 +3,7 @@
 This module does not implement Sim2Gate scoring or authorize benchmark training.
 """
 import json
+import re
 
 ALLOWED_TOP_LEVEL = frozenset(("schema_version", "records"))
 ALLOWED_RECORD = frozenset(("opaque_id", "measurements"))
@@ -22,11 +23,23 @@ FORBIDDEN_TERMS = frozenset((
 ))
 
 
+OPAQUE_ID_PATTERN = re.compile(r"^[A-Za-z0-9]{8,32}$")
+
+
+def _unique_object_pairs(pairs):
+    obj = {}
+    for key, value in pairs:
+        if key in obj:
+            raise ValueError("duplicate JSON key")
+        obj[key] = value
+    return obj
+
+
 def parse_public_features(raw):
     """Reject unexpected metadata rather than silently dropping it."""
     if isinstance(raw, bytes):
         raw = raw.decode("utf-8")
-    payload = json.loads(raw)
+    payload = json.loads(raw, object_pairs_hook=_unique_object_pairs)
     if not isinstance(payload, dict) or set(payload) != ALLOWED_TOP_LEVEL:
         raise ValueError("unexpected top-level input fields")
     if payload["schema_version"] != "v0.1-public-features-draft":
@@ -40,7 +53,8 @@ def parse_public_features(raw):
         if not isinstance(rec, dict) or set(rec) != ALLOWED_RECORD:
             raise ValueError("unexpected record fields")
         opaque_id = rec["opaque_id"]
-        if not isinstance(opaque_id, str) or not opaque_id or len(opaque_id) > 80:
+        if (not isinstance(opaque_id, str) or not OPAQUE_ID_PATTERN.fullmatch(opaque_id)
+                or any(term in opaque_id.lower() for term in FORBIDDEN_TERMS)):
             raise ValueError("invalid opaque ID")
         if opaque_id in seen:
             raise ValueError("duplicate opaque ID")
