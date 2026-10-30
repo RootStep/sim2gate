@@ -1,0 +1,182 @@
+{
+ "purpose": "G0 transfer and load check for the 19 policies of the historical Phase 2 development evaluation (HISTORICAL_PHASE2_INDEPENDENT_EVAL_SPEC.md section 3). No simulator, GPU or policy execution.",
+ "performed": "2026-10-30, operator-run on the Brev instance inside container isaac-arena-vscode with /isaac-sim/python.sh; output pasted into a Claude session and transcribed here. Not an independent third-party rerun.",
+ "tool": "benchmark/v0.1/load_check_checkpoints.py at commit 838bce0 (branch review/checkpoint-verifier)",
+ "transfer": "14 study checkpoints extracted from unsealed.tar on the shared PC (only */model_1999.pt members) and copied with rsync to /home/ubuntu/IsaacLab-Arena/v2_runs/phase2_eval_ckpt/ on Brev. The load check re-hashed each copied file and matched it to its register digest, so the transferred bytes are identical to the verified originals.",
+ "controls": "5 control checkpoints loaded in place from logs/rsl_rl/sim2gate_go2_flat_p0_v5b/ (byte-verified on Brev, phase1_checkpoint_byte_verification_2026-10-30.json).",
+ "summary": "19/19 PASS; 1 distinct network structure; every file: training iteration 1999, 68 tensors, 80,281 non-optimizer parameters, all tensors finite, loaded with torch weights_only=True.",
+ "not_covered": "Loading into the Isaac Lab policy runner and stepping the simulator (a GPU smoke run) has not been done and requires explicit approval.",
+ "files": {
+  "p0v5b_s101": {
+   "container_path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_20-28-49/model_1999.pt",
+   "checkpoint_sha256": "14e03fab96f671e5b45c43ffefe947ea11754c6a07634d232c58b67745befe62",
+   "result": "PASS",
+   "iter": 1999,
+   "tensors": 68,
+   "parameters": 80281,
+   "load_mode": "weights_only"
+  },
+  "p0v5b_s102": {
+   "container_path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_21-25-39/model_1999.pt",
+   "checkpoint_sha256": "dcd188cbf70d0c9c0a94cd1dd2165e714c977c9db67382563900f96358e0989b",
+   "result": "PASS",
+   "iter": 1999,
+   "tensors": 68,
+   "parameters": 80281,
+   "load_mode": "weights_only"
+  },
+  "p0v5b_s103": {
+   "container_path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_22-18-59/model_1999.pt",
+   "checkpoint_sha256": "612ea5b6f092e44b338fa74d88b2d9c8befb3481e0202c9026295edc7d941343",
+   "result": "PASS",
+   "iter": 1999,
+   "tensors": 68,
+   "parameters": 80281,
+   "load_mode": "weights_only"
+  },
+  "p0v5b_s104": {
+   "container_path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_23-14-16/model_1999.pt",
+   "checkpoint_sha256": "7c3061069ae3571e8b11c1719db4a578f24844e156745c66968a2c34d7ea2215",
+   "result": "PASS",
+   "iter": 1999,
+   "tensors": 68,
+   "parameters": 80281,
+   "load_mode": "weights_only"
+  },
+  "p0v5b_s105": {
+   "container_path": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_00-08-49/model_1999.pt",
+   "checkpoint_sha256": "4891931732af39e55fee00cd9ea7aa5c99b664969837b3fccadd4d19f579e46e",
+   "result": "PASS",
+   "iter": 1999,
+   "tensors": 68,
+   "parameters": 80281,
+   "load_mode": "weights_only"
+  },
+  "s301": {
+   "container_path": "/workspaces/isaaclab_arena/v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-25_23-40-15/model_1999.pt",
+   "checkpoint_sha256": "980169c651e5229203c8507c5780caf6f74cc3bf98e290150d99c1503ff542c8",
+   "result": "PASS",
+   "iter": 1999,
+   "tensors": 68,
+   "parameters": 80281,
+   "load_mode": "weights_only"
+  },
+  "s302": {
+   "container_path": "/workspaces/isaaclab_arena/v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_00-39-37/model_1999.pt",
+   "checkpoint_sha256": "d600d35b98f0af606812b7a53ba3681ec51992c7e870981a20fb7d9debb3cf9d",
+   "result": "PASS",
+   "iter": 1999,
+   "tensors": 68,
+   "parameters": 80281,
+   "load_mode": "weights_only"
+  },
+  "s303": {
+   "container_path": "/workspaces/isaaclab_arena/v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_01-34-00/model_1999.pt",
+   "checkpoint_sha256": "f49cf328ae2c215d2f96973ea6bdb14fa3a8482f8976bdc25194d2f2d42fb17a",
+   "result": "PASS",
+   "iter": 1999,
+   "tensors": 68,
+   "parameters": 80281,
+   "load_mode": "weights_only"
+  },
+  "s304": {
+   "container_path": "/workspaces/isaaclab_arena/v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_02-29-56/model_1999.pt",
+   "checkpoint_sha256": "f12069235bf244497b91145a7a5f3244d2318b0dbcdf139ab81df9a6941cfe42",
+   "result": "PASS",
+   "iter": 1999,
+   "tensors": 68,
+   "parameters": 80281,
+   "load_mode": "weights_only"
+  },
+  "s305": {
+   "container_path": "/workspaces/isaaclab_arena/v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_03-24-40/model_1999.pt",
+   "checkpoint_sha256": "242a2cf058270d5f8774ea0c78f01998d233584320250d82fe95978bcedd8a8a",
+   "result": "PASS",
+   "iter": 1999,
+   "tensors": 68,
+   "parameters": 80281,
+   "load_mode": "weights_only"
+  },
+  "s306": {
+   "container_path": "/workspaces/isaaclab_arena/v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_04-24-53/model_1999.pt",
+   "checkpoint_sha256": "bff7d25ae730621e3389e3a24328fa32477d1d636bc6e692e88ee433cd43afe6",
+   "result": "PASS",
+   "iter": 1999,
+   "tensors": 68,
+   "parameters": 80281,
+   "load_mode": "weights_only"
+  },
+  "s307": {
+   "container_path": "/workspaces/isaaclab_arena/v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_05-18-10/model_1999.pt",
+   "checkpoint_sha256": "05959e9161e3b52848ec422a0965360e34d2a4e3664559e22ef85a172ea72b55",
+   "result": "PASS",
+   "iter": 1999,
+   "tensors": 68,
+   "parameters": 80281,
+   "load_mode": "weights_only"
+  },
+  "s308": {
+   "container_path": "/workspaces/isaaclab_arena/v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_06-12-35/model_1999.pt",
+   "checkpoint_sha256": "c66c79b9ab4c78f28c7a5b9999014ee1172d825af9abe87bcd0f4972cdc5712c",
+   "result": "PASS",
+   "iter": 1999,
+   "tensors": 68,
+   "parameters": 80281,
+   "load_mode": "weights_only"
+  },
+  "s309": {
+   "container_path": "/workspaces/isaaclab_arena/v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_07-06-43/model_1999.pt",
+   "checkpoint_sha256": "0bb84992a1855a5fd9e54204eae72e76bd26f80bc326f5941124b4c2988627bd",
+   "result": "PASS",
+   "iter": 1999,
+   "tensors": 68,
+   "parameters": 80281,
+   "load_mode": "weights_only"
+  },
+  "s310": {
+   "container_path": "/workspaces/isaaclab_arena/v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_08-02-46/model_1999.pt",
+   "checkpoint_sha256": "2343f1872f5e8a3bec944f5ffc07b5ba2b4b9412ec03291e2f27c162692b2657",
+   "result": "PASS",
+   "iter": 1999,
+   "tensors": 68,
+   "parameters": 80281,
+   "load_mode": "weights_only"
+  },
+  "s311": {
+   "container_path": "/workspaces/isaaclab_arena/v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_08-57-50/model_1999.pt",
+   "checkpoint_sha256": "0b5f64992656f0c1d8921fb2ca8f8587ecfdee24a09442aa569f4d5ddb7ec7ac",
+   "result": "PASS",
+   "iter": 1999,
+   "tensors": 68,
+   "parameters": 80281,
+   "load_mode": "weights_only"
+  },
+  "s312": {
+   "container_path": "/workspaces/isaaclab_arena/v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_09-54-34/model_1999.pt",
+   "checkpoint_sha256": "49508d134223c13fcd5fa02c3134c5f414569bc56e1c87dbc15cef381319b30b",
+   "result": "PASS",
+   "iter": 1999,
+   "tensors": 68,
+   "parameters": 80281,
+   "load_mode": "weights_only"
+  },
+  "s314": {
+   "container_path": "/workspaces/isaaclab_arena/v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_12-12-57/model_1999.pt",
+   "checkpoint_sha256": "bbaf8258dbce5e679a73b9479198563181e5fb62c781f2b7999ce0bea96c0b12",
+   "result": "PASS",
+   "iter": 1999,
+   "tensors": 68,
+   "parameters": 80281,
+   "load_mode": "weights_only"
+  },
+  "s315": {
+   "container_path": "/workspaces/isaaclab_arena/v2_runs/phase2_eval_ckpt/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_13-09-26/model_1999.pt",
+   "checkpoint_sha256": "9cb30174033a157904bb74501cb8b58d900bba98d18b70c01ebc3e71c1b92b88",
+   "result": "PASS",
+   "iter": 1999,
+   "tensors": 68,
+   "parameters": 80281,
+   "load_mode": "weights_only"
+  }
+ }
+}
