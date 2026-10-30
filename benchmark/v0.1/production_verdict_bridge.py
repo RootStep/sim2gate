@@ -22,8 +22,8 @@ STATUSES = ("scored", "invalid")
 
 
 def _valid_id(value):
-    return (isinstance(value, str) and OPAQUE_ID_PATTERN.fullmatch(value)
-            and not any(word in value.lower() for word in FORBIDDEN_TERMS))
+    return bool(isinstance(value, str) and OPAQUE_ID_PATTERN.fullmatch(value)
+                and not any(word in value.lower() for word in FORBIDDEN_TERMS))
 
 
 def _project(record):
