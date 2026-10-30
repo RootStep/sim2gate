@@ -1,0 +1,38 @@
+"""Register validator must reject missing and conflicting known checkpoint digests."""
+import csv
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+SCRIPT = ROOT / "benchmark/v0.1/validate_seen_policies.py"
+REGISTER = ROOT / "benchmark/v0.1/SEEN_POLICIES_PROVISIONAL.csv"
+
+class RegisterV2Tests(unittest.TestCase):
+    def test_tracked_sources_match(self):
+        subprocess.run([sys.executable, str(SCRIPT)], cwd=ROOT, check=True, capture_output=True)
+
+    def test_source_hash_missing_or_conflicting_fails(self):
+        original = REGISTER.read_bytes()
+        try:
+            for replacement in ("", "0" * 64):
+                with self.subTest(replacement=replacement):
+                    rows = list(csv.DictReader(original.decode().splitlines()))
+                    row = next(r for r in rows if r["policy_id"] == "p0v5b_s107")
+                    row["checkpoint_sha256"] = replacement
+                    if not replacement:
+                        row["hash_status"] = "UNRESOLVED"
+                    with REGISTER.open("w", newline="") as handle:
+                        writer = csv.DictWriter(handle, fieldnames=rows[0].keys())
+                        writer.writeheader()
+                        writer.writerows(rows)
+                    p = subprocess.run([sys.executable, str(SCRIPT)], cwd=ROOT,
+                                       capture_output=True, text=True)
+                    self.assertNotEqual(p.returncode, 0, p.stdout)
+        finally:
+            REGISTER.write_bytes(original)
+
+if __name__ == "__main__":
+    unittest.main()
