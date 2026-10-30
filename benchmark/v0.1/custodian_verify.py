@@ -93,3 +93,49 @@ def synthetic_unseal(*args, **kwargs):
         "legacy synthetic_unseal is disabled; use "
         "synthetic_unseal_with_protected_commitment with a custodian-protected digest"
     )
+
+
+def verify_issued_input_binding(result, issued_input_sha256, issued_ids):
+    """Require independently issued canonical public-input digest and ID roster."""
+    import hmac
+    if not isinstance(issued_input_sha256, str) or len(issued_input_sha256) != 64 or any(
+        c not in "0123456789abcdef" for c in issued_input_sha256
+    ):
+        raise ValueError("invalid issued input commitment")
+    verify_prediction_commitment(result)
+    body = result["predictions"]
+    if not hmac.compare_digest(body["input_sha256"], issued_input_sha256):
+        raise ValueError("prediction input does not match custodian-issued input")
+    ids = [row["opaque_id"] for row in body["predictions"]]
+    if not isinstance(issued_ids, (list, tuple)) or list(issued_ids) != ids:
+        raise ValueError("prediction IDs differ from custodian-issued roster")
+    return True
+
+
+def synthetic_unseal_once(result, sealed_labels, protected_digest,
+                          issued_input_sha256, issued_ids, state_directory):
+    """Synthetic-only single-attempt gate, with a custodian-owned private state dir.
+
+    Caller MUST provide independently recorded digests and roster. A locally
+    chosen digest or writable state directory provides no security guarantee.
+    This reserves the unseal attempt *before* verifying or accessing labels.
+    """
+    import os
+    from pathlib import Path
+    state = Path(state_directory)
+    if not state.is_dir() or state.is_symlink() or state.stat().st_mode & 0o077:
+        raise ValueError("custodian state directory must be private (0700)")
+    marker = state / "synthetic_unseal_attempted"
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    try:
+        fd = os.open(marker, flags, 0o600)
+    except FileExistsError as exc:
+        raise ValueError("synthetic unseal already attempted") from exc
+    with os.fdopen(fd, "w") as handle:
+        handle.write("attempt reserved; never retry or reset in place\\n")
+        handle.flush()
+        os.fsync(handle.fileno())
+    verify_issued_input_binding(result, issued_input_sha256, issued_ids)
+    return synthetic_unseal_with_protected_commitment(result, sealed_labels, protected_digest)
