@@ -14,6 +14,8 @@ on:
       - "benchmark/v0.1/custodian_verify.py"
       - "benchmark/v0.1/check2_sanitized_adapter.py"
       - "benchmark/v0.1/check15_sanitized_adapter.py"
+      - "benchmark/v0.1/production_verdict_bridge.py"
+      - "benchmark/v0.1/tests/test_production_verdict_bridge.py"
       - "benchmark/v0.1/tests/test_public_feature_boundary.py"
       - "benchmark/v0.1/tests/test_commit_public_inputs.py"
       - "benchmark/v0.1/tests/test_end_to_end_smoke.py"
@@ -55,6 +57,8 @@ jobs:
         run: PYTHONPATH=src python -m unittest discover -s benchmark/v0.1/tests -p test_check2_sanitized_adapter.py -v
       - name: Exercise real Check 1 and 5 sanitized projection tests
         run: PYTHONPATH=src python -m unittest discover -s benchmark/v0.1/tests -p test_check15_sanitized_adapter.py -v
+      - name: Exercise production verdict bridge and leakage tests
+        run: PYTHONPATH=src python -m unittest discover -s benchmark/v0.1/tests -p test_production_verdict_bridge.py -v
       - name: Exercise unmocked production scored-case parity and synthetic label invariance
         run: PYTHONPATH=src python -m unittest discover -s benchmark/v0.1/tests -p test_real_production_parity.py -v
       - name: Exercise separate-process synthetic custody canary
