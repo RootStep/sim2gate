@@ -29,7 +29,7 @@ class SyntheticReviewFixes(unittest.TestCase):
                 parse_public_features(raw)
 
     def test_ids_reject_semantic_leaks_and_punctuation(self):
-        for bad in ("labeltrue", "seed1234", "recipeabc", "key12345", "opaque_01",
+        for bad in ("labeltrue", "seed1234", "recipeabc", "key12345", "opaque-01",
                     "../keyfile", "a", "opaque01/secret"):
             raw = json.loads(payload())
             raw["records"][0]["opaque_id"] = bad
