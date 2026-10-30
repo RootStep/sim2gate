@@ -16,7 +16,7 @@
   "unsealed.tar": {
    "sha256": "52dfb97416cd99bd08b8bd3045c83960588f48b2b1006cac3f55e541d8b8df83",
    "bytes": 2780938240,
-   "note": "decrypted by the key holder on 2026-10-26 from the sealed archive above; no previously recorded digest. Re-decrypting the sealed archive and hashing the output would independently confirm this link."
+   "note": "decrypted by the key holder on 2026-10-26 from the sealed archive above; the operator confirmed this provenance on 2026-10-30. No previously recorded digest for unsealed.tar; the link is operator-attested, not re-derived."
   }
  },
  "state_json": "unsealed/workspaces/isaaclab_arena/v2_runs/phase2_study/state.json (robots.study_s<seed>.checkpoint.sha256 and summary.nominal.checkpoint_sha256; equal for all 14)",
