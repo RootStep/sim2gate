@@ -7,7 +7,7 @@
 # v2_runs/phase2_tier_r_smoke/s0_evidence.txt. It runs nothing else: no other policy, cell or stage.
 set -euo pipefail
 
-COMMIT=2eb1b033deb9a46302e471d9eee87c6db7aea8ae
+COMMIT=4a665cc0bb8bd6c00aff47c5fc143e245ef01549
 HOST_ROOT=/home/ubuntu/IsaacLab-Arena            # = /workspaces/isaaclab_arena in the container
 CONTAINER=isaac-arena-vscode
 TOOLS=v2_runs/phase2_eval_tools
@@ -34,10 +34,10 @@ for f in independent_collector.py independent_truth.py independent_analysis.py G
   curl -fsSL "$BASE/$f" -o "$TOOLS/$f"
 done
 ( cd "$TOOLS" && sha256sum -c - ) <<'SUMS'
-95aed16b0f83be4007a6ce27c3fea441b4e925fcf7ecb05570844bf9acb6c12a  independent_collector.py
+92110869ae8c66d0099a8101b8478ab47b85ed050e50416799bad43c1d66e6d8  independent_collector.py
 19f7e3d222151e4fb4c7ec061acc655d2ae47c394873a3bd60667363e626d0a8  independent_truth.py
 cc765b8695f300cf40ff6a2bd0b3996d57b563c554cdbaacb78df777ea12231d  independent_analysis.py
-dd8dc8fadd4266cb2d3737d0c0f0d3b00076fd525390371a5887ca1355755fe8  G2_TIER_R_MANIFEST.json
+419ed50c64594bff2fb7bef1b19c2778d2500dbe1ed000ffbcadb5cdcc9d2f22  G2_TIER_R_MANIFEST.json
 3e0f2053d9ae6d644c392c14dc49012de8f5065373e7be88fa8e95765ec79440  configs/tier_r_commands_64.json
 SUMS
 
@@ -98,8 +98,34 @@ if os.path.exists(out):
     keep = ("completed", "stage", "checkpoint", "checkpoint_matches_manifest", "num_envs", "step_dt", "episode_steps",
             "steps_run", "episode_lengths", "unexpected_early_dones", "foot_names", "task", "play_args",
             "manifest_sha256", "tool_sha256", "truth_lib_sha256", "dependency_files", "cfg_changes",
-            "sync_checks", "runtime_checks")
+            "sync_checks", "runtime_checks", "friction_probe")
     print(json.dumps({k: (h or {}).get(k) for k in keep}, indent=1, default=str))
+    h = h or {}
+    sc, rc = h.get("sync_checks") or {}, h.get("runtime_checks") or {}
+    ct, el = rc.get("contact") or {}, h.get("episode_lengths") or {}
+    zero = ("capture_length_not_consecutive", "termination_flag_mismatch", "done_without_reset_after_capture",
+            "state_changed_after_capture", "command_mismatch", "steps_without_physics_advance")
+    crit = [
+        ("completed, footer verifies, read_run no problems", h.get("completed") is True and not probs),
+        ("samples_checked = 128000", sc.get("samples_checked") == 128000),
+        ("sync mismatch counters all 0", all(sc.get(k) == 0 for k in zero)),
+        ("reset_episode_length_max = 0", sc.get("reset_episode_length_max") == 0),
+        ("terminal_steps = [1000]", sc.get("terminal_steps") == [1000]),
+        ("reset_moved_robot = 128", sc.get("reset_moved_robot") == 128),
+        ("episode lengths 1000..1000, early dones 0", el.get("min") == 1000 and el.get("max") == 1000
+         and h.get("unexpected_early_dones") == 0),
+        ("runtime_checks.ok", rc.get("ok") is True),
+        ("effective friction [0.8] / [0.6]", ct.get("effective_static") == [0.8] and ct.get("effective_dynamic") == [0.6]),
+    ]
+    print("== S0 CRITERIA")
+    for name, ok in crit:
+        print(("PASS  " if ok else "FAIL  ") + name)
+    print("== S0 " + ("PASSED" if all(ok for _, ok in crit) else "NOT PASSED"))
+    fp = h.get("friction_probe") or {}
+    print("== friction probe (diagnostic only):", {k: fp.get(k) for k in
+          ("contact_samples", "sliding_samples", "median", "q25", "q75", "cell_dynamic_coefficient", "error")})
+    print("== contact limitations:", ct.get("limitations"), " modes considered:", ct.get("robot_modes_considered"),
+          " runtime mode probe:", ct.get("robot_runtime_mode"))
 else:
     print("== no run file written")
     d = out + ".diagnostic.json"
