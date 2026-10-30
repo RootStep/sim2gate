@@ -50,7 +50,8 @@ class SyntheticOsIsolation(unittest.TestCase):
                 ],
             }))
             input_path.chmod(0o644)
-            public.chmod(0o777)  # temporary synthetic scorer output location
+            os.chown(public, nobody.pw_uid, nobody.pw_gid)
+            public.chmod(0o700)  # scorer-owned private output directory
             # A child script attempts the private path *explicitly* and
             # executes the scorer only after access is denied.
             # Copy only allowlisted scorer modules into the accessible sandbox. 
