@@ -101,8 +101,8 @@ if os.path.exists(out):
             "sync_checks", "runtime_checks", "friction_probe")
     print(json.dumps({k: (h or {}).get(k) for k in keep}, indent=1, default=str))
     h = h or {}
-    sc, rc = h.get("sync_checks") or {}, h.get("runtime_checks") or {}
-    ct, el = rc.get("contact") or {}, h.get("episode_lengths") or {}
+    sc, rtc = h.get("sync_checks") or {}, h.get("runtime_checks") or {}   # rc is the exit code: not reused
+    ct, el = rtc.get("contact") or {}, h.get("episode_lengths") or {}
     zero = ("capture_length_not_consecutive", "termination_flag_mismatch", "done_without_reset_after_capture",
             "state_changed_after_capture", "command_mismatch", "steps_without_physics_advance")
     crit = [
@@ -115,7 +115,7 @@ if os.path.exists(out):
         ("reset_moved_robot = 128", sc.get("reset_moved_robot") == 128),
         ("episode lengths 1000..1000, early dones 0", el.get("min") == 1000 and el.get("max") == 1000
          and h.get("unexpected_early_dones") == 0),
-        ("runtime_checks.ok", rc.get("ok") is True),
+        ("runtime_checks.ok", rtc.get("ok") is True),
         ("effective friction [0.8] / [0.6]", ct.get("effective_static") == [0.8] and ct.get("effective_dynamic") == [0.6]),
     ]
     print("== S0 CRITERIA")

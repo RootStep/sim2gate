@@ -124,3 +124,26 @@ Attempt 4 (proposed, needs authorization) re-runs S0 once to show the exit crite
 A real probe would need the sensor's friction-force output, if this Isaac Lab version offers one (for example a `track_friction_forces` option). That is not proposed now.
 
 **Contact-force note for G1.** In this build `net_forces_w` is the normal contact force. On flat ground its z component equals the vertical load, so the truth library's stance detection (z force above 10 N) is valid. It must be re-checked before any non-flat terrain is used.
+
+## Attempt 4 (2026-10-30 21:12 UTC, tools `d7e88a6`): every S0 exit criterion met
+
+The collector exited with code 0 after 69 seconds, with no shutdown hang. The run file is `p0v5b_s101__N080.attempt4.jsonl.gz`: 7,998,478 bytes, 128 episodes.
+
+| Criterion | Evidence |
+|---|---|
+| Exit 0; completed; footer verifies; `read_run` reports no problems | exit 0; `completed: true`; no problems |
+| 1000 consecutive post-physics samples | 128,000 samples checked; `capture_length_not_consecutive` 0; `steps_without_physics_advance` 0; `stale_env_samples` 0; lengths 1000..1000 |
+| First recorded state synchronized | `reset_episode_length_max` 0; `command_mismatch` 0, max command deviation 3e-8 |
+| Final sample is the terminal transition | `termination_flag_mismatch` 0; `terminal_steps` [1000]; `unexpected_early_dones` 0 |
+| No reset state in the trajectory | `done_without_reset_after_capture` 0; `state_changed_after_capture` 0, max change 0.0; `reset_moved_robot` 128 |
+| Configuration | terminations `['time_out']` (only `base_contact` was removed); no removed event active; motor lag 0, strength 1.0; no delay buffers |
+| Effective friction | [0.8] / [0.6]. Limitation: the robot's runtime combine mode is not observable; both producible modes give the same value |
+| Provenance | checkpoint `14e03fab…` matches the manifest; installed `sim2gate` dependency files match the repository |
+
+The friction probe was not informative, for the same reason as in attempt 3.
+
+The runbook's PASS/FAIL printer crashed on a variable-name bug of its own, after the evidence had been printed. The criteria above are read from that evidence. The printer is fixed.
+
+**Proposed status:** S0 is closable. Before asking the reviewer to close it, the attempt 3 and attempt 4 run files will be re-checked independently, off the instance.
+
+Measured cost: 69 s per run. S1 is not authorized; its cap is re-derived from this measurement as part of its approval.

@@ -3,7 +3,7 @@
  "review_status": {
   "G1": "provisional",
   "G2": "provisionally accepted (revision 2, 2026-10-30)",
-  "S0": "authorized by the manager 2026-10-30T20:04Z; attempts 1-2 aborted at runtime verification; attempt 3 authorized 2026-10-30T20:56Z",
+  "S0": "attempt 4 met every S0 exit criterion by its own evidence (2026-10-30T21:13Z); closure pending independent re-check of the run file and reviewer confirmation",
   "S1": "not authorized",
   "S2": "not authorized",
   "open_runtime_uncertainties": [
@@ -350,16 +350,55 @@
     {
      "attempt": 4,
      "purpose": "demonstrate exit code 0 with the exit fix; all S0 criteria re-checked",
-     "authorization": "pending manager authorization",
-     "result": null
+     "authorization": "manager ran the attempt-4 runbook, 2026-10-30T21:12Z",
+     "result": "ALL S0 EXIT CRITERIA MET (per the run's own evidence); independent re-check of the file pending",
+     "tools_commit": "d7e88a6521173e0cbfdb2899783a534091faf7a7",
+     "utc": "2026-10-30T21:12:30Z start, 21:13:39Z end",
+     "collector_exit": 0,
+     "wall_seconds": 69,
+     "output": "v2_runs/phase2_tier_r_smoke/p0v5b_s101__N080.attempt4.jsonl.gz, 7,998,478 bytes, 128 episodes",
+     "evidence": {
+      "exit": "collector exit 0, wall 69 s; no shutdown hang",
+      "read_run_problems": [],
+      "checkpoint_sha256": "14e03fab96f671e5b45c43ffefe947ea11754c6a07634d232c58b67745befe62 (matches)",
+      "sync_checks": {
+       "samples_checked": 128000,
+       "capture_length_not_consecutive": 0,
+       "termination_flag_mismatch": 0,
+       "done_without_reset_after_capture": 0,
+       "state_changed_after_capture": 0,
+       "command_mismatch": 0,
+       "steps_without_physics_advance": 0,
+       "stale_env_samples": 0,
+       "reset_moved_robot": 128,
+       "reset_episode_length_max": 0,
+       "terminal_steps": [
+        1000
+       ],
+       "max_command_deviation": 2.95e-08,
+       "max_state_change_after_capture": 0.0,
+       "ok": true
+      },
+      "episodes": "lengths 1000..1000; unexpected_early_dones 0; removed_terminations ['base_contact']",
+      "runtime_checks": "ok: terminations ['time_out']; events physics_material, reset_base, reset_robot_joints; robot friction 0.8/0.6 on 128 x 27 shapes; swept motor lag 0 strength 1.0; no delay buffers; effective friction [0.8]/[0.6] with the unobservable-mode limitation",
+      "dependency_files": {
+       "sim2gate.checks.isaaclab_conditions": "7896f1d9ec3f230bb5dba1c076b82ecbd59475bd271e3cc731e4536293113595",
+       "sim2gate.checks.commands": "deb97ae3ce7e4e7bf32f4f5806a3872674d6dd4c5d69cec215c129b456a90b0d",
+       "note": "both identical to the repository's files at this branch"
+      },
+      "friction_probe": "not informative (normal-only contact forces in this build), as in attempt 3",
+      "runbook_summary_bug": "the PASS/FAIL printer reused the name rc for the runtime checks and crashed before printing; criteria read from the evidence JSON instead; printer fixed"
+     }
     }
    ],
    "budget_used": {
-    "run_wall_seconds_total": 70,
+    "run_wall_seconds_total": "42 + 28 + attempt 3 (not transcribed; about 2.5 min including the 2-min shutdown hang) + 69",
     "run_wall_hours_total": 0.0194,
     "note": "Wall time of the collector process per attempt, as measured by the runbook. Under the manifest's literal cap unit (instance time from the first run's start to the last run's end) the stage window since 20:10:24Z already exceeds 0.5 h; the manager must choose how S0 budget is counted before attempt 3.",
     "manager_decision": "2026-10-30T20:56Z: the manager waived the S0 budget question ('dont worry about budget') and directed attempt 3. Recorded accounting: summed collector wall time per attempt (70 s so far), each attempt still bounded by the runbook's 25-minute timeout. Remaining under the 0.5 h cap on that basis: about 0.48 h."
-   }
+   },
+   "measured_per_run_seconds": 69,
+   "note_for_S1": "Measured 69 s per run (one Isaac Sim launch, 128 envs x 1000 steps). At that rate S1's 40 runs take about 46 min, against its 3.0 h cap; the cap is re-derived as an S1 approval item."
   },
   {
    "id": "S1",
