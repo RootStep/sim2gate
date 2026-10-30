@@ -92,3 +92,35 @@ Whether to also make it a pass/fail criterion is the reviewer's call. A toleranc
 3. **Attempt 3 needs explicit manager authorization.** The revised check is committed first. All other S0 exit criteria are unchanged, including the 1000-step trajectory and terminal-sample checks.
 
 The robot's physics materials are not changed.
+
+## Attempt 3 (2026-10-30, tools `4a665cc`): data criteria passed; clean exit not yet shown
+
+Every data criterion passed:
+- the run completed, the footer verifies, and `read_run` reports no problems;
+- 128,000 samples were checked, with every step-synchronization counter at 0;
+- the episode counter was 0 after the collector's reset;
+- every episode ended at step 1000, and all 128 resets were observed outside the recorded samples;
+- there were no early ends;
+- the runtime checks passed;
+- the effective friction is 0.8 / 0.6.
+
+The recorded limitation: the robot's runtime combine mode cannot be observed, because the tensor view has no query for it. Both modes the setup could produce give 0.8 / 0.6.
+
+**Not passed: exit code 0.** After the output was written and verified, Isaac Sim's shutdown (`SimulationApp.close()`, called by the play script when its loop is interrupted) hung. A 2-minute watchdog then ended the process with an error.
+
+The runbook's PASS/FAIL summary did not include the exit-code criterion, so its "S0 PASSED" line overstated the result.
+
+The data are unaffected, because the file was complete and verified before the shutdown began.
+
+**Fix:** the collector now ends the process itself, with its verified exit code, as soon as the output is fsynced and renamed:
+- 0 for a completed, re-verified run that passed step synchronization;
+- 1 for a run that is incomplete or does not verify;
+- 3 for a step-synchronization failure.
+
+Attempt 4 (proposed, needs authorization) re-runs S0 once to show the exit criterion.
+
+**Friction probe: not informative in this build.** Isaac Lab reports that PhysX does not return the total contact force, so the contact sensor returns only the normal force. The tangential part is numerically zero: the median |F_t| / F_n was 1.3 × 10⁻⁷ over 153,842 sliding samples. The probe therefore says nothing about friction here, which is what reviewer decision 2 anticipated.
+
+A real probe would need the sensor's friction-force output, if this Isaac Lab version offers one (for example a `track_friction_forces` option). That is not proposed now.
+
+**Contact-force note for G1.** In this build `net_forces_w` is the normal contact force. On flat ground its z component equals the vertical load, so the truth library's stance detection (z force above 10 N) is valid. It must be re-checked before any non-flat terrain is used.

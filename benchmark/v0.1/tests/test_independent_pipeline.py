@@ -114,6 +114,12 @@ class PreResetCaptureTests(unittest.TestCase):
         col._pending, col._in_step, col.early_dones, col.started = None, False, 0, True
         col.finished = False
         col._finish = lambda env: setattr(col, "finished", True)
+        col.exit_code = lambda: 0
+
+        def stop(code):                                                 # stands in for the hard exit
+            col.exit_seen = code
+            raise KeyboardInterrupt
+        col._exit = stop
         col.sync = ic.SyncTrace([[0.5, 0.0, 0.0]] * n, max_steps)
         col.probe, col._pending_probe = ic.FrictionProbe(), None
         col._probe_snapshot = lambda env: ([[[3.0, 4.0, 50.0]] * 4] * n, [[[0.1, 0.0]] * 4] * n)
@@ -159,6 +165,7 @@ class PreResetCaptureTests(unittest.TestCase):
             for _ in range(5):
                 col.step(wrapper, orig, Act())
         self.assertTrue(col.finished)
+        self.assertEqual(col.exit_seen, 0)
         self.assertEqual(col.early_dones, 0)
         self.assertEqual(col.log.record(0)["base_height_m"][-1], 0.05)
         sync = col.sync.result(col.log.lengths())
@@ -182,6 +189,30 @@ class PreResetCaptureTests(unittest.TestCase):
         wrapper = types.SimpleNamespace(unwrapped=env)
         with self.assertRaisesRegex(RuntimeError, "pre-reset"):
             col.step(wrapper, lambda w, a: ("o", "r", [False, False], {}), Act())
+
+
+class ExitCodeTests(unittest.TestCase):
+    def col(self, d, completed=True, sync_ok=True, write=True):
+        c = object.__new__(ic.Collector)
+        c.policy_id, c.cell, c.completed = "p0v5b_s101", {"id": "N080"}, completed
+        c.sync_checks = {"ok": sync_ok, "problems": [] if sync_ok else ["x"]}
+        c.out = str(Path(d) / "r.jsonl.gz")
+        if write:
+            write_run(c.out, small_manifest(4), "m", "p0v5b_s101", "N080", 4, T=20)
+        return c
+
+    def test_codes(self):
+        with tempfile.TemporaryDirectory() as d, contextlib.redirect_stdout(io.StringIO()), \
+                contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(self.col(d).exit_code(), 0)
+        with tempfile.TemporaryDirectory() as d, contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(self.col(d, completed=False, write=False).exit_code(), 1)
+        with tempfile.TemporaryDirectory() as d, contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(self.col(d, sync_ok=False).exit_code(), 3)
+        with tempfile.TemporaryDirectory() as d, contextlib.redirect_stderr(io.StringIO()):
+            c = self.col(d)
+            rewrite_lines(c.out, lambda ls: ls[:-1])
+            self.assertEqual(c.exit_code(), 1)
 
 
 class SyncTraceTests(unittest.TestCase):

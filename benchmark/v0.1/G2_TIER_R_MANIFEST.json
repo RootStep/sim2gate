@@ -325,7 +325,32 @@
     {
      "attempt": 3,
      "authorization": "manager, 2026-10-30T20:56Z ('make run successful'); revised check committed first (423dc41)",
-     "tools_commit": "see run_s0_smoke.sh",
+     "tools_commit": "4a665cc0bb8bd6c00aff47c5fc143e245ef01549",
+     "result": "DATA CRITERIA PASSED; exit-code criterion FAILED (process did not exit 0)",
+     "utc": "2026-10-30T21:02:55Z approx. start (log); output written ~21:03:17Z",
+     "evidence": {
+      "criteria_passed": [
+       "completed, footer verifies, read_run no problems",
+       "samples_checked = 128000",
+       "all sync mismatch counters 0",
+       "reset_episode_length_max = 0",
+       "terminal_steps = [1000]",
+       "reset_moved_robot = 128",
+       "episode lengths 1000..1000, unexpected_early_dones 0",
+       "runtime_checks.ok",
+       "effective friction [0.8] / [0.6]"
+      ],
+      "contact_limitation": "runtime combine mode of the 27 unbound robot shapes not observable (the tensor view exposes no combine-mode query); effective friction computed for ['average', 'multiply'], both 0.8 / 0.6",
+      "exit": "after the output was written and verified, Isaac Sim's SimulationApp.close() (play script launch context, on the interrupt) hung until a 2-minute watchdog ('Timeout (0:02:00)!') ended the process with an error. The runbook's PASS/FAIL summary omitted the exit-code criterion, so its 'S0 PASSED' line overstated the result.",
+      "friction_probe": "NOT INFORMATIVE: Isaac Lab warned 'PhysX does not return a total contact force ... Returning net_normal_forces_w', so the contact sensor carries no tangential force. Median |Ft|/Fn = 1.3e-7 over 153,842 sliding samples is numerical noise, not a friction measurement.",
+      "contact_force_note": "net_forces_w is the NORMAL contact force in this build. On flat ground its z component is the vertical load, so the truth library's stance detection (z force > 10 N) is unaffected; this must be re-checked before any non-flat terrain."
+     },
+     "fix": "the collector exits immediately (os._exit) with its verified code after the output is fsynced and renamed, skipping Kit shutdown; exit_code(): 0 completed and re-verified and sync ok, 1 incomplete or unverifiable, 3 sync failure"
+    },
+    {
+     "attempt": 4,
+     "purpose": "demonstrate exit code 0 with the exit fix; all S0 criteria re-checked",
+     "authorization": "pending manager authorization",
      "result": null
     }
    ],

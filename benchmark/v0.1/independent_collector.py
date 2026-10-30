@@ -43,11 +43,10 @@ State is read inside reward computation, i.e. after physics and terminations but
 ended episodes, so the terminal step of every episode is recorded (nothing is hidden by a reset). Any episode that
 ends before the time limit is counted as unexpected and invalidates the run in the analysis.
 
-Completion: the output is written to a temporary file and renamed only after every episode has been recorded,
-with header `completed: true` and a footer holding the record count and a digest of the records. The run stops
-Isaac Lab's play loop with KeyboardInterrupt, the stop signal of the existing condition runner (Isaac Sim closes
-the process on other exceptions); success is decided by the completion flag and the footer, never by the
-interrupt. main() exits 0 only for a completed run.
+Completion: the output is written to a temporary file, fsynced and renamed only after every episode has been
+recorded, with header `completed: true` and a footer holding the record count and a digest of the records. The
+process then exits at once with 0 (completed, file re-verified, step synchronization passed), 1 or 3, skipping
+Isaac Sim's shutdown, which hung after a good run in S0 attempt 3.
 
 Authorization: refuses to run unless the manifest is APPROVED and the requested stage is APPROVED and contains
 this (policy, cell).
@@ -409,7 +408,27 @@ class EpisodeLog:
                 h.update(line.encode())
                 f.write(line + "\n")
             f.write(json.dumps({"footer": {"records": self.n, "records_sha256": h.hexdigest()}}) + "\n")
+        fd = os.open(tmp, os.O_RDONLY)                               # durable before rename (and before a hard exit)
+        try:
+            os.fsync(fd)
+        finally:
+            os.close(fd)
         os.replace(tmp, path)
+        dfd = os.open(os.path.dirname(os.path.abspath(path)) or ".", os.O_RDONLY)
+        try:
+            os.fsync(dfd)
+        finally:
+            os.close(dfd)
+
+
+def _hard_exit(code):
+    """End the process now, with `code`. S0 attempt 3: after the output was written and verified, Isaac Sim's
+    SimulationApp.close() (run by the play script's launch context when the play loop is interrupted) hung until a
+    2-minute watchdog killed it, so a good run exited non-zero. The output is closed, fsynced and renamed before
+    this is called, and nothing after the play loop is needed, so Kit's shutdown is skipped."""
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(code)
 
 
 def verify_written(path):
@@ -452,6 +471,7 @@ class Collector:
         self.obs_buf = self.act_buf = None
         self._pending, self._pending_sync, self._pending_probe, self._in_step, self.early_dones = None, None, None, False, 0
         self.probe = FrictionProbe()
+        self._exit = _hard_exit
         self.sync_checks = None
 
     def record_checkpoint(self, path):
@@ -522,7 +542,7 @@ class Collector:
         self.log.add(self._pending, done=dones)
         if self.log.all_closed or self.steps >= self.max_steps + 5:
             self._finish(env)
-            raise KeyboardInterrupt
+            self._exit(self.exit_code())                           # does not return in a real run
         return (self._delay_obs(out[0]),) + tuple(out[1:])
 
     def _delay_obs(self, obs):
@@ -711,6 +731,22 @@ class Collector:
                 "base_lin_vel_b_xy": t(d.root_lin_vel_b)[:, :2].tolist(), "cmd_vel_xy": cmd.tolist(),
                 "foot_force_n": forces.tolist(), "foot_pos_w_xy": feet_pos.tolist()}
 
+    def exit_code(self):
+        """0 only for a completed run whose file re-verifies and whose step synchronization passed."""
+        if not self.completed:
+            print(f"[independent] {self.policy_id}: NOT completed", file=sys.stderr)
+            return 1
+        problems = verify_written(self.out)
+        if problems:
+            print(f"[independent] {self.policy_id}: output fails verification: {problems}", file=sys.stderr)
+            return 1
+        if not (self.sync_checks or {}).get("ok"):
+            print(f"[independent] {self.policy_id}: step synchronization failed: {(self.sync_checks or {}).get('problems')}",
+                  file=sys.stderr)
+            return 3
+        print(f"[independent] {self.policy_id} {self.cell['id']}: completed, verified, exit 0")
+        return 0
+
     def _finish(self, env):
         ck = self.checkpoints[-1] if self.checkpoints else None
         expected = self.manifest["policies"][self.policy_id]["checkpoint_sha256"]
@@ -778,20 +814,10 @@ def main(argv=None):
         runpy.run_module("isaaclab_rl.entrypoints.backends.play_rsl_rl", run_name="__main__")
     except KeyboardInterrupt:
         pass
-    if not col.completed:
-        if os.path.exists(a.out + ".tmp"):
-            os.remove(a.out + ".tmp")
-        print(f"[independent] {a.policy} {a.cell}: NOT completed; no output written", file=sys.stderr)
-        return 1
-    problems = verify_written(a.out)
-    if problems:
-        print(f"[independent] {a.policy} {a.cell}: output fails verification: {problems}", file=sys.stderr)
-        return 1
-    if not col.sync_checks["ok"]:                                    # kept as evidence; the analysis rejects it
-        print(f"[independent] {a.policy} {a.cell}: step synchronization failed: {col.sync_checks['problems']}",
-              file=sys.stderr)
-        return 3
-    return 0
+    # normally not reached: a finished run ends the process from step() via _hard_exit
+    if not col.completed and os.path.exists(a.out + ".tmp"):
+        os.remove(a.out + ".tmp")
+    return col.exit_code()
 
 
 if __name__ == "__main__":
