@@ -7,21 +7,21 @@
 # v2_runs/phase2_tier_r_smoke/s0_evidence.txt. It runs nothing else: no other policy, cell or stage.
 set -euo pipefail
 
-COMMIT=4a665cc0bb8bd6c00aff47c5fc143e245ef01549
+COMMIT=d7e88a6521173e0cbfdb2899783a534091faf7a7
 HOST_ROOT=/home/ubuntu/IsaacLab-Arena            # = /workspaces/isaaclab_arena in the container
 CONTAINER=isaac-arena-vscode
 TOOLS=v2_runs/phase2_eval_tools
 SMOKE=v2_runs/phase2_tier_r_smoke
-OUT=$SMOKE/p0v5b_s101__N080.jsonl.gz
+OUT=$SMOKE/p0v5b_s101__N080.attempt4.jsonl.gz       # attempt 3's file is kept unchanged
 
 cd "$HOST_ROOT"
 if [ -e "$OUT" ]; then echo "STOP: $OUT already exists; runs are written once"; exit 1; fi
 mkdir -p "$TOOLS/configs" "$SMOKE"
 # keep an earlier aborted attempt's evidence instead of overwriting it
-if ls "$SMOKE"/s0_evidence.txt "$SMOKE"/s0_run.log "$OUT".diagnostic.json >/dev/null 2>&1; then
+if ls "$SMOKE"/s0_evidence.txt "$SMOKE"/s0_run.log >/dev/null 2>&1; then
   PREV="$SMOKE/attempt_$(date -u +%Y%m%dT%H%M%SZ)_previous"
   mkdir -p "$PREV"
-  for f in s0_evidence.txt s0_run.log p0v5b_s101__N080.jsonl.gz.diagnostic.json; do
+  for f in s0_evidence.txt s0_run.log p0v5b_s101__N080.jsonl.gz.diagnostic.json p0v5b_s101__N080.attempt4.jsonl.gz.diagnostic.json; do
     [ -e "$SMOKE/$f" ] && mv "$SMOKE/$f" "$PREV/"
   done
   echo "== earlier attempt's files moved to $PREV"
@@ -34,10 +34,10 @@ for f in independent_collector.py independent_truth.py independent_analysis.py G
   curl -fsSL "$BASE/$f" -o "$TOOLS/$f"
 done
 ( cd "$TOOLS" && sha256sum -c - ) <<'SUMS'
-92110869ae8c66d0099a8101b8478ab47b85ed050e50416799bad43c1d66e6d8  independent_collector.py
+e10b20ccbeca92992f48c82dff13901662c7d689885e608caa57a33b0be8c20f  independent_collector.py
 19f7e3d222151e4fb4c7ec061acc655d2ae47c394873a3bd60667363e626d0a8  independent_truth.py
 cc765b8695f300cf40ff6a2bd0b3996d57b563c554cdbaacb78df777ea12231d  independent_analysis.py
-419ed50c64594bff2fb7bef1b19c2778d2500dbe1ed000ffbcadb5cdcc9d2f22  G2_TIER_R_MANIFEST.json
+5691532fb98137f8e2590c7095a00ca96d3eb6eca4d0e3e1973d4fdb37629555  G2_TIER_R_MANIFEST.json
 3e0f2053d9ae6d644c392c14dc49012de8f5065373e7be88fa8e95765ec79440  configs/tier_r_commands_64.json
 SUMS
 
@@ -46,7 +46,7 @@ docker exec -i -w /workspaces/isaaclab_arena "$CONTAINER" bash -s <<'IN_CONTAINE
 set -uo pipefail
 TOOLS=v2_runs/phase2_eval_tools
 SMOKE=v2_runs/phase2_tier_r_smoke
-OUT=$SMOKE/p0v5b_s101__N080.jsonl.gz
+OUT=$SMOKE/p0v5b_s101__N080.attempt4.jsonl.gz
 CKPT=/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_20-28-49/model_1999.pt
 EV=$SMOKE/s0_evidence.txt
 PY=/isaac-sim/python.sh; [ -x "$PY" ] || PY=python
@@ -84,9 +84,9 @@ RC=$?
 END=$(date -u +%s)
 echo "== collector exit $RC  wall_seconds $((END-START))  end $(date -u +%FT%TZ)  (124 = 25-min timeout)" >> "$EV"
 
-"$PY" - "$TOOLS" "$OUT" >> "$EV" 2>&1 <<'PYEV'
+"$PY" - "$TOOLS" "$OUT" "$RC" >> "$EV" 2>&1 <<'PYEV'
 import json, os, sys
-tools, out = sys.argv[1], sys.argv[2]
+tools, out, rc = sys.argv[1], sys.argv[2], int(sys.argv[3])
 sys.path.insert(0, tools)
 import independent_analysis as ia
 man = os.path.join(tools, "G2_TIER_R_MANIFEST.json")
@@ -106,6 +106,7 @@ if os.path.exists(out):
     zero = ("capture_length_not_consecutive", "termination_flag_mismatch", "done_without_reset_after_capture",
             "state_changed_after_capture", "command_mismatch", "steps_without_physics_advance")
     crit = [
+        ("collector exit code 0 (got %d)" % rc, rc == 0),
         ("completed, footer verifies, read_run no problems", h.get("completed") is True and not probs),
         ("samples_checked = 128000", sc.get("samples_checked") == 128000),
         ("sync mismatch counters all 0", all(sc.get(k) == 0 for k in zero)),
