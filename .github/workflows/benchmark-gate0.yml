@@ -1,0 +1,84 @@
+name: Benchmark Gate 0 static checks
+
+on:
+  push:
+    branches:
+      - benchmark/v0.1-foundation
+    paths:
+      - "benchmark/v0.1/SEEN_POLICIES_PROVISIONAL.csv"
+      - "benchmark/v0.1/validate_seen_policies.py"
+      - "benchmark/v0.1/tests/test_seen_policy_register_v2.py"
+      - "benchmark/v0.1/public_feature_boundary.py"
+      - "benchmark/v0.1/commit_public_inputs.py"
+      - "benchmark/v0.1/blinded_scorer_smoke.py"
+      - "benchmark/v0.1/custodian_verify.py"
+      - "benchmark/v0.1/check2_sanitized_adapter.py"
+      - "benchmark/v0.1/check15_sanitized_adapter.py"
+      - "benchmark/v0.1/production_verdict_bridge.py"
+      - "benchmark/v0.1/tests/test_production_verdict_bridge.py"
+      - "benchmark/v0.1/tests/test_public_feature_boundary.py"
+      - "benchmark/v0.1/tests/test_commit_public_inputs.py"
+      - "benchmark/v0.1/tests/test_end_to_end_smoke.py"
+      - "benchmark/v0.1/tests/test_check2_sanitized_adapter.py"
+      - "benchmark/v0.1/tests/test_check15_sanitized_adapter.py"
+      - "benchmark/v0.1/tests/test_real_production_parity.py"
+      - "benchmark/v0.1/tests/test_process_custody_canary.py"
+      - "benchmark/v0.1/tests/test_custody_boundary_regressions.py"
+      - "benchmark/v0.1/tests/test_os_custody_isolation.py"
+      - "benchmark/v0.1/tests/test_review_f1_f5_synthetic.py"
+      - ".github/workflows/benchmark-gate0.yml"
+  pull_request:
+    paths:
+      - "benchmark/v0.1/**"
+      - ".github/workflows/benchmark-gate0.yml"
+  workflow_dispatch:
+
+jobs:
+  static-gate0:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate historical exclusion register
+        run: python benchmark/v0.1/validate_seen_policies.py
+      - name: Exercise seen-register source-tamper regressions
+        run: python -m unittest discover -s benchmark/v0.1/tests -p test_seen_policy_register_v2.py -v
+      - name: Exercise synthetic metadata boundary tests
+        run: python -m unittest discover -s benchmark/v0.1/tests -p "test_*public*.py" -v
+      - name: Exercise deterministic input commitment tests
+        run: python -m unittest discover -s benchmark/v0.1/tests -p test_commit_public_inputs.py -v
+      - name: Exercise end-to-end synthetic custody and leakage canaries
+        run: python -m unittest discover -s benchmark/v0.1/tests -p test_end_to_end_smoke.py -v
+      - name: Exercise real Check 2 sanitized adapter parity tests
+        run: PYTHONPATH=src python -m unittest discover -s benchmark/v0.1/tests -p test_check2_sanitized_adapter.py -v
+      - name: Exercise real Check 1 and 5 sanitized projection tests
+        run: PYTHONPATH=src python -m unittest discover -s benchmark/v0.1/tests -p test_check15_sanitized_adapter.py -v
+      - name: Exercise production verdict bridge and leakage tests
+        run: PYTHONPATH=src python -m unittest discover -s benchmark/v0.1/tests -p test_production_verdict_bridge.py -v
+      - name: Exercise unmocked production scored-case parity and synthetic label invariance
+        run: PYTHONPATH=src python -m unittest discover -s benchmark/v0.1/tests -p test_real_production_parity.py -v
+      - name: Exercise separate-process synthetic custody canary
+        run: python -m unittest discover -s benchmark/v0.1/tests -p test_process_custody_canary.py -v
+      - name: Exercise synthetic custody boundary regressions
+        run: python -m unittest discover -s benchmark/v0.1/tests -p test_custody_boundary_regressions.py -v
+      - name: Exercise reviewer F1-F5 synthetic custody regressions
+        run: python -m unittest discover -s benchmark/v0.1/tests -p test_review_f1_f5_synthetic.py -v
+      - name: Exercise synthetic Linux OS credential isolation
+        run: |
+          sudo python -c 'import os,sys; assert sys.platform.startswith("linux") and os.geteuid()==0'
+          set -o pipefail
+          sudo python -m unittest discover -s benchmark/v0.1/tests -p test_os_custody_isolation.py -v 2>&1 | tee os-custody-test.log
+          if grep -Eq 'skipped=|Ran 0 tests' os-custody-test.log; then exit 1; fi
+      - name: Retain OS custody test output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-os-custody-test-log
+          path: os-custody-test.log
+          if-no-files-found: warn
+      - name: Mark scope of checks
+        run: echo "Static checks only. Not an end-to-end leakage certification, custodian approval, or benchmark freeze."
