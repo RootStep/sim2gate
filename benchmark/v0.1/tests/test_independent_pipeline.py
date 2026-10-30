@@ -46,7 +46,8 @@ def good_header(m, sha, policy, cell, n, T):
     return {"manifest_sha256": sha, "policy_id": policy, "cell": next(c for c in m["cells"] if c["id"] == cell),
             "checkpoint": {"sha256": m["policies"][policy]["checkpoint_sha256"]}, "checkpoint_matches_manifest": True,
             "command_set_sha256": m["command_set"]["sha256"], "task": m["common_task"], "num_envs": n,
-            "runtime_checks": {"ok": True, "problems": []}, "unexpected_early_dones": 0, "episode_steps": T,
+            "runtime_checks": {"ok": True, "problems": []}, "sync_checks": {"ok": True, "problems": []},
+            "unexpected_early_dones": 0, "episode_steps": T,
             "steps_run": T}
 
 
@@ -110,9 +111,16 @@ class PreResetCaptureTests(unittest.TestCase):
         col._pending, col._in_step, col.early_dones, col.started = None, False, 0, True
         col.finished = False
         col._finish = lambda env: setattr(col, "finished", True)
-        state = {"h": 0.32, "t": 0}
+        col.sync = ic.SyncTrace([[0.5, 0.0, 0.0]] * n, max_steps)
+        col.sync.on_reset([0] * n)
+        state = {"h": 0.32, "t": 0, "len": 0, "x": 0.0}
         env = types.SimpleNamespace(reward_manager=types.SimpleNamespace(compute=lambda *a, **k: "rew"))
         col._snapshot = lambda env: dict(snap(n, state["t"]), base_height_m=[state["h"]] * n)
+        col._sync_snapshot = lambda env: {"len": [state["len"]] * n, "flag": [state["flag"]] * n,
+                                          "pos": [[state["x"], 0.0, state["h"]]] * n, "cmd": [[0.5, 0.0, 0.0]] * n}
+        env.episode_length_buf = types.SimpleNamespace(tolist=lambda: [state["len"]] * n)
+        env.scene = {"robot": types.SimpleNamespace(data=types.SimpleNamespace(
+            root_pos_w=types.SimpleNamespace(tolist=lambda: [[state["x"], 0.0, state["h"]]] * n)))}
         col._install_prereset_hook(env)
         return col, env, state
 
@@ -126,12 +134,15 @@ class PreResetCaptureTests(unittest.TestCase):
 
         def orig_step(wrapper, actions):
             state["t"] += 1
+            state["len"] += 1                                           # Isaac Lab: length, terminations, rewards
+            state["x"] += 0.01
             if fall_at is not None and state["t"] == fall_at:
                 state["h"] = 0.05                                       # falls on this step
-            env.reward_manager.compute()                                # capture point (pre-reset)
             done = state["t"] in done_at
+            state["flag"] = done
+            env.reward_manager.compute()                                # capture point (pre-reset)
             if done:
-                state["h"] = 0.32                                       # the reset hides the fall
+                state["h"], state["x"], state["len"] = 0.32, 0.0, 0     # the reset hides the fall
             return ("obs", "rew", Dones([done] * n), {})
         return orig_step
 
@@ -145,6 +156,10 @@ class PreResetCaptureTests(unittest.TestCase):
         self.assertTrue(col.finished)
         self.assertEqual(col.early_dones, 0)
         self.assertEqual(col.log.record(0)["base_height_m"][-1], 0.05)
+        sync = col.sync.result(col.log.lengths())
+        self.assertTrue(sync["ok"], sync["problems"])
+        self.assertEqual(sync["reset_moved_robot"], 2)                  # the reset was real, and not recorded
+        self.assertEqual(sync["terminal_steps"], [3])
 
     def test_early_done_counted(self):
         col, env, state = self.make(n=2, max_steps=5)
@@ -154,12 +169,109 @@ class PreResetCaptureTests(unittest.TestCase):
             for _ in range(10):
                 col.step(wrapper, orig, Act())
         self.assertEqual(col.early_dones, 2)
+        self.assertFalse(col.sync.result(col.log.lengths())["ok"])      # ended at step 2, not 5
 
     def test_missing_capture_raises(self):
         col, env, state = self.make()
         wrapper = types.SimpleNamespace(unwrapped=env)
         with self.assertRaisesRegex(RuntimeError, "pre-reset"):
             col.step(wrapper, lambda w, a: ("o", "r", [False, False], {}), Act())
+
+
+class SyncTraceTests(unittest.TestCase):
+    """Each way the recorded trajectory could fall out of step with the environment is detected."""
+
+    def run_trace(self, T=4, n=2, mutate=None):
+        cmds = [[0.5, 0.0, 0.1]] * n
+        tr = ic.SyncTrace(cmds, T)
+        tr.on_reset([0] * n)
+        open_ = [True] * n
+        for k in range(1, T + 1):
+            done = k == T
+            ev = {"open": list(open_), "cap_len": [k] * n, "cap_flag": [done] * n,
+                  "cap_pos": [[0.01 * k, 0.0, 0.3]] * n, "cap_cmd": [list(c) for c in cmds], "dones": [done] * n,
+                  "post_len": [0 if done else k] * n,
+                  "post_pos": [[0.0, 0.0, 0.3] if done else [0.01 * k, 0.0, 0.3]] * n}
+            if mutate:
+                mutate(k, ev)
+            tr.on_step(k, ev["open"], ev["cap_len"], ev["cap_flag"], ev["cap_pos"], ev["cap_cmd"], ev["dones"],
+                       ev["post_len"], ev["post_pos"])
+            if done:
+                open_ = [False] * n
+        return tr.result([T] * n)
+
+    def test_clean_trace_passes(self):
+        r = self.run_trace()
+        self.assertTrue(r["ok"], r["problems"])
+        self.assertEqual(r["samples_checked"], 8)
+        self.assertEqual(r["reset_moved_robot"], 2)
+
+    def test_each_desynchronization_detected(self):
+        def at(step, key, value):
+            def m(k, ev):
+                if k == step:
+                    ev[key] = value
+            return m
+        cases = {
+            "capture_length_not_consecutive": at(2, "cap_len", [3, 3]),        # a skipped or repeated sample
+            "termination_flag_mismatch": at(4, "cap_flag", [False, False]),   # snapshot not at the terminal step
+            "done_without_reset_after_capture": at(4, "post_len", [4, 4]),    # done but no reset after capture
+            "state_changed_after_capture": at(2, "post_pos", [[9.0, 0.0, 0.3]] * 2),  # state moved after capture
+            "command_mismatch": at(3, "cap_cmd", [[0.0, 0.0, 0.0]] * 2),      # command buffer not pinned
+            "steps_without_physics_advance": at(3, "cap_pos", [[0.02, 0.0, 0.3]] * 2),  # step-2 state again
+        }
+        for key, mut in cases.items():
+            r = self.run_trace(mutate=mut)
+            self.assertFalse(r["ok"], key)
+            self.assertTrue(any(p.startswith(key) for p in r["problems"]), (key, r["problems"]))
+
+    def test_reset_length_and_end_step(self):
+        tr = ic.SyncTrace([[0.5, 0.0, 0.0]], 3)
+        tr.on_reset([7])                                                   # collector's reset did not take
+        self.assertTrue(any("after the collector's reset" in p for p in tr.result([3])["problems"]))
+        r = self.run_trace(T=4)
+        tr = ic.SyncTrace([[0.5, 0.0, 0.1]] * 2, 5)                        # expected 5 steps, env ended at 4
+        tr.on_reset([0, 0])
+        for k in range(1, 5):
+            d = k == 4
+            tr.on_step(k, [True, True], [k, k], [d, d], [[0, 0, 0]] * 2, [[0.5, 0.0, 0.1]] * 2, [d, d],
+                       [0 if d else k] * 2, [[1, 0, 0] if d else [0, 0, 0]] * 2)
+        probs = tr.result([4, 4])["problems"]
+        self.assertTrue(any("terminal transition at step 5" in p for p in probs), probs)
+        self.assertTrue(any("expected exactly 5" in p for p in probs), probs)
+        self.assertTrue(r["ok"])
+
+
+class ContactMaterialTests(unittest.TestCase):
+    def ev(self, ground_mode="multiply", ground=1.0, robot_mode="average", **kw):
+        e = {"ground_materials": [{"path": "/World/ground/physicsMaterial", "static": ground, "dynamic": ground,
+                                   "mode": ground_mode}],
+             "robot_shapes": [{"prim": "/World/envs/env_0/Robot/FL_foot/collision", "material": "/Robot/mat",
+                               "mode": robot_mode}], "robot_unbound_shapes": 0}
+        e.update(kw)
+        return e
+
+    def test_combine_rule(self):
+        self.assertAlmostEqual(ic.combine_friction(0.4, 1.0, "average", "multiply"), 0.4)
+        self.assertAlmostEqual(ic.combine_friction(0.4, 1.0, "average", "average"), 0.7)
+        self.assertAlmostEqual(ic.combine_friction(0.4, 1.0, "max", "multiply"), 1.0)
+        self.assertAlmostEqual(ic.combine_friction(0.4, 0.8, "min", "average"), 0.4)
+        with self.assertRaises(ValueError):
+            ic.combine_friction(0.4, 1.0, "geometric", "multiply")
+
+    def test_effective_friction_checked_not_just_robot(self):
+        c = ic.load_cell(MANIFEST, "F040")
+        self.assertEqual(ic.contact_problems(self.ev(), c), [])            # multiply x 1.0: cell is effective
+        bad = {"average ground": self.ev(ground_mode="average"),          # (0.4 + 1.0) / 2 = 0.7
+               "max robot": self.ev(robot_mode="max"),                    # max(0.4, 1.0)
+               "ground not 1.0": self.ev(ground=0.8),                     # 0.4 x 0.8
+               "no ground": self.ev(ground_materials=[]),
+               "unbound robot": self.ev(robot_unbound_shapes=3),
+               "shared": self.ev(robot_shapes=[{"prim": "x", "material": "/World/ground/physicsMaterial",
+                                                "mode": "average"}]),
+               "error": {"error": "ImportError: pxr"}}
+        for name, e in bad.items():
+            self.assertNotEqual(ic.contact_problems(e, c), [], name)
 
 
 class Act:
@@ -355,6 +467,7 @@ class AnalysisTests(unittest.TestCase):
         cases = {
             "not marked completed": "rewrite",
             "runtime verification": dict(header_changes={"runtime_checks": {"ok": False, "problems": ["x"]}}),
+            "step synchronization": dict(header_changes={"sync_checks": {"ok": False, "problems": ["x"]}}),
             "checkpoint not confirmed": dict(header_changes={"checkpoint_matches_manifest": False}),
             "checkpoint digest": dict(header_changes={"checkpoint": {"sha256": "0" * 64}}),
             "cell definition": dict(header_changes={"cell": {"id": "F040", "static_friction": 0.5}}),

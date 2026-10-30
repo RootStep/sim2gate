@@ -2,7 +2,9 @@
 
 **Status: DRAFT, revision 2 — 2026-10-30.** The machine-readable manifest is [G2_TIER_R_MANIFEST.json](G2_TIER_R_MANIFEST.json). This revision answers the reviewer's G2 decision; the item-by-item response is in [G2_REVISION2_RESPONSE.md](G2_REVISION2_RESPONSE.md).
 
-**Nothing is authorized to run.** Not the GPU smoke test and not the full evaluation.
+**Review status:** G1 provisional. G2 provisionally accepted. The S0 smoke test is pending explicit manager authorization, and S1 and S2 are not authorized. **Nothing is authorized to run.**
+
+The reviewer's additional finding (revision 2b) is answered in [G2_REVISION2_RESPONSE.md](G2_REVISION2_RESPONSE.md#revision-2b-step-synchronization-and-effective-friction).
 
 The collector refuses to run unless both of these hold:
 - the manifest's `status` is `APPROVED`;
@@ -107,12 +109,20 @@ Stop rules:
 - An invalid or crashed run is retried once from scratch, within the cap.
 - S1 is reviewed for validity, timing and cost only. Outcome analysis waits until S2 is complete.
 
-**S0 exit criteria:**
-- exit code 0 and `completed: true`;
-- `runtime_checks.ok` true, with active terminations `['time_out']` and friction readback 0.8 / 0.6;
-- zero unexpected early dones, and every episode exactly 1000 steps;
-- `read_run` reports no problems;
-- the wall time is recorded.
+**S0 exit criteria.** S0 exists to resolve the runtime uncertainties before any scientific evaluation. Every criterion is a field in the run header:
+
+| Evidence | Required value |
+|---|---|
+| Completion | exit 0; `completed: true`; footer verifies; `read_run` reports no problems |
+| 1000 consecutive post-physics samples | `sync_checks.samples_checked` = 128,000, with `capture_length_not_consecutive` and `steps_without_physics_advance` = 0; episode lengths min = max = 1000 |
+| First recorded state synchronized | `reset_episode_length_max` = 0; the first capture is at episode length 1; `command_mismatch` = 0 at every step |
+| Final sample is the terminal transition | `termination_flag_mismatch` = 0; `terminal_steps` = [1000]; `unexpected_early_dones` = 0 |
+| No reset state in the trajectory | `done_without_reset_after_capture` = 0; `state_changed_after_capture` = 0; `reset_moved_robot` = 128 |
+| Configuration | `runtime_checks.ok`: terminations `['time_out']`; no removed event active; motor lag 0, strength 1.0 |
+| Effective friction | `runtime_checks.contact`: every ground and robot physics material with its combine mode; `effective_static` = [0.8] and `effective_dynamic` = [0.6]; no shared or unbound material |
+| Cost | wall time per run recorded |
+
+If S0 fails, no scientific run takes place. The output (exit 3, sync failure) or `<out>.diagnostic.json` (runtime-check failure) is reviewed, the collector is revised, and S0 is re-authorized.
 
 ## Power
 

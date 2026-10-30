@@ -13,7 +13,7 @@ primary cells (Bonferroni).
 
 Run validity (revision 2): a run is INVALID, and excluded from every count including the pooled controls, if its
 header is not marked completed, its footer is missing or does not match the records, it used another manifest,
-checkpoint, cell, command set or task, its runtime verification is missing or failed, any episode ended before the
+checkpoint, cell, command set or task, its runtime verification or step-synchronization evidence is missing or failed, any episode ended before the
 time limit or is not exactly episode_steps long, or any episode fails the schema. Invalid and missing runs are
 reported separately and never imputed. If any required run (each non-control policy in its arm's primary cells,
 each control in every primary cell) is missing or invalid, the status is INCOMPLETE, no primary truth label is
@@ -83,6 +83,8 @@ def read_run(path, manifest=None, manifest_sha=None, policy_id=None, cell_id=Non
             problems.append(f"num_envs {header.get('num_envs')} != {n_expected}")
     if (header.get("runtime_checks") or {}).get("ok") is not True:
         problems.append("runtime verification missing or failed")
+    if (header.get("sync_checks") or {}).get("ok") is not True:
+        problems.append("step synchronization evidence missing or failed")
     if header.get("unexpected_early_dones", 1) != 0:
         problems.append("episodes ended before the time limit")
     if len(episodes) != header.get("num_envs"):

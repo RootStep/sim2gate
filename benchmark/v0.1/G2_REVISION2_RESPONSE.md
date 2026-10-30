@@ -1,6 +1,6 @@
 # G2 revision 2 — response to the reviewer's decision (2026-10-30)
 
-**Status: resubmitted for review. The manifest stays DRAFT, and nothing is authorized to run.**
+**Status:** G2 provisionally accepted. The S0 smoke test is pending explicit manager authorization. The manifest stays DRAFT, and nothing is authorized to run.
 
 The reviewer's decision:
 - G1: provisional.
@@ -72,3 +72,73 @@ The synthetic suite (no Isaac Lab, no torch) has 27 tests, up from 12. The full 
 3. Choose 128 or 256 episodes per cell.
 
 S1 and S2 are not requested now.
+
+## Revision 2b: step synchronization and effective friction
+
+The reviewer's additional finding was that the correspondence between the recorded samples and the environment's own step, termination and reset bookkeeping was asserted but not demonstrated in Isaac Lab. It also asked whether the friction readback measures the actual ground contact. Decision: G2 provisionally accepted; S0 pending explicit manager authorization.
+
+### 1. Step synchronization is now measured on every run
+
+At the capture point, inside reward computation, the collector records for every environment:
+- the environment's episode length;
+- its termination flag;
+- its base position;
+- its velocity command.
+
+After the step returns, it records the episode length and base position again. `SyncTrace` checks each open environment at each step:
+
+| Check | Fails if | Rules out |
+|---|---|---|
+| Capture-time episode length = policy step k | any sample is not k | skipped, repeated or off-by-one samples; desynchronized counters |
+| Capture-time termination flag = the done flag the step returns | any mismatch | a snapshot taken at a different point than the terminations |
+| Done: episode length after the step = 0 | not reset | treating a non-reset step as terminal |
+| Not done: length and position unchanged after the capture | any change | anything (resets included) between capture and return |
+| Captured command = the pinned command | any deviation over 1e-5 | command buffers not synchronized after the reset |
+| Some environment moved since the previous capture | no environment moved at a step | stale, non-post-physics reads |
+| Every environment ends at step `max_episode_length`, with the flag set | otherwise | episodes that do not end at the time limit |
+| Episode length after the collector's own reset = 0 | otherwise | the first-call reset not taking effect |
+
+The step also counts `reset_moved_robot`: done environments whose state changed between capture and return. That positive evidence shows the reset happened and is outside the recorded sample. In S0 it should equal 128.
+
+The results go into the header as `sync_checks`. Any problem makes the collector exit 3. The file is kept as evidence, and `read_run` marks the run invalid.
+
+**The first call.** It resets every environment and discards the action the policy computed from the pre-reset observation; that action is never applied. The policy's next action is computed from the reset observation. The checks above show that episode counters, commands and the first recorded sample (length 1) line up after that reset.
+
+### 2. Friction is checked as effective robot–ground contact
+
+The collector reads physics materials from the stage:
+- the material bound to every ground collision prim, or the scene default material if none is bound;
+- the material bound to each robot collision prim in env 0;
+
+each with its friction combine mode.
+
+It combines the robot's simulator-readback friction with each ground material under PhysX's rule: the higher-priority mode of average < min < multiply < max wins. The result must equal the cell.
+
+Two further failure conditions:
+- the robot and the ground share a material;
+- a robot collision shape has no bound material, so it would fall back to the scene default.
+
+Either fails verification.
+
+The configured ground material (`scene.terrain.physics_material`, `sim.physics_material`) is also recorded from the config. A runtime-check failure writes `<out>.diagnostic.json` with everything observed, so S0 produces evidence even when it fails.
+
+Cell F040 is valid only if the effective coefficient is 0.40. For example:
+- with a ground of 1.0 in multiply mode, the effective coefficient is the robot's value, 0.40;
+- with a ground of 1.0 in average mode, it would be 0.70, and the cell would be invalid.
+
+The check makes no assumption about which case holds; S0 records it.
+
+### 3. Tests
+
+The synthetic suite now has 32 tests. The full benchmark suite has 117 tests, all passing. New tests cover:
+- a clean trace;
+- each of the six desynchronization types;
+- a reset that did not take;
+- an early end;
+- an end-to-end step loop in which a fall on the terminal step is recorded and the reset is detected but not recorded;
+- the combine rule;
+- seven contact-material failure cases (average-mode ground, max-mode robot, ground not 1.0, no ground material, unbound robot shape, shared material, unreadable stage);
+- invalidation of runs whose header lacks passing `sync_checks`.
+
+**What S0 must still show.** The S0 exit criteria in the manifest list each value the smoke run must report. The open question is whether the Isaac Lab runtime behaves as these checks expect: reward computation after terminations and before resets, `reset_buf` at that point, and `episode_length_buf` reset to 0. The checks make no assumption about it. If the runtime differs, S0 fails loudly and shows how.
+

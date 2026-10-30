@@ -25,7 +25,17 @@ Runtime verification (revision 2), before the first recorded step; any failure a
   - the termination manager's active terms are exactly ['time_out'];
   - none of the profile's removed events is active;
   - every robot shape's static and dynamic friction, read back from the simulator, equals the cell's values;
-  - every actuator is the swept DC motor with zero lag and full strength (latency comes only from the cell).
+  - every actuator is the swept DC motor with zero lag and full strength (latency comes only from the cell);
+  - the EFFECTIVE robot-ground friction (robot readback combined with every ground material under PhysX's
+    combine-mode rule, materials and modes read from the stage) equals the cell; robot and ground must not share
+    a material. On failure a `<out>.diagnostic.json` with everything observed is written, and no run output.
+Step synchronization (revision 2b), checked at every step for every environment (SyncTrace) and stored in the
+header as `sync_checks`: capture-time episode length is consecutive from 1 after the collector's own reset; the
+capture-time termination flag equals the done flag the step returns; a done environment's episode length is 0
+after the step (the reset happened after the capture) and an open one's state is unchanged after the capture;
+the captured command equals the pinned command; every environment ends at exactly max_episode_length. The first
+call into step() resets every environment and discards the action the policy computed from the pre-reset
+observation (it is never applied); the policy's next action is computed from the reset observation.
 State is read inside reward computation, i.e. after physics and terminations but BEFORE the environment resets
 ended episodes, so the terminal step of every episode is recorded (nothing is hidden by a reset). Any episode that
 ends before the time limit is counted as unexpected and invalidates the run in the analysis.
@@ -116,6 +126,137 @@ def runtime_problems(obs, cell, removed_events, tol=1e-4):
         probs.append(f"latency buffers (obs {lat['obs_buffer']}, action {lat['action_buffer']}) do not match "
                      f"the cell ({side}, {k} steps)")
     return probs
+
+
+COMBINE_PRIORITY = {"average": 0, "min": 1, "multiply": 2, "max": 3}   # PhysX: the higher-priority mode wins
+
+
+def combine_friction(a, b, mode_a, mode_b):
+    """Effective coefficient of a contact pair under PhysX's combine rule."""
+    if mode_a not in COMBINE_PRIORITY or mode_b not in COMBINE_PRIORITY:
+        raise ValueError(f"unknown combine mode {mode_a!r} / {mode_b!r}")
+    mode = mode_a if COMBINE_PRIORITY[mode_a] >= COMBINE_PRIORITY[mode_b] else mode_b
+    return {"average": (a + b) / 2.0, "min": min(a, b), "multiply": a * b, "max": max(a, b)}[mode]
+
+
+def contact_problems(ev, cell, tol=1e-4):
+    """ev: robot shape materials (USD, env 0) and every ground material, with combine modes. The robot's values
+    come from the simulator readback (already checked equal to the cell); this checks the EFFECTIVE robot-ground
+    coefficients, which is what the cell is meant to set."""
+    probs = []
+    mu, mu_d = float(cell["static_friction"]), 0.75 * float(cell["static_friction"])
+    if ev.get("error"):
+        return [f"contact material evidence unavailable: {ev['error']}"]
+    ground, robot = ev.get("ground_materials") or [], ev.get("robot_shapes") or []
+    if not ground:
+        probs.append("no ground material found")
+    if not robot:
+        probs.append("no robot collision shapes found")
+    if ev.get("robot_unbound_shapes"):
+        probs.append(f"{ev['robot_unbound_shapes']} robot collision shapes have no bound physics material "
+                     "(they would use the scene default material, possibly shared with the ground)")
+    shared = sorted({r["material"] for r in robot} & {g["path"] for g in ground})
+    if shared:
+        probs.append(f"robot and ground share physics material(s) {shared}")
+    eff_s, eff_d = set(), set()
+    for g in ground:
+        for r in robot:
+            try:
+                eff_s.add(round(combine_friction(mu, g["static"], r["mode"], g["mode"]), 6))
+                eff_d.add(round(combine_friction(mu_d, g["dynamic"], r["mode"], g["mode"]), 6))
+            except (ValueError, TypeError, KeyError) as e:
+                probs.append(f"cannot combine {r.get('material')} with {g.get('path')}: {e}")
+    ev["effective_static"], ev["effective_dynamic"] = sorted(eff_s), sorted(eff_d)
+    if any(abs(x - mu) > tol for x in eff_s):
+        probs.append(f"effective robot-ground static friction {sorted(eff_s)} differs from the cell's {mu}")
+    if any(abs(x - mu_d) > tol for x in eff_d):
+        probs.append(f"effective robot-ground dynamic friction {sorted(eff_d)} differs from {mu_d}")
+    return probs
+
+
+class SyncTrace:
+    """Per-step evidence, for every open environment, that the recorded samples are consecutive post-physics
+    states, that the last one is the actual terminal transition, and that no reset state is recorded.
+    Pure Python (lists in, counts out), so its logic is unit-tested without Isaac Lab.
+
+    At capture (inside reward computation) the environment reports its episode length and termination flag;
+    after the step returns, its episode length again and the base position. For a sample taken at policy step k:
+      - capture episode length must be k (consecutive, starting at 1 after the collector's reset);
+      - the capture-time termination flag must equal the done flag the step returned;
+      - done: the post-step episode length must be 0 (the reset happened AFTER the capture);
+      - not done: the post-step episode length and base position must equal the captured ones.
+    The command at capture must equal the pinned command. Every environment must end exactly at max_steps."""
+
+    def __init__(self, expected_cmds, max_steps, tol=1e-6):
+        self.cmds, self.max_steps, self.tol = [list(map(float, c)) for c in expected_cmds], int(max_steps), tol
+        self.n = len(self.cmds)
+        self.c = {"steps": 0, "samples_checked": 0, "capture_length_not_consecutive": 0,
+                  "termination_flag_mismatch": 0, "done_without_reset_after_capture": 0,
+                  "state_changed_after_capture": 0, "command_mismatch": 0, "reset_moved_robot": 0,
+                  "stale_env_samples": 0, "steps_without_physics_advance": 0}
+        self._prev_pos = None
+        self.max_cmd_dev = self.max_state_dev = 0.0
+        self.reset_length_max, self.terminal = None, [None] * self.n
+
+    def on_reset(self, ep_len):
+        self.reset_length_max = max(int(x) for x in ep_len)
+
+    def on_step(self, k, open_, cap_len, cap_flag, cap_pos, cap_cmd, dones, post_len, post_pos):
+        c = self.c
+        c["steps"] += 1
+        moved_any, checked = False, 0
+        for i in range(self.n):
+            if not open_[i]:
+                continue
+            c["samples_checked"] += 1
+            checked += 1
+            if self._prev_pos is not None and self._prev_pos[i] is not None:
+                if list(map(float, cap_pos[i])) == self._prev_pos[i]:
+                    c["stale_env_samples"] += 1                      # identical to the previous capture
+                else:
+                    moved_any = True
+            else:
+                moved_any = True
+            if int(cap_len[i]) != k:
+                c["capture_length_not_consecutive"] += 1
+            if bool(cap_flag[i]) != bool(dones[i]):
+                c["termination_flag_mismatch"] += 1
+            dc = max(abs(float(a) - b) for a, b in zip(cap_cmd[i], self.cmds[i]))
+            self.max_cmd_dev = max(self.max_cmd_dev, dc)
+            if dc > 1e-5:
+                c["command_mismatch"] += 1
+            dp = max(abs(float(a) - float(b)) for a, b in zip(cap_pos[i], post_pos[i]))
+            if dones[i]:
+                if int(post_len[i]) != 0:
+                    c["done_without_reset_after_capture"] += 1
+                if dp > self.tol:
+                    c["reset_moved_robot"] += 1                       # the reset is visible, and not recorded
+                self.terminal[i] = {"step": k, "capture_length": int(cap_len[i]), "flag": bool(cap_flag[i])}
+            else:
+                self.max_state_dev = max(self.max_state_dev, dp)
+                if int(post_len[i]) != int(cap_len[i]) or dp > self.tol:
+                    c["state_changed_after_capture"] += 1
+        if checked and not moved_any:
+            c["steps_without_physics_advance"] += 1                  # no environment changed: not post-physics
+        self._prev_pos = [list(map(float, cap_pos[i])) if open_[i] else None for i in range(self.n)]
+
+    def result(self, lengths):
+        c, probs = self.c, []
+        if self.reset_length_max != 0:
+            probs.append(f"episode length after the collector's reset is {self.reset_length_max}, expected 0")
+        for k in ("capture_length_not_consecutive", "termination_flag_mismatch", "done_without_reset_after_capture",
+                  "state_changed_after_capture", "command_mismatch", "steps_without_physics_advance"):
+            if c[k]:
+                probs.append(f"{k}: {c[k]}")
+        bad_end = sum(1 for t in self.terminal if t is None or t["step"] != self.max_steps
+                      or t["capture_length"] != self.max_steps or not t["flag"])
+        if bad_end:
+            probs.append(f"{bad_end} environments did not end with a terminal transition at step {self.max_steps}")
+        if any(n != self.max_steps for n in lengths):
+            probs.append(f"recorded lengths {min(lengths)}-{max(lengths)}, expected exactly {self.max_steps}")
+        return dict(c, max_command_deviation=self.max_cmd_dev, max_state_change_after_capture=self.max_state_dev,
+                    reset_episode_length_max=self.reset_length_max, terminal_steps=sorted(
+                        {t["step"] for t in self.terminal if t}), problems=probs, ok=not probs)
 
 
 class EpisodeLog:
@@ -215,7 +356,8 @@ class Collector:
         self.n_envs = len(self.command_doc["commands"]) * int(manifest["episodes_per_cell_repeat"])
         self.checkpoints, self.cfg_changes, self.started = [], {}, False
         self.obs_buf = self.act_buf = None
-        self._pending, self._in_step, self.early_dones = None, False, 0
+        self._pending, self._pending_sync, self._in_step, self.early_dones = None, None, False, 0
+        self.sync_checks = None
 
     def record_checkpoint(self, path):
         try:
@@ -242,6 +384,13 @@ class Collector:
         if getattr(terms, "time_out", None) is None:
             raise RuntimeError("the task has no time_out termination; episodes would never end")
         self.cfg_changes["removed_terminations"] = removed
+        mats = {}
+        for name, mat in (("terrain", getattr(getattr(cfg.scene, "terrain", None), "physics_material", None)),
+                          ("sim_default", getattr(cfg.sim, "physics_material", None))):
+            if mat is not None:
+                mats[name] = {k: getattr(mat, k, None) for k in ("static_friction", "dynamic_friction",
+                                                                 "friction_combine_mode", "restitution")}
+        self.cfg_changes["configured_ground_materials"] = mats
 
     # -- every policy step --
     def step(self, wrapper, orig_step, actions):
@@ -251,6 +400,7 @@ class Collector:
             self._setup(env)
             self.started = True
             obs, extras = wrapper.reset()
+            self.sync.on_reset(env.episode_length_buf.tolist())
             obs = self._delay_obs(obs)
             n = wrapper.num_envs
             return obs, torch.zeros(n, device=env.device), torch.zeros(n, dtype=torch.long, device=env.device), \
@@ -268,6 +418,10 @@ class Collector:
         self.steps += 1
         if any(dones) and self.steps < self.max_steps:
             self.early_dones += sum(dones)
+        t = lambda x: x.torch if hasattr(x, "torch") else x  # noqa: E731
+        self.sync.on_step(self.steps, list(self.log.open), self._pending_sync["len"], self._pending_sync["flag"],
+                          self._pending_sync["pos"], self._pending_sync["cmd"], dones,
+                          env.episode_length_buf.tolist(), t(env.scene["robot"].data.root_pos_w).tolist())
         self.log.add(self._pending, done=dones)
         if self.log.all_closed or self.steps >= self.max_steps + 5:
             self._finish(env)
@@ -293,6 +447,8 @@ class Collector:
             self.act_buf = it.LatencyBuffer(k)
         self.log = EpisodeLog(env.num_envs, self.foot_names, float(env.step_dt))
         self.steps, self.max_steps = 0, int(env.max_episode_length)
+        m = len(self.command_doc["commands"])
+        self.sync = SyncTrace([self.command_doc["commands"][i % m] for i in range(env.num_envs)], self.max_steps)
         self._verify_runtime(env)
         self._install_prereset_hook(env)
 
@@ -305,8 +461,81 @@ class Collector:
             out = orig_compute(*a, **k)
             if self._in_step:
                 self._pending = self._snapshot(env)
+                self._pending_sync = self._sync_snapshot(env)
             return out
         mgr.compute = compute
+
+    def _sync_snapshot(self, env):
+        t = lambda x: x.torch if hasattr(x, "torch") else x  # noqa: E731
+        flag = getattr(env, "reset_buf", None)
+        if flag is None:
+            flag = env.termination_manager.dones
+        return {"len": env.episode_length_buf.tolist(), "flag": flag.bool().tolist(),
+                "pos": t(env.scene["robot"].data.root_pos_w).tolist(),
+                "cmd": env.command_manager.get_term("base_velocity").vel_command_b[:, :3].tolist()}
+
+    def _contact_evidence(self, env):
+        """Physics materials as authored on the stage: every ground collision prim's bound material (or the scene
+        default material if unbound) and the robot's (env 0) collision prims' bound materials, with combine modes."""
+        try:
+            from pxr import UsdPhysics, UsdShade
+            stage = env.scene.stage
+
+            def mat_info(prim):
+                api = UsdPhysics.MaterialAPI(prim)
+                mode = prim.GetAttribute("physxMaterial:frictionCombineMode")
+                return {"path": str(prim.GetPath()), "static": api.GetStaticFrictionAttr().Get(),
+                        "dynamic": api.GetDynamicFrictionAttr().Get(),
+                        "mode": (mode.Get() if mode and mode.HasAuthoredValue() else "average")}
+
+            def bound(prim):
+                m, _ = UsdShade.MaterialBindingAPI(prim).ComputeBoundMaterial("physics")
+                return m.GetPrim() if m else None
+
+            def collision_prims(root):
+                r = stage.GetPrimAtPath(root)
+                if not r or not r.IsValid():
+                    raise RuntimeError(f"prim {root} not found")
+                from pxr import Usd
+                return [q for q in Usd.PrimRange(r) if q.HasAPI(UsdPhysics.CollisionAPI)]
+
+            default = None
+            for q in stage.Traverse():
+                if q.IsA(UsdPhysics.Scene):
+                    default = bound(q)
+                    break
+            ground, gpaths, g_unbound = [], set(), 0
+            for q in collision_prims(env.scene.terrain.cfg.prim_path):
+                mp = bound(q) or default
+                g_unbound += bound(q) is None
+                if mp is not None and str(mp.GetPath()) not in gpaths:
+                    gpaths.add(str(mp.GetPath()))
+                    ground.append(mat_info(mp))
+            rpath = env.scene["robot"].cfg.prim_path.replace("{ENV_REGEX_NS}", "/World/envs/env_0").replace(
+                "env_.*", "env_0")
+            robot, r_unbound, rmats = [], 0, {}
+            for q in collision_prims(rpath):
+                mp = bound(q)
+                if mp is None:
+                    r_unbound += 1
+                    continue
+                info = rmats.setdefault(str(mp.GetPath()), mat_info(mp))
+                robot.append({"prim": str(q.GetPath()), "material": info["path"], "mode": info["mode"]})
+            return {"ground_materials": ground, "ground_unbound_collision_prims": g_unbound,
+                    "scene_default_material": mat_info(default) if default is not None else None,
+                    "robot_prim": rpath, "robot_shapes": robot, "robot_unbound_shapes": r_unbound,
+                    "robot_materials_usd": list(rmats.values())}
+        except Exception as e:                                       # evidence, not a crash: reported as a problem
+            return {"error": f"{type(e).__name__}: {e}"}
+
+    def _write_diagnostic(self):
+        """On a failed runtime check: write what was observed next to the (never-created) output, then abort."""
+        path = str(self.out) + ".diagnostic.json"
+        with open(path, "w") as f:
+            json.dump({"policy_id": self.policy_id, "cell": self.cell, "stage": self.stage_id,
+                       "runtime_checks": self.runtime_checks, "cfg_changes": self.cfg_changes,
+                       "note": "runtime verification failed; no run output written"}, f, indent=1, default=str)
+        return path
 
     def _verify_runtime(self, env):
         """Effective configuration as the simulator holds it, not as configured. Raises on any mismatch."""
@@ -333,10 +562,12 @@ class Collector:
                "latency": {"side": self.cell["latency_side"], "control_steps": int(self.cell["latency_steps"]),
                            "ms": int(self.cell["latency_steps"]) * float(env.step_dt) * 1000.0,
                            "obs_buffer": self.obs_buf is not None, "action_buffer": self.act_buf is not None}}
-        problems = runtime_problems(obs, self.cell, REMOVED_EVENTS)
-        self.runtime_checks = dict(obs, problems=problems, ok=not problems)
+        contact = self._contact_evidence(env)
+        problems = runtime_problems(obs, self.cell, REMOVED_EVENTS) + contact_problems(contact, self.cell)
+        self.runtime_checks = dict(obs, contact=contact, problems=problems, ok=not problems)
         if problems:
-            raise RuntimeError("runtime verification failed: " + "; ".join(problems))
+            where = self._write_diagnostic()
+            raise RuntimeError("runtime verification failed (" + where + "): " + "; ".join(problems))
 
     def _snapshot(self, env):
         t = lambda x: x.torch if hasattr(x, "torch") else x  # noqa: E731  (warp arrays in Isaac Lab 3.x)
@@ -354,7 +585,8 @@ class Collector:
         ck = self.checkpoints[-1] if self.checkpoints else None
         expected = self.manifest["policies"][self.policy_id]["checkpoint_sha256"]
         lengths = self.log.lengths()
-        header = {"tool": "independent_collector", "tool_sha256": _sha_file(__file__), "stage": self.stage_id,
+        self.sync_checks = self.sync.result(lengths)
+        header = {"sync_checks": self.sync_checks,"tool": "independent_collector", "tool_sha256": _sha_file(__file__), "stage": self.stage_id,
                   "runtime_checks": self.runtime_checks, "unexpected_early_dones": self.early_dones,
                   "episode_lengths": {"min": min(lengths), "max": max(lengths)},
                   "truth_lib_sha256": _sha_file(HERE / "independent_truth.py"),
@@ -413,6 +645,10 @@ def main(argv=None):
     if problems:
         print(f"[independent] {a.policy} {a.cell}: output fails verification: {problems}", file=sys.stderr)
         return 1
+    if not col.sync_checks["ok"]:                                    # kept as evidence; the analysis rejects it
+        print(f"[independent] {a.policy} {a.cell}: step synchronization failed: {col.sync_checks['problems']}",
+              file=sys.stderr)
+        return 3
     return 0
 
 
