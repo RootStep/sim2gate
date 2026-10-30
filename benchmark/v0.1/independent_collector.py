@@ -128,6 +128,22 @@ def runtime_problems(obs, cell, removed_events, tol=1e-4):
     return probs
 
 
+ENV0_ROOT = "/World/envs/env_0"
+
+
+def resolve_env0_path(pattern, paths):
+    """The env-0 prim matching an Isaac Lab prim-path pattern. Isaac Lab writes the environment part as a
+    regex ({ENV_REGEX_NS}, env_.*, env_[^/]+, ...), so match the whole pattern as a regex against real prim paths
+    and keep the shortest match under env_0."""
+    import re
+    rx = re.compile(pattern.replace("{ENV_REGEX_NS}", "/World/envs/env_.*"))
+    hits = sorted((p for p in paths if (p == ENV0_ROOT or p.startswith(ENV0_ROOT + "/")) and rx.fullmatch(p)),
+                  key=len)
+    if not hits:
+        raise RuntimeError(f"no prim under {ENV0_ROOT} matches {pattern}")
+    return hits[0]
+
+
 COMBINE_PRIORITY = {"average": 0, "min": 1, "multiply": 2, "max": 3}   # PhysX: the higher-priority mode wins
 
 
@@ -492,12 +508,15 @@ class Collector:
                 m, _ = UsdShade.MaterialBindingAPI(prim).ComputeBoundMaterial("physics")
                 return m.GetPrim() if m else None
 
+            from pxr import Usd
+
             def collision_prims(root):
                 r = stage.GetPrimAtPath(root)
                 if not r or not r.IsValid():
                     raise RuntimeError(f"prim {root} not found")
-                from pxr import Usd
-                return [q for q in Usd.PrimRange(r) if q.HasAPI(UsdPhysics.CollisionAPI)]
+                # instanceable assets keep their collision prims inside instance proxies
+                return [q for q in Usd.PrimRange(r, Usd.TraverseInstanceProxies())
+                        if q.HasAPI(UsdPhysics.CollisionAPI)]
 
             default = None
             for q in stage.Traverse():
@@ -511,8 +530,10 @@ class Collector:
                 if mp is not None and str(mp.GetPath()) not in gpaths:
                     gpaths.add(str(mp.GetPath()))
                     ground.append(mat_info(mp))
-            rpath = env.scene["robot"].cfg.prim_path.replace("{ENV_REGEX_NS}", "/World/envs/env_0").replace(
-                "env_.*", "env_0")
+            pattern = env.scene["robot"].cfg.prim_path
+            env0 = stage.GetPrimAtPath(ENV0_ROOT)
+            search = Usd.PrimRange(env0) if env0 and env0.IsValid() else stage.Traverse()
+            rpath = resolve_env0_path(pattern, (str(q.GetPath()) for q in search))
             robot, r_unbound, rmats = [], 0, {}
             for q in collision_prims(rpath):
                 mp = bound(q)
@@ -521,9 +542,12 @@ class Collector:
                     continue
                 info = rmats.setdefault(str(mp.GetPath()), mat_info(mp))
                 robot.append({"prim": str(q.GetPath()), "material": info["path"], "mode": info["mode"]})
-            return {"ground_materials": ground, "ground_unbound_collision_prims": g_unbound,
+            return {"robot_prim_pattern": pattern, "ground_materials": ground,
+                    "ground_collision_prims": len(collision_prims(env.scene.terrain.cfg.prim_path)),
+                    "ground_unbound_collision_prims": g_unbound,
                     "scene_default_material": mat_info(default) if default is not None else None,
-                    "robot_prim": rpath, "robot_shapes": robot, "robot_unbound_shapes": r_unbound,
+                    "robot_prim": rpath, "robot_collision_prims": len(robot) + r_unbound,
+                    "robot_shapes": robot, "robot_unbound_shapes": r_unbound,
                     "robot_materials_usd": list(rmats.values())}
         except Exception as e:                                       # evidence, not a crash: reported as a problem
             return {"error": f"{type(e).__name__}: {e}"}

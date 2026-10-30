@@ -251,6 +251,15 @@ class ContactMaterialTests(unittest.TestCase):
         e.update(kw)
         return e
 
+    def test_env0_path_resolution(self):
+        """S0 attempt 1 failed here: Isaac Lab 3 writes the pattern as env_[^/]+, not env_.*."""
+        paths = ["/World", "/World/envs", "/World/envs/env_0", "/World/envs/env_0/Robot",
+                 "/World/envs/env_0/Robot/base", "/World/envs/env_1/Robot", "/World/envs/env_10/Robot"]
+        for pat in ("/World/envs/env_[^/]+/Robot", "/World/envs/env_.*/Robot", "{ENV_REGEX_NS}/Robot"):
+            self.assertEqual(ic.resolve_env0_path(pat, paths), "/World/envs/env_0/Robot", pat)
+        with self.assertRaisesRegex(RuntimeError, "no prim under"):
+            ic.resolve_env0_path("/World/envs/env_[^/]+/Dog", paths)
+
     def test_combine_rule(self):
         self.assertAlmostEqual(ic.combine_friction(0.4, 1.0, "average", "multiply"), 0.4)
         self.assertAlmostEqual(ic.combine_friction(0.4, 1.0, "average", "average"), 0.7)

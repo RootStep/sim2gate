@@ -261,7 +261,32 @@
     "measured wall time per run recorded"
    ],
    "note": "Smoke output is kept but never analysed or pooled.",
-   "on_failure": "No scientific run. The output file (sync failure, exit 3) or <out>.diagnostic.json (runtime check failure) is reviewed, the cause is fixed in a new collector revision, and S0 is re-authorized."
+   "on_failure": "No scientific run. The output file (sync failure, exit 3) or <out>.diagnostic.json (runtime check failure) is reviewed, the cause is fixed in a new collector revision, and S0 is re-authorized.",
+   "attempts": [
+    {
+     "attempt": 1,
+     "utc": "2026-10-30T20:1xZ (evening of authorization; exact wall time in s0_evidence.txt on the host)",
+     "tools_commit": "7881a3e330c117a82833e23b07fb1a7c9a0c208a",
+     "result": "ABORTED at runtime verification; no run output written",
+     "cause": "collector bug: the robot prim pattern is /World/envs/env_[^/]+/Robot in Isaac Lab 3; the env-0 path conversion handled only env_.*, so the contact-material evidence could not be read",
+     "checks_passed": [
+      "active terminations ['time_out']",
+      "active events physics_material, reset_base, reset_robot_joints (no removed event)",
+      "robot shape friction readback 0.8/0.6 on 128 x 27 shapes",
+      "swept motor, lag 0, strength 1.0",
+      "no delay buffers (N080)",
+      "configured ground material 1.0/1.0, multiply (terrain and sim default)",
+      "actor is a non-recurrent MLP (48-128-128-128-12)"
+     ],
+     "fix": "resolve_env0_path(): match the Isaac Lab pattern as a regex against real prims under env_0; traverse instance proxies when collecting collision prims"
+    },
+    {
+     "attempt": 2,
+     "tools_commit": "see run_s0_smoke.sh",
+     "result": null,
+     "authorization": "pending manager re-authorization (S0 on_failure rule)"
+    }
+   ]
   },
   {
    "id": "S1",
