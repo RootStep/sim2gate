@@ -1,84 +1,131 @@
-# Diagnostic Benchmark v0.1 — historical Phase 2 independent evaluation specification
+# Diagnostic Benchmark v0.1 — historical Phase 2 evaluation specification (revision 2)
 
-**Status: DEVELOPMENT DRAFT — 2026-10-30.** Commit this specification **before** any new evaluation trajectories. This is a retrospective, post-results-seen development exercise, **not** a preregistered confirmatory benchmark. No training, GPU evaluation, protocol freeze, key unsealing, or external publication is authorized by this file.
+**Status: DEVELOPMENT DRAFT, revision 2 — 2026-10-30.** Commit this specification **before** any new evaluation trajectories. It describes a retrospective, post-results-seen development exercise, **not** a preregistered confirmatory benchmark. It authorizes no training, GPU evaluation, Check 2 rerun, protocol freeze, key unsealing or external publication.
 
-## 0. Checkpoint availability: mandatory first gate
+Revision 2 changes:
+- adds the three evaluation tiers (section 1);
+- records the Check 2 physics confound ([CHECK2_PHYSICS_CONFOUND_EVIDENCE.md](CHECK2_PHYSICS_CONFOUND_EVIDENCE.md));
+- updates gate G0 with checkpoint verification evidence;
+- gives both baselines a common 20-robot healthy reference;
+- requires Sim2Gate verdicts to be computed and committed before new trajectories;
+- uses Clopper–Pearson intervals throughout;
+- defines the delay conditions;
+- makes the slip truth consequence-based.
 
-Fresh independent trajectories require the **actual trained checkpoint bytes**, not just recorded SHA-256 strings or Phase 2 feature tables.
+## 1. Three evaluation tiers — never mix them
 
-- Five historical controls: `p0v5b_s101`–`s105`, reported in `phase1-clean.tgz`.
-- Fourteen completed study runs: R-slip `s301`–`s305`, Φ-slip-mild `s306`–`s310`, Φ-delay `s311`, `s312`, `s314`, `s315`. The Phase 2 raw export reportedly contained 21 folders and 426 checkpoint files, but its current location and availability have **not** been verified here.
-- `s313` crashed twice and has **no completed measurement**; do not substitute its training features or impute a result.
+| Tier | What it is | Physics | Status of its results |
+|---|---|---|---|
+| **H. Historical** | Phase 2 measurements as recorded on Oct 25–26, 2026 | Nominal, Check 1 and Check 5 under the common nominal profile; **Check 2 under each arm's training physics** | A record of what the original system measured. Check 2 is confounded for Φ-slip-mild and Φ-delay |
+| **R. Corrected retrospective** | The same 19 policies re-measured in one common evaluation task, plus independent symptom tests | Identical for all policies | **Post hoc, development only.** The cohort has already informed the benchmark design, so this cannot be independent validation |
+| **F. Future independent** | New policies not used for any threshold, design choice or analysis decision | Identical for all policies | The only tier that can support generalization, false-alarm or confirmatory claims. Not part of this specification |
 
-**Stop rule G0:** Do not schedule new evaluation until all required checkpoint bytes are located, per-run checkpoint selection is reconciled to the historical protocol, SHA-256 and lineage are checked, and the selected checkpoints can load under a documented compatible environment. Missing files are **missing**, not guessed. If G0 fails, permit only a separately labeled retrospective analysis of already recorded measurements; that analysis cannot establish independence through new terrain/command/delay trials. Partial recovery may support a transparent *subset feasibility study*, never a 19-run result.
+Every table and sentence must say which tier it reports.
 
-## 1. Historical population and known selection
+## 2. Cohort and known selection
 
-| Arm | Completed / assigned | Historical training intervention | Interpretation |
+| Arm | Completed / assigned | Training intervention | Interpretation |
 |---|---:|---|---|
-| Healthy controls | 5 / 5 | Unmodified P0 v5b, seeds 101–105 | Controls were among the 20 clean robots used to set v2 limits |
+| Healthy controls | 5 / 5 | Unmodified P0 v5b, seeds 101–105 | Also among the 20 clean robots that set the v2 limits |
 | R-slip | 5 / 5 | `feet_slide` reward weight ×0.1, seeds 301–305 | Reward-side slip intervention |
-| Φ-slip-mild | 5 / 5 | Training friction shifted to 0.3–0.6, seeds 306–310 | Historical physics-side slip intervention; **NOT benchmark D1** (narrowed randomization) |
-| Φ-delay | 4 / 5 | No command delay in training, completed seeds 311,312,314,315 | Delay-fragility intervention; s313 missing |
+| Φ-slip-mild | 5 / 5 | Training friction shifted to 0.3–0.6, seeds 306–310 | Historical physics-side slip intervention; **not benchmark D1** (narrowed randomization) |
+| Φ-delay | 4 / 5 | No command delay in training; completed seeds 311, 312, 314, 315 | Delay-fragility intervention; s313 has no final checkpoint |
 
-**N=19 completed policies**, plus the incomplete assigned s313 explicitly reported. This cohort was selected after earlier pilots showed symptoms while preserving nominal viability. Prior Phase 2 Check 1/2 behavior and intervention outcomes have already been seen by the team. Independent-test design is therefore **post hoc relative to earlier results**, even if its new execution settings are fixed before new trajectories. All runs are seen development data, never future held-out policies.
+N = 19 completed policies, plus the incomplete s313, reported explicitly.
 
-## 2. Separate intervention truth from independent behavioral truth
+The arms were kept after earlier pilots because they showed symptoms while keeping nominal viability. Phase 2 behaviour and intervention outcomes have already been seen. Every design choice here is therefore **post hoc relative to earlier results**, even when its execution settings are fixed before new trajectories. All 19 are seen development data, never future held-out policies.
 
-Intervention assignment is established from historical training config/manifest and is not a behavioral diagnosis. A symptom must be measured with a **separate implementation and fresh evaluation episodes**, without consulting Sim2Gate check verdicts or thresholds to label it.
+## 3. Gate G0: checkpoints and environment
 
-**Slip test (proposed, requires implementation review):**
-- A separately implemented slip estimator from raw contact, body/foot kinematics and simulator state; independent unit tests with synthetic stationary/sliding trajectories.
-- Distinct terrain friction distribution, command sequences, episode seeds and condition cells from Check 2's calibrated fixed command set and historical measurement suite.
-- Predefine foot contact logic, velocity frame, slip metric aggregation, episode duration, minimum valid contacts, missing sensor policy, repeatability rule and absolute/relative effect threshold **before reading new results**.
-- Report continuous slip metrics and per-policy differences from matched controls. Do not define a failure by Check 2's `slip_p95` cutoff or by its `flagged` output.
+**Bytes: verified.**
+- 14 study checkpoints are verified in [phase2_checkpoint_byte_verification_2026-10-30.json](phase2_checkpoint_byte_verification_2026-10-30.json). The source is `unsealed.tar`, operator-attested as decrypted from `sealed_for_vihaan.tar.enc`, whose SHA-256 `60228f28…` matches `docs/v2/PHASE2_FREEZE.md`. Each digest equals the study's `state.json` `checkpoint.sha256` at its recorded run folder.
+- 5 controls are verified in [phase1_checkpoint_byte_verification_2026-10-30.json](phase1_checkpoint_byte_verification_2026-10-30.json), on the Brev instance.
+- No digest equals the empty-file SHA-256 (`e3b0c442…`).
+- 7 of the 14 study files were reported at 983,989 bytes in the operator's verifier output. **Pending:** the byte sizes of all 14 study members, taken from the archive listing and added to the verification record.
+- These records are both operator-run on 2026-10-30, using `verify_checkpoints.py` at `f63c55e`.
 
-**Delay test (proposed, requires implementation review):**
-- Evaluate at actuator/command delays **outside** Check 1's frozen delay grid, with a separately written episode-level fall detector and tracking-loss metric.
-- Predefine delay values, command trajectories, fall criterion, tracking-loss threshold, episode counts and how instability is aggregated.
-- Compare Φ-delay with controls using fresh episode seeds. Do not use Check 1's `action_latency_ms` flag to define truth.
+**Still open before any new trajectory:**
+- copy the 14 study checkpoints to the evaluation machine, then re-hash them there;
+- load each checkpoint under the recorded environment (Isaac Lab 3.0.0, Isaac Lab-Arena `2cc9e97`, rsl-rl-lib 5.4.1, sim2gate `e502dae`) and record the result;
+- confirm checkpoint selection: the final `model_1999.pt` of each run, as in Phase 2.
 
-**Independence disclosure:** Different code and conditions reduce circularity, but both evaluations still rely on simulated physics and may share low-level telemetry. They are not physical-robot ground truth. New thresholds are development-only and may be revised only in a newly versioned, explicitly post hoc analysis.
+**Stop rule G0:** no new trajectory until every item above is recorded. Missing files are missing, not guessed. Partial recovery supports at most a labelled subset feasibility study, never a 19-policy result.
 
-## 3. Nominal-success-only baseline
+## 4. Common evaluation conditions (tier R)
 
-- Extract each policy's historical **nominal PhysX success rate** with its episode count, success definition and measurement-code version. Do not silently mix unlike success definitions.
-- Report the original historical 0.85 viability cutoff as a **descriptive comparator only**; it helped select the arms and is not an unbiased detection threshold.
-- Primary development success-only rule: define a fixed threshold from the **healthy reference distribution** before viewing the new independent evaluations, e.g. the minimum nominal success among the five historical controls; flag a policy if its success is **strictly below** that value. State ties explicitly and report the numerical threshold and source. This is an in-sample descriptive baseline, not a calibrated false-positive-rate rule.
-- As a sensitivity analysis, also report the original 0.85 rule and a leave-one-out healthy-control threshold, with the reference control excluded when scoring itself. Do not optimize a threshold to maximize flawed-policy detection.
-- The statement “success misses the flaw” is a **selected-cohort phenomenon**, not an estimate of its population frequency, because interventions with poor nominal success were screened out in prior pilots.
+- **One task for all policies:** `Sim2Gate-Velocity-Flat-Go2-P0-v5b`, with every condition applied by explicit override and recorded in each report. **Never** use a policy's training task.
+- Before any tier-R run, verify that every report records the same task, friction, delay, events, command set and engine. A report that differs is invalid and is rerun, not analysed.
+- Confirm from the historical nominal, sweep and Newton reports that each records the same `profile_record`. This upgrades tier H's claim that those three were unaffected from a code reading to runtime evidence.
 
-## 4. Sim2Gate outputs and false alarms
+## 5. Independent behavioural truth (tier R)
 
-- Preserve the **historically recorded** Check 1/2/5 predictions as the development comparator, with scoring version, calibration and applicability noted. Do not recalibrate after seeing the independent outcomes.
-- **No independent false-alarm estimate from controls s101–s105:** they are part of the 20 clean robots used to derive v2 Check 2 thresholds. Report their in-sample flags descriptively only.
-- For development false-alarm context, use **leave-one-out across all 20 healthy calibration robots** with calibration re-fit on the other 19 for each held-out robot. The existing `docs/v2/evidence/layer1/README.md` reports Check 2 **0/20** under this procedure, with an approximate 95% interval of **0.00–0.16**; verify the underlying code and records before independently reproducing that claim. This is still not a truly untouched healthy cohort.
-- Report Check 1 and Check 5 false-alarm context separately; do not apply Check 2's leave-one-out result to the combined Sim2Gate decision.
-- A credible fresh false-positive-rate estimate requires **new healthy policies not used to set thresholds**.
+Intervention assignment comes from the historical training configuration and is **not** a behavioural diagnosis. Truth is measured with **separate code and fresh episodes**, without consulting Sim2Gate verdicts or thresholds.
 
-## 5. Comparison table and descriptive statistics
+**Slip arms (R-slip, Φ-slip-mild).**
+- **Primary truth is consequence-based:** falls, or tracking loss above a stated threshold, on low-friction ground in the common task. Use a friction distribution and command sequences different from Check 2's fixed command set.
+- **Secondary:** slip magnitude from a separately implemented estimator using raw contact and foot kinematics. It must be unit-tested on synthetic stationary and sliding trajectories.
+- Predefine before reading results: contact logic, velocity frame, aggregation, episode length, minimum valid contacts, missing-sensor policy, repeat rule and effect threshold.
 
-Produce one row per assigned policy, with explicit `missing` for s313:
+**Delay arm (Φ-delay).**
+- **Delay values:** values not on Check 1's frozen grid, within the same realistic envelope. Check 1's delay buffer is limited to 20 physics steps (100 ms, `isaaclab_conditions.py:47`). Values beyond it require a separately reviewed implementation and are reported apart.
+- **Truth:** episode-level falls and tracking loss from a separately written detector, against controls at the same delays and on the same seeds.
+- Predefine: delay values, command trajectories, fall criterion, tracking-loss threshold, episode counts and aggregation.
 
-`policy_id | arm | checkpoint_verified | nominal_success_n/N | success_only_flag | check1_status/flag | check2_status/flag | check5_status/flag | independent_slip_metric | independent_slip_failure | independent_delay_fall_n/N | independent_delay_failure | cross_symptoms | notes`
+**Independence disclosure:** separate code and conditions reduce circularity, but both evaluations rely on simulated physics and may share low-level telemetry. Neither is physical-robot ground truth. Thresholds are development-only.
 
-Aggregate by arm:
-- Completed and missing denominators; intervention application verified; independently manifested symptom count; nominal-success flags; Sim2Gate flags; joint cross-tab **independent manifestation × success-only × Sim2Gate**.
-- Exact binomial (Clopper–Pearson) 95% confidence intervals for per-arm counts/proportions; for **0/5**, the upper bound is about **0.522** and for **0/20**, about **0.168**. Treat intervals as descriptive for this selected, small cohort, not as population-generalizable uncertainty.
-- Report continuous effect sizes and control ranges, not only binary flags. Policy training run is the unit; do not treat episodes or disturbance cells as independent policies.
-- **No headline AUROC, sensitivity-at-10%-FPR, or generalization claim** from 19 selected development runs. Do not score an approach as wrong when its necessary evidence is absent; record N/A or missing.
+## 6. Baselines and diagnostic comparators
 
-## 6. Execution and stop rules
+**Common healthy reference.** Both baselines use the **same 20 qualified P0 v5b robots** (p0v5b_s101–s105, s107–s111, s113–s122). These robots also set the v2 Check 2 limits. So the reference is consistent for both methods, but it **cannot** provide an independent false-alarm estimate for either. False-alarm figures from it are in-sample (section 7).
 
-1. **G0: bytes and environment.** Recover all 19 selected checkpoint files and verify SHA-256, selection lineage and loadability. Stop new-trajectory evaluation if not satisfied.
-2. **G1: evaluator independence.** Independent slip and delay implementations pass unit tests; confirm no calls to Sim2Gate scoring code or use of its thresholds in behavioral labeling.
-3. **G2: prospective execution manifest.** Fix terrain and command distributions, out-of-grid delay values, episode budgets, random seeds, failure definitions, missing-data rules, hardware/runtime and GPU-hour/cost cap in a separately committed manifest **before** running new evaluation.
-4. **G3: baseline lock.** Fix nominal-success threshold, ties, version, historical Sim2Gate output source and 20-control leave-one-out procedure before inspecting new trajectories.
-5. **G4: data completeness.** Preserve all attempted evaluations, crashes, missing checkpoints and invalid telemetry; do not replace a policy because its outcome is inconvenient. Report deviations and missing denominators.
-6. **G5: analysis.** Independently recompute truth labels from fresh trajectories, compare with locked diagnostic outputs, report arm-level counts and exact intervals, and publish negative/ambiguous findings in the internal development report.
+**Success-only baseline.**
+- Measurement: nominal PhysX success under the common nominal profile. For the 5 controls, use the **Phase 2 re-measure**, which ran on the same code as the study robots (`docs/v2/PHASE2_PROTOCOL.md:122-124`). For the other 15 reference robots, use their Phase 1 nominal measurement, and state the version difference.
+- Primary rule: flag a policy whose success is strictly below the minimum success among the 20 reference robots. Report the numeric threshold and its source.
+- Sensitivity: the 5-control minimum, a leave-one-out reference minimum, and the historical 0.85 viability cutoff (descriptive only, because it helped select the arms). Never tune a threshold to detect flawed policies.
+- "Success misses the flaw" is a **selected-cohort phenomenon**, not a frequency estimate.
 
-**No new GPU run is approved.** An approved execution manifest and explicit manager approval are required after G0–G3. No fresh training is proposed. If archives cannot be recovered, produce an evidence-availability report and stop; do not claim an independent benchmark result.
+**Sim2Gate comparators.**
+- **H (historical):** compute verdicts from the recorded measurements using the frozen v2 rules:
+  - Check 1 envelope rule;
+  - Check 2 combined worst-metric ratio above 1.0541 (`docs/v2/evidence/layer1/check2_limit_v2.json`);
+  - Check 5: Newton fall-free share below 80% or tracking error above 2× PhysX.
+  
+  Label Check 2 for Φ-slip-mild and Φ-delay "measured under training physics". **Commit this verdict table before any new trajectory.** It is CPU-only.
+- **R (corrected):** rerun Check 2, and Checks 1 and 5 for parity, in the common task under the same frozen rules and limits, with no recalibration. Commit that table before the independent truth labels are computed. Label it post hoc corrected.
 
-## 7. What this exercise cannot establish
+## 7. False-alarm context
 
-This selected cohort cannot validate a confirmatory benchmark, a population failure frequency, an unbiased 10% false-alarm rate, mechanism-level causal attribution, or real-hardware transfer. Its purpose is to test independent measurement feasibility and whether a *known selected phenomenon* survives different evaluation conditions, while documenting whether success-only and Sim2Gate detect it.
+- Controls s101–s105 are in-sample for the Check 2 limits. Their flags are reported descriptively only.
+- Development context: the existing leave-one-out across the 20 reference robots, with limits from the other 19 (`src/sim2gate/v2/layer1_limits.py:222-232`). It reports Check 2 at 0/20. The Layer 1 README quotes a Wilson interval (0.00–0.16); this specification reports Clopper–Pearson (0.000–0.168). Reproduce it from the code before citing it.
+- Check 1 and Check 5 false-alarm context is reported separately; Check 2's result does not cover the combined decision.
+- A credible false-positive rate needs tier F: new healthy policies not used to set any threshold.
+
+## 8. Reporting
+
+One row per assigned policy, with an explicit `missing` row for s313:
+
+`policy_id | arm | checkpoint_verified | nominal_success_n/N | success_only_flag | H_check1 | H_check2 (physics label) | H_check5 | R_check1 | R_check2 | R_check5 | slip_consequence_failure | slip_magnitude | delay_falls_n/N | delay_failure | cross_symptoms | notes`
+
+- Aggregate by arm. Report completed and missing denominators, independently manifested symptoms, and success-only flags. Report Sim2Gate flags separately for tiers H and R. Include the cross-tabulation of **independent truth × success-only × Sim2Gate (R)**.
+- Use Clopper–Pearson 95% intervals for per-arm proportions (for example, 0/5 has an upper bound of 0.522). They are descriptive for a small, selected cohort.
+- Report continuous effect sizes against control ranges as well as flags. The independent training run is the unit.
+- **No headline AUROC, sensitivity at 10% false-positive rate, or generalization claim.** Record N/A where a method's necessary evidence is absent.
+
+## 9. Gates and stop rules
+
+1. **G0 — bytes and environment:** section 3.
+2. **G1 — evaluator independence:** the independent slip and delay code passes unit tests. Verify that it makes no calls to Sim2Gate scoring code and uses none of its thresholds.
+3. **G2 — prospective manifest:** commit a separate manifest before any run. It fixes the common task and conditions, delay values, friction distribution, command sequences, episode budgets, seeds, failure definitions, missing-data rules, hardware, and the GPU-hour and cost cap.
+4. **G3 — comparator lock:** the tier-H verdict table, the baseline thresholds and the reference set are committed before any tier-R trajectory. The tier-R Sim2Gate table is committed before truth labels are computed.
+5. **G4 — completeness:** preserve every attempted evaluation, crash and invalid report. Never replace a policy because of its outcome.
+6. **G5 — analysis:** report all tiers separately, including negative and ambiguous findings, in an internal development report.
+
+**No new GPU run is approved.** Execution needs G0–G3 complete, a committed G2 manifest and explicit manager approval.
+
+## 10. What this exercise cannot establish
+
+It cannot validate a confirmatory benchmark. It cannot establish a population failure frequency, an unbiased false-alarm rate, mechanism-level attribution or hardware transfer. It tests:
+- whether independent measurement is feasible;
+- whether a known, selected phenomenon survives common evaluation physics and independent conditions;
+- whether success-only and Sim2Gate each detect it.
+
+Stronger claims need tier F.
