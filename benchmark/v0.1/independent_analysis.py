@@ -78,6 +78,9 @@ def read_run(path, manifest=None, manifest_sha=None, policy_id=None, cell_id=Non
             problems.append("command set differs from the manifest")
         if header.get("task") != manifest["common_task"]:
             problems.append("task is not the common task")
+        missing = [x for x in manifest.get("play_args_fixed", []) if x not in (header.get("play_args") or [])]
+        if missing:
+            problems.append(f"fixed play arguments missing: {missing}")
         n_expected = int(manifest["episodes_per_cell_repeat"]) * int(manifest["command_set"].get("n_commands", 64))
         if header.get("num_envs") != n_expected:
             problems.append(f"num_envs {header.get('num_envs')} != {n_expected}")

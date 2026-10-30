@@ -586,7 +586,15 @@ class Collector:
         expected = self.manifest["policies"][self.policy_id]["checkpoint_sha256"]
         lengths = self.log.lengths()
         self.sync_checks = self.sync.result(lengths)
-        header = {"sync_checks": self.sync_checks,"tool": "independent_collector", "tool_sha256": _sha_file(__file__), "stage": self.stage_id,
+        import importlib
+        deps = {}
+        for mod in ("sim2gate.checks.isaaclab_conditions", "sim2gate.checks.commands"):
+            try:
+                f = importlib.import_module(mod).__file__
+                deps[mod] = {"path": f, "sha256": _sha_file(f)}
+            except Exception as e:                                   # recorded, not fatal: provenance only
+                deps[mod] = {"error": f"{type(e).__name__}: {e}"}
+        header = {"sync_checks": self.sync_checks, "dependency_files": deps,"tool": "independent_collector", "tool_sha256": _sha_file(__file__), "stage": self.stage_id,
                   "runtime_checks": self.runtime_checks, "unexpected_early_dones": self.early_dones,
                   "episode_lengths": {"min": min(lengths), "max": max(lengths)},
                   "truth_lib_sha256": _sha_file(HERE / "independent_truth.py"),
@@ -623,6 +631,9 @@ def main(argv=None):
     task = next((rest[i + 1] for i, x in enumerate(rest[:-1]) if x == "--task"), None)
     if task != manifest["common_task"]:
         raise SystemExit(f"--task must be the common task {manifest['common_task']!r}, got {task!r}")
+    missing = [x for x in manifest.get("play_args_fixed", []) if x not in rest]
+    if missing:
+        raise SystemExit(f"fixed play arguments missing from the command line: {missing}")
     if any(x == "--num_envs" or x.startswith("--num_envs=") for x in rest):
         raise SystemExit("--num_envs is set from the manifest; do not pass it")
     if os.path.exists(a.out):

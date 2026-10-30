@@ -1,6 +1,6 @@
 # G2 revision 2 — response to the reviewer's decision (2026-10-30)
 
-**Status:** G2 provisionally accepted. The S0 smoke test is pending explicit manager authorization. The manifest stays DRAFT, and nothing is authorized to run.
+**Status:** G2 provisionally accepted. The manager authorized S0 only, on 2026-10-30 (20:04 UTC). S1 and S2 are not authorized.
 
 The reviewer's decision:
 - G1: provisional.

@@ -1,8 +1,8 @@
-# G2 execution manifest — Phase 2 tier R (DRAFT revision 2, not approved)
+# G2 execution manifest — Phase 2 tier R (revision 2b; APPROVED for S0 only)
 
-**Status: DRAFT, revision 2 — 2026-10-30.** The machine-readable manifest is [G2_TIER_R_MANIFEST.json](G2_TIER_R_MANIFEST.json). This revision answers the reviewer's G2 decision; the item-by-item response is in [G2_REVISION2_RESPONSE.md](G2_REVISION2_RESPONSE.md).
+**Status: APPROVED, revision 2b — S0 only.** The manager authorized S0 on 2026-10-30 (20:04 UTC). S1 and S2 are not authorized, and `truth_rules` remain provisional. The machine-readable manifest is [G2_TIER_R_MANIFEST.json](G2_TIER_R_MANIFEST.json). This revision answers the reviewer's G2 decision; the item-by-item response is in [G2_REVISION2_RESPONSE.md](G2_REVISION2_RESPONSE.md).
 
-**Review status:** G1 provisional. G2 provisionally accepted. The S0 smoke test is pending explicit manager authorization, and S1 and S2 are not authorized. **Nothing is authorized to run.**
+**Review status:** G1 provisional. G2 provisionally accepted. **Only S0 is authorized:** one run, p0v5b_s101 × N080, capped at 0.5 GPU-hours / $1.75. S1 and S2 are not authorized.
 
 The reviewer's additional finding (revision 2b) is answered in [G2_REVISION2_RESPONSE.md](G2_REVISION2_RESPONSE.md#revision-2b-step-synchronization-and-effective-friction).
 
@@ -153,7 +153,8 @@ Inside the container, from `/workspaces/isaaclab_arena`:
 /isaac-sim/python.sh v2_runs/phase2_eval_tools/independent_collector.py --manifest v2_runs/phase2_eval_tools/G2_TIER_R_MANIFEST.json \
   --stage <S0|S1|S2> --policy <id> --cell <cell> --out <stage output_dir>/<id>__<cell>.jsonl.gz -- \
   --task Sim2Gate-Velocity-Flat-Go2-P0-v5b --checkpoint <manifest checkpoint path> \
-  physics=isaacsim_physx env.sim.use_newton_actuators=false --external_callback sim2gate.v2.tasks.register --seed 20261031
+  physics=isaacsim_physx env.sim.use_newton_actuators=false env.scene.robot.joint_ordering=physx \
+  env.scene.robot.body_ordering=physx --external_callback sim2gate.v2.tasks.register --seed 20261031
 ```
 
 Before any truth analysis, run the tier-R Sim2Gate rerun (spec section 6) in the same common task and commit its table.

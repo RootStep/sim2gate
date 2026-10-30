@@ -1,9 +1,9 @@
 {
- "status": "DRAFT",
+ "status": "APPROVED",
  "review_status": {
   "G1": "provisional",
   "G2": "provisionally accepted (revision 2, 2026-10-30)",
-  "S0": "pending explicit manager authorization",
+  "S0": "authorized by the manager 2026-10-30T20:04:00Z (one run, cap 0.5 GPU-hours / 1.75 USD)",
   "S1": "not authorized",
   "S2": "not authorized",
   "open_runtime_uncertainties": [
@@ -13,17 +13,20 @@
   ]
  },
  "revision": 2,
- "revision_note": "G2 revision 2 (2026-10-30) after reviewer decision: action delay primary, observation delay secondary, L3 dropped, staged execution with caps, run-validity rules. See G2_REVISION2_RESPONSE.md.",
+ "revision_note": "G2 revision 2 (2026-10-30) after reviewer decision: action delay primary, observation delay secondary, L3 dropped, staged execution with caps, run-validity rules. See G2_REVISION2_RESPONSE.md. Revision 2b adds step-synchronization and effective-friction evidence; play_args_fixed gains the PhysX joint/body ordering overrides used by the runtime-confirmed nominal runs. S0 authorized 2026-10-30.",
  "purpose": "G2 execution manifest for the Phase 2 tier-R corrected retrospective evaluation (HISTORICAL_PHASE2_INDEPENDENT_EVAL_SPEC.md). Development only, post hoc.",
  "approval": {
-  "approved_by": null,
-  "approved_utc": null,
+  "approved_by": "Vijendra Kulkarni (RootStep custodian / manager)",
+  "approved_utc": "2026-10-30T20:04:00Z",
+  "scope": "Manifest revision 2b approved for staged execution. Only stage S0 is authorized. truth_rules remain provisional (S0 only). S1 and S2 each need their own approval.",
   "note": "Manifest approval does not authorize any stage. Each stage in `stages` needs its own approval."
  },
  "common_task": "Sim2Gate-Velocity-Flat-Go2-P0-v5b",
  "play_args_fixed": [
   "physics=isaacsim_physx",
   "env.sim.use_newton_actuators=false",
+  "env.scene.robot.joint_ordering=physx",
+  "env.scene.robot.body_ordering=physx",
   "--external_callback",
   "sim2gate.v2.tasks.register",
   "--seed",
@@ -234,9 +237,9 @@
   {
    "id": "S0",
    "name": "GPU smoke test",
-   "status": "NOT_APPROVED",
-   "approved_by": null,
-   "approved_utc": null,
+   "status": "APPROVED",
+   "approved_by": "Vijendra Kulkarni (RootStep custodian / manager)",
+   "approved_utc": "2026-10-30T20:04:00Z",
    "runs": [
     [
      "p0v5b_s101",
@@ -963,7 +966,6 @@
   "reading": "128 episodes detect a true excess of 0.15 or more with power >= 0.90; an excess near the 0.10 floor is detected about half the time. A 'not manifested' label therefore means 'no excess >= ~0.15 detected', not 'no flaw'. Doubling to 256 episodes is the option if the reviewer wants >= 0.8 power at +0.10; it doubles S1 and S2 cost."
  },
  "decisions_open": [
-  "approval of S0 (Brev rate confirmed by the custodian at 3.50 USD/h on 2026-10-30)",
   "truth_rules values: provisional, smoke test only, until confirmed before S1",
   "episodes per cell: 128 (power above) or 256"
  ],

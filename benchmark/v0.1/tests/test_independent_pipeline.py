@@ -48,7 +48,7 @@ def good_header(m, sha, policy, cell, n, T):
             "command_set_sha256": m["command_set"]["sha256"], "task": m["common_task"], "num_envs": n,
             "runtime_checks": {"ok": True, "problems": []}, "sync_checks": {"ok": True, "problems": []},
             "unexpected_early_dones": 0, "episode_steps": T,
-            "steps_run": T}
+            "steps_run": T, "play_args": ["--task", m["common_task"], "--checkpoint", "x.pt"] + m["play_args_fixed"]}
 
 
 def write_run(path, m, sha, policy, cell, n, fall_envs=0, T=200, slide=0.0, header_changes=None, short_env=None):
@@ -324,7 +324,7 @@ class CollectorGuards(unittest.TestCase):
     def test_draft_manifest_refused(self):
         with tempfile.TemporaryDirectory() as d:
             m = Path(d) / "m.json"
-            m.write_text(json.dumps(MANIFEST))
+            m.write_text(json.dumps(dict(MANIFEST, status="DRAFT")))
             with self.assertRaisesRegex(SystemExit, "not APPROVED"):
                 ic.main(["--manifest", str(m), "--policy", "s301", "--cell", "F040", "--out", str(Path(d) / "o"),
                          "--stage", "S1", "--", "--task", MANIFEST["common_task"], "--checkpoint", "x.pt"])
@@ -340,8 +340,11 @@ class CollectorGuards(unittest.TestCase):
             ic.authorize(m, "S9", "s301", "A1")
         with self.assertRaisesRegex(SystemExit, "not APPROVED"):
             ic.authorize(dict(m, status="DRAFT"), "S1", "s301", "A1")    # manifest itself not approved
+        self.assertEqual(ic.authorize(MANIFEST, "S0", "p0v5b_s101", "N080")["id"], "S0")  # committed: S0 only
         with self.assertRaisesRegex(SystemExit, "not APPROVED"):
-            ic.authorize(MANIFEST, "S0", "p0v5b_s101", "N080")          # the committed manifest authorizes nothing
+            ic.authorize(MANIFEST, "S1", "s301", "A1")
+        with self.assertRaisesRegex(SystemExit, "not a run of stage"):
+            ic.authorize(MANIFEST, "S0", "p0v5b_s101", "F040")
 
     def test_stage_required(self):
         with tempfile.TemporaryDirectory() as d, contextlib.redirect_stderr(io.StringIO()):
@@ -357,10 +360,13 @@ class CollectorGuards(unittest.TestCase):
             m.write_text(json.dumps(approved()))
             base = ["--manifest", str(m), "--policy", "s301", "--cell", "F040", "--out", str(Path(d) / "o"),
                     "--stage", "S1", "--"]
+            fixed = MANIFEST["play_args_fixed"]
             with self.assertRaisesRegex(SystemExit, "common task"):
-                ic.main(base + ["--task", "Sim2Gate-Velocity-Flat-Go2-P2-R-slip-k0.1", "--checkpoint", "x.pt"])
+                ic.main(base + ["--task", "Sim2Gate-Velocity-Flat-Go2-P2-R-slip-k0.1", "--checkpoint", "x.pt"] + fixed)
+            with self.assertRaisesRegex(SystemExit, "fixed play arguments"):
+                ic.main(base + ["--task", MANIFEST["common_task"], "--checkpoint", "x.pt", "physics=isaacsim_physx"])
             with self.assertRaisesRegex(SystemExit, "num_envs"):
-                ic.main(base + ["--task", MANIFEST["common_task"], "--num_envs", "4"])
+                ic.main(base + ["--task", MANIFEST["common_task"], "--num_envs", "4"] + fixed)
 
     def test_cells_valid(self):
         for c in MANIFEST["cells"]:
@@ -474,6 +480,7 @@ class AnalysisTests(unittest.TestCase):
             "command set": dict(header_changes={"command_set_sha256": "x"}),
             "common task": dict(header_changes={"task": "Sim2Gate-Velocity-Flat-Go2-P2-R-slip-k0.1"}),
             "num_envs": dict(header_changes={"num_envs": 5}),
+            "fixed play arguments": dict(header_changes={"play_args": ["--task", m["common_task"]]}),
             "ended before the time limit": dict(header_changes={"unexpected_early_dones": 1}),
             "not exactly episode_steps": dict(short_env=2),
         }
@@ -547,7 +554,8 @@ class ManifestTests(unittest.TestCase):
         for pid, v in pol.items():
             src = p1[pid] if pid.startswith("p0v5b") else p2[pid]
             self.assertEqual(v["checkpoint_sha256"], src["checkpoint_sha256"], pid)
-        self.assertEqual(MANIFEST["status"], "DRAFT")
+        self.assertEqual(MANIFEST["status"], "APPROVED")
+        self.assertIn("Only stage S0", MANIFEST["approval"]["scope"])
         self.assertEqual(set(MANIFEST["truth_rules"]), set(it.REQUIRED_RULES))
         cs = json.loads((HERE / MANIFEST["command_set"]["path"]).read_text())
         canon = json.dumps([[float(x) for x in r] for r in cs["commands"]], separators=(",", ":"))
@@ -570,7 +578,9 @@ class ManifestTests(unittest.TestCase):
     def test_stages_partition_runs_and_caps(self):
         st = {s["id"]: s for s in MANIFEST["stages"]}
         self.assertEqual(sorted(st), ["S0", "S1", "S2"])
-        self.assertTrue(all(s["status"] == "NOT_APPROVED" and s["approved_by"] is None for s in st.values()))
+        self.assertEqual(st["S0"]["status"], "APPROVED")                    # manager authorization 2026-10-30
+        self.assertTrue(st["S0"]["approved_by"] and st["S0"]["approved_utc"])
+        self.assertTrue(all(st[k]["status"] == "NOT_APPROVED" and st[k]["approved_by"] is None for k in ("S1", "S2")))
         everything = {(p, c["id"]) for p in MANIFEST["policies"] for c in MANIFEST["cells"]}
         s1 = [tuple(r) for r in st["S1"]["runs"]]
         s2 = [tuple(r) for r in st["S2"]["runs"]]
