@@ -23,7 +23,7 @@ FORBIDDEN_TERMS = frozenset((
 ))
 
 
-OPAQUE_ID_PATTERN = re.compile(r"^[A-Za-z0-9]{8,32}$")
+OPAQUE_ID_PATTERN = re.compile(r"^[A-Za-z0-9_]{8,32}$")
 
 
 def _unique_object_pairs(pairs):
