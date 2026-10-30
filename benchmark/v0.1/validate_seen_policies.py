@@ -65,7 +65,14 @@ for policy_id, item in p2.items():
 assert by_key[("v2_phase2", "s313")]["hash_status"] == "INCOMPLETE_RUN"
 assert set(p2) | {"s313"} == {pid for c, pid in by_key if c == "v2_phase2"}
 
+# Phase 1 qualified checkpoints: operator-run byte verification on Brev (2026-10-30).
+p1 = json.loads((HERE / "phase1_checkpoint_byte_verification_2026-10-30.json").read_text())["robots"]
+assert set(p1) == {item["label"] for item in layer["sources"]} and len(p1) == 20
+for policy_id, item in p1.items():
+    check("v2_phase1", policy_id, item["checkpoint_sha256"])
+    assert by_key[("v2_phase1", policy_id)]["hash_status"] == "BYTE_VERIFIED", policy_id
+
 print("PASS: 97 seen exclusions; 15 recovered Phase 1 hashes; "
       "20 pilot and 3 calibration hashes match tracked sources; "
-      "14 Phase 2 study hashes match the 2026-10-30 byte-verification record")
+      "14 Phase 2 study and 20 Phase 1 hashes match the 2026-10-30 byte-verification records")
 print("NOT VERIFIED: other cohorts' checkpoint bytes, 16 rows without any digest")

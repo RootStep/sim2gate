@@ -1,0 +1,150 @@
+{
+ "purpose": "Byte-level verification of the 20 qualified v2 Phase 1 P0 v5b checkpoints (s101-s105, s107-s111, s113-s122) for the seen-policy exclusion register. Seen development data; no training or evaluation.",
+ "performed": "2026-10-30, operator-run on the Brev instance (host /home/ubuntu/IsaacLab-Arena = container /workspaces/isaaclab_arena); outputs pasted into a Claude session and transcribed here. Not an independent third-party rerun.",
+ "tool": "benchmark/v0.1/verify_checkpoints.py at commit f63c55e (branch review/checkpoint-verifier)",
+ "scanned": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b (1011 .pt files)",
+ "path_check": "each matched model_1999.pt lies at the run_dir recorded in docs/v2/evidence/layer1/check2_limit_v2.json sources[].checkpoint",
+ "robots": {
+  "p0v5b_s101": {
+   "seed": 101,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_20-28-49",
+   "host_path": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_20-28-49/model_1999.pt",
+   "checkpoint_sha256": "14e03fab96f671e5b45c43ffefe947ea11754c6a07634d232c58b67745befe62",
+   "register_status_before": "BYTE_VERIFIED"
+  },
+  "p0v5b_s102": {
+   "seed": 102,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_21-25-39",
+   "host_path": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_21-25-39/model_1999.pt",
+   "checkpoint_sha256": "dcd188cbf70d0c9c0a94cd1dd2165e714c977c9db67382563900f96358e0989b",
+   "register_status_before": "BYTE_VERIFIED"
+  },
+  "p0v5b_s103": {
+   "seed": 103,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_22-18-59",
+   "host_path": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_22-18-59/model_1999.pt",
+   "checkpoint_sha256": "612ea5b6f092e44b338fa74d88b2d9c8befb3481e0202c9026295edc7d941343",
+   "register_status_before": "BYTE_VERIFIED"
+  },
+  "p0v5b_s104": {
+   "seed": 104,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_23-14-16",
+   "host_path": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-21_23-14-16/model_1999.pt",
+   "checkpoint_sha256": "7c3061069ae3571e8b11c1719db4a578f24844e156745c66968a2c34d7ea2215",
+   "register_status_before": "BYTE_VERIFIED"
+  },
+  "p0v5b_s105": {
+   "seed": 105,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_00-08-49",
+   "host_path": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_00-08-49/model_1999.pt",
+   "checkpoint_sha256": "4891931732af39e55fee00cd9ea7aa5c99b664969837b3fccadd4d19f579e46e",
+   "register_status_before": "BYTE_VERIFIED"
+  },
+  "p0v5b_s107": {
+   "seed": 107,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_01-52-53",
+   "host_path": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_01-52-53/model_1999.pt",
+   "checkpoint_sha256": "d371877538484ffeb7aa157a7d3988b9d330324c829e4a9434ded52d426cac8c",
+   "register_status_before": "RECORDED_ONLY"
+  },
+  "p0v5b_s108": {
+   "seed": 108,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_02-48-20",
+   "host_path": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_02-48-20/model_1999.pt",
+   "checkpoint_sha256": "5eb41198d2a0ab8572cbe6a3b9e715ff4456f5153cb30c4c5b71dc3b61f5875f",
+   "register_status_before": "RECORDED_ONLY"
+  },
+  "p0v5b_s109": {
+   "seed": 109,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_03-42-01",
+   "host_path": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_03-42-01/model_1999.pt",
+   "checkpoint_sha256": "3aa27e227c08e90abb24a43021cf50f798939601857fe62e1a14226cfe27889f",
+   "register_status_before": "RECORDED_ONLY"
+  },
+  "p0v5b_s110": {
+   "seed": 110,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_04-39-36",
+   "host_path": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_04-39-36/model_1999.pt",
+   "checkpoint_sha256": "e94d30f21ad1aaf95576d5ac1a59b08c7bdaee125897ebfb3ad4b166baea984d",
+   "register_status_before": "RECORDED_ONLY"
+  },
+  "p0v5b_s111": {
+   "seed": 111,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_05-36-58",
+   "host_path": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_05-36-58/model_1999.pt",
+   "checkpoint_sha256": "b8fdea2878abfffd73a1605bc259ff2f45e38b00a0cc641119fc60f540e19327",
+   "register_status_before": "RECORDED_ONLY"
+  },
+  "p0v5b_s113": {
+   "seed": 113,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_07-22-47",
+   "host_path": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_07-22-47/model_1999.pt",
+   "checkpoint_sha256": "a9b285e0b5ced309b79f36fbd532ff93d79cd88e231cc47fd93deb548c603a89",
+   "register_status_before": "RECORDED_ONLY"
+  },
+  "p0v5b_s114": {
+   "seed": 114,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_08-18-00",
+   "host_path": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_08-18-00/model_1999.pt",
+   "checkpoint_sha256": "3100813929cf2e680943acb8789ae8b02b4cbf85e4ddb3d522b844abda1211b6",
+   "register_status_before": "RECORDED_ONLY"
+  },
+  "p0v5b_s115": {
+   "seed": 115,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_09-11-52",
+   "host_path": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_09-11-52/model_1999.pt",
+   "checkpoint_sha256": "d9a30ab12bce840a257e6957d4ae1b724cf897c10fc43000437e2a476d947aa9",
+   "register_status_before": "RECORDED_ONLY"
+  },
+  "p0v5b_s116": {
+   "seed": 116,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_10-05-58",
+   "host_path": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_10-05-58/model_1999.pt",
+   "checkpoint_sha256": "b8b29f0edfdfbe48e1643663c93aab06aba832c012a6917fef7f97695e4b6767",
+   "register_status_before": "RECORDED_ONLY"
+  },
+  "p0v5b_s117": {
+   "seed": 117,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_11-00-07",
+   "host_path": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_11-00-07/model_1999.pt",
+   "checkpoint_sha256": "100373d8e18badf51f0a0d15d4d410cb4ea83578100f18f4e55964285a29a44e",
+   "register_status_before": "RECORDED_ONLY"
+  },
+  "p0v5b_s118": {
+   "seed": 118,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_11-55-12",
+   "host_path": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_11-55-12/model_1999.pt",
+   "checkpoint_sha256": "dd87778d215fe542a25cf0bef46fe67c7643194911ccf4717c987031a34a948e",
+   "register_status_before": "RECORDED_ONLY"
+  },
+  "p0v5b_s119": {
+   "seed": 119,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_12-48-20",
+   "host_path": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_12-48-20/model_1999.pt",
+   "checkpoint_sha256": "5861d33eff71a4c66ca5fd808931ae1490809452f84d7f6737a145df27f44b26",
+   "register_status_before": "RECORDED_ONLY"
+  },
+  "p0v5b_s120": {
+   "seed": 120,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_13-43-28",
+   "host_path": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_13-43-28/model_1999.pt",
+   "checkpoint_sha256": "2fd320c5883442cf7d8996ddb6226206e588dddc715ff06f4c62a0602d5e1d0c",
+   "register_status_before": "RECORDED_ONLY"
+  },
+  "p0v5b_s121": {
+   "seed": 121,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_14-40-34",
+   "host_path": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_14-40-34/model_1999.pt",
+   "checkpoint_sha256": "a5b3de386334d54811b9b42e2c48aa9ecd1f1d6c877e85684c28ca097d2927b1",
+   "register_status_before": "RECORDED_ONLY"
+  },
+  "p0v5b_s122": {
+   "seed": 122,
+   "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_15-34-29",
+   "host_path": "/home/ubuntu/IsaacLab-Arena/logs/rsl_rl/sim2gate_go2_flat_p0_v5b/2026-10-22_15-34-29/model_1999.pt",
+   "checkpoint_sha256": "55873ab02a2bdf152bbbdffffe40538bc6e5d6550a2a3707c3da452dbd7d97ce",
+   "register_status_before": "RECORDED_ONLY"
+  }
+ },
+ "not_covered": "p0v5b_s106 and p0v5b_s112 (did not qualify; no recorded digest; run folders not yet identified)"
+}

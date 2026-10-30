@@ -37,12 +37,13 @@ class RegisterV2Tests(unittest.TestCase):
     def test_phase2_byte_verified_digest_tampering_fails(self):
         original = REGISTER.read_bytes()
         try:
-            for policy_id, field, value in (("s306", "checkpoint_sha256", "0" * 64),
-                                            ("s306", "hash_status", "RECORDED_ONLY"),
-                                            ("s301", "checkpoint_sha256", "f" * 64)):
+            for cohort, policy_id, field, value in (("v2_phase2", "s306", "checkpoint_sha256", "0" * 64),
+                                                    ("v2_phase2", "s306", "hash_status", "RECORDED_ONLY"),
+                                                    ("v2_phase2", "s301", "checkpoint_sha256", "f" * 64),
+                                                    ("v2_phase1", "p0v5b_s107", "hash_status", "RECORDED_ONLY")):
                 with self.subTest(policy_id=policy_id, field=field):
                     rows = list(csv.DictReader(original.decode().splitlines()))
-                    row = next(r for r in rows if r["cohort"] == "v2_phase2" and r["policy_id"] == policy_id)
+                    row = next(r for r in rows if r["cohort"] == cohort and r["policy_id"] == policy_id)
                     row[field] = value
                     with REGISTER.open("w", newline="") as handle:
                         writer = csv.DictWriter(handle, fieldnames=rows[0].keys())
