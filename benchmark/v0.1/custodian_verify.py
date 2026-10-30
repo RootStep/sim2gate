@@ -139,3 +139,28 @@ def synthetic_unseal_once(result, sealed_labels, protected_digest,
         os.fsync(handle.fileno())
     verify_issued_input_binding(result, issued_input_sha256, issued_ids)
     return synthetic_unseal_with_protected_commitment(result, sealed_labels, protected_digest)
+
+
+def custodian_record_synthetic_commitment(result, issued_input_sha256, issued_ids, private_directory):
+    """Custodian-only write-once synthetic record, not external attestation."""
+    import os
+    from pathlib import Path
+    directory = Path(private_directory)
+    if not directory.is_dir() or directory.is_symlink() or directory.stat().st_mode & 0o077:
+        raise ValueError("custodian directory must be private (0700)")
+    verify_issued_input_binding(result, issued_input_sha256, issued_ids)
+    digest = verify_prediction_commitment(result)
+    path = directory / "synthetic_prediction_commitment.json"
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    try:
+        fd = os.open(path, flags, 0o600)
+    except FileExistsError as exc:
+        raise ValueError("custodian commitment already recorded") from exc
+    with os.fdopen(fd, "w") as handle:
+        json.dump({"prediction_sha256": digest, "issued_input_sha256": issued_input_sha256,
+                   "issued_ids": list(issued_ids), "synthetic_only": True}, handle, sort_keys=True)
+        handle.flush()
+        os.fsync(handle.fileno())
+    return path
