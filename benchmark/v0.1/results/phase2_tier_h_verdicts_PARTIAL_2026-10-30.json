@@ -1,0 +1,737 @@
+{
+ "rows": [
+  {
+   "arm": "control",
+   "folder": "/home/claude/data/p2meas/controls/p0v5b_s101",
+   "inputs": {},
+   "policy_id": "p0v5b_s101",
+   "status": "missing reports: nominal, sweep, check2, newton"
+  },
+  {
+   "arm": "control",
+   "folder": "/home/claude/data/p2meas/controls/p0v5b_s102",
+   "inputs": {},
+   "policy_id": "p0v5b_s102",
+   "status": "missing reports: nominal, sweep, check2, newton"
+  },
+  {
+   "arm": "control",
+   "folder": "/home/claude/data/p2meas/controls/p0v5b_s103",
+   "inputs": {},
+   "policy_id": "p0v5b_s103",
+   "status": "missing reports: nominal, sweep, check2, newton"
+  },
+  {
+   "arm": "control",
+   "folder": "/home/claude/data/p2meas/controls/p0v5b_s104",
+   "inputs": {},
+   "policy_id": "p0v5b_s104",
+   "status": "missing reports: nominal, sweep, check2, newton"
+  },
+  {
+   "arm": "control",
+   "folder": "/home/claude/data/p2meas/controls/p0v5b_s105",
+   "inputs": {},
+   "policy_id": "p0v5b_s105",
+   "status": "missing reports: nominal, sweep, check2, newton"
+  },
+  {
+   "arm": "R-slip",
+   "check1": {
+    "flagged": false,
+    "flagged_params": [],
+    "reasons": [],
+    "status": "scored"
+   },
+   "check2": {
+    "driving_metric": "foot_slip_p95_mps",
+    "flagged": true,
+    "limit": 1.0540540540540542,
+    "measured_in_task": "Sim2Gate-Velocity-Flat-Go2-P2-R-slip-k0.1",
+    "physics_label": "P0 v5b physics (reward change only)",
+    "reasons": [],
+    "score": 24.04021043798383,
+    "status": "scored"
+   },
+   "check5": {
+    "flagged": false,
+    "reasons": [],
+    "risks": [],
+    "status": "scored"
+   },
+   "folder": "/home/claude/data/p2meas/robots/study_s301/measure",
+   "inputs": {
+    "check2": "03fd934aab9c84b14d224ed71e409fd21b0ffcb11ae6cb779c64d282ef9d81bc",
+    "newton": "14628a8d5a6635f1e17e51599656eaa7665d65ba31002a99d6e1045bd319fed8",
+    "nominal": "32f2172c65f1e5fee846949fba985cf47554dd518d8838ed780923a9f94c5109",
+    "sweep": "9671cc36aa20b9388279e3ba5e08462bc9139a5111e5871906732a2449329510"
+   },
+   "nominal_success": {
+    "episodes": 256,
+    "falls": 0,
+    "rate": 1.0
+   },
+   "policy_id": "s301",
+   "recomputed_matches_recorded": {
+    "check1_flagged": true,
+    "nominal_success": true
+   },
+   "recorded": {
+    "check1_flagged": false,
+    "nominal_success": 1.0
+   },
+   "sim2gate_any_flag": true,
+   "status": "scored"
+  },
+  {
+   "arm": "R-slip",
+   "check1": {
+    "flagged": false,
+    "flagged_params": [],
+    "reasons": [],
+    "status": "scored"
+   },
+   "check2": {
+    "driving_metric": "foot_slip_p95_mps",
+    "flagged": true,
+    "limit": 1.0540540540540542,
+    "measured_in_task": "Sim2Gate-Velocity-Flat-Go2-P2-R-slip-k0.1",
+    "physics_label": "P0 v5b physics (reward change only)",
+    "reasons": [],
+    "score": 23.763835395976436,
+    "status": "scored"
+   },
+   "check5": {
+    "flagged": false,
+    "reasons": [],
+    "risks": [],
+    "status": "scored"
+   },
+   "folder": "/home/claude/data/p2meas/robots/study_s302/measure",
+   "inputs": {
+    "check2": "801904c556f1a21734fdeb5f89b242412fb53b59a51ae32e27f4039c9edd4bfa",
+    "newton": "55e96892623630f8dabaebddb8e7de6cd61273e5193df9d29cfbf5457768478c",
+    "nominal": "1d1c45802e5338992f910fbde3f5c9fc4b5e9fe12b6382e533de5e8827c97231",
+    "sweep": "df29a9d548245e6f65380a1af18b55d10117c06fc704dc7f2ab5823fffbc39ea"
+   },
+   "nominal_success": {
+    "episodes": 256,
+    "falls": 0,
+    "rate": 1.0
+   },
+   "policy_id": "s302",
+   "recomputed_matches_recorded": {
+    "check1_flagged": true,
+    "nominal_success": true
+   },
+   "recorded": {
+    "check1_flagged": false,
+    "nominal_success": 1.0
+   },
+   "sim2gate_any_flag": true,
+   "status": "scored"
+  },
+  {
+   "arm": "R-slip",
+   "check1": {
+    "flagged": false,
+    "flagged_params": [],
+    "reasons": [],
+    "status": "scored"
+   },
+   "check2": {
+    "driving_metric": "foot_slip_p95_mps",
+    "flagged": true,
+    "limit": 1.0540540540540542,
+    "measured_in_task": "Sim2Gate-Velocity-Flat-Go2-P2-R-slip-k0.1",
+    "physics_label": "P0 v5b physics (reward change only)",
+    "reasons": [],
+    "score": 24.2762127791296,
+    "status": "scored"
+   },
+   "check5": {
+    "flagged": false,
+    "reasons": [],
+    "risks": [],
+    "status": "scored"
+   },
+   "folder": "/home/claude/data/p2meas/robots/study_s303/measure",
+   "inputs": {
+    "check2": "c69dc9aca20ba0e1d8468866db68e3335ed52f93046d8fe208e7187dbedc1107",
+    "newton": "514fb8d1fa3c0e6adeabde61376f362783ca591656e86b2bec79dca54c36e334",
+    "nominal": "baf0b26a5af5bfcccdb2cd0daf5d7b95c1f38dd7d6c9bfc971f79428531f0114",
+    "sweep": "bedb1a5e181c568c7a67a64dc4a173c5c7d40ab194a02153655ed68861987cc9"
+   },
+   "nominal_success": {
+    "episodes": 256,
+    "falls": 0,
+    "rate": 0.9921875
+   },
+   "policy_id": "s303",
+   "recomputed_matches_recorded": {
+    "check1_flagged": true,
+    "nominal_success": true
+   },
+   "recorded": {
+    "check1_flagged": false,
+    "nominal_success": 0.9921875
+   },
+   "sim2gate_any_flag": true,
+   "status": "scored"
+  },
+  {
+   "arm": "R-slip",
+   "check1": {
+    "flagged": false,
+    "flagged_params": [],
+    "reasons": [],
+    "status": "scored"
+   },
+   "check2": {
+    "driving_metric": "foot_slip_p95_mps",
+    "flagged": true,
+    "limit": 1.0540540540540542,
+    "measured_in_task": "Sim2Gate-Velocity-Flat-Go2-P2-R-slip-k0.1",
+    "physics_label": "P0 v5b physics (reward change only)",
+    "reasons": [],
+    "score": 24.707711132307214,
+    "status": "scored"
+   },
+   "check5": {
+    "flagged": false,
+    "reasons": [],
+    "risks": [],
+    "status": "scored"
+   },
+   "folder": "/home/claude/data/p2meas/robots/study_s304/measure",
+   "inputs": {
+    "check2": "bb1181bddd2c2f62ca259a4bc3303c09c2f31ebd4e1cdb54f92c5fb4d81eaade",
+    "newton": "7bf387c67b399c479fd0f49c597103f11bca1a292fde4466da045c2d618f5e73",
+    "nominal": "9802f4567e3b91fe1208f2a26a3fd8a69e72d81bbadb88f428ccae24849de179",
+    "sweep": "dabf14b697a59cf5f80a7f89f0e37742c251124897441cc5d6d4d0c10ee2fcee"
+   },
+   "nominal_success": {
+    "episodes": 256,
+    "falls": 0,
+    "rate": 0.98046875
+   },
+   "policy_id": "s304",
+   "recomputed_matches_recorded": {
+    "check1_flagged": true,
+    "nominal_success": true
+   },
+   "recorded": {
+    "check1_flagged": false,
+    "nominal_success": 0.98046875
+   },
+   "sim2gate_any_flag": true,
+   "status": "scored"
+  },
+  {
+   "arm": "R-slip",
+   "check1": {
+    "flagged": false,
+    "flagged_params": [],
+    "reasons": [],
+    "status": "scored"
+   },
+   "check2": {
+    "driving_metric": "foot_slip_p95_mps",
+    "flagged": true,
+    "limit": 1.0540540540540542,
+    "measured_in_task": "Sim2Gate-Velocity-Flat-Go2-P2-R-slip-k0.1",
+    "physics_label": "P0 v5b physics (reward change only)",
+    "reasons": [],
+    "score": 24.218570217470702,
+    "status": "scored"
+   },
+   "check5": {
+    "flagged": false,
+    "reasons": [],
+    "risks": [],
+    "status": "scored"
+   },
+   "folder": "/home/claude/data/p2meas/robots/study_s305/measure",
+   "inputs": {
+    "check2": "cac5c084788310646b1f2e5b6c011f7a2e8ad65d1d70f59eee58b5e086540bb9",
+    "newton": "08d8e194734269da18b383402e6653582c40da4721b39714547bdb5ab0046da9",
+    "nominal": "1c6843a0f4213a42a1b5cf29261cfdcd8fc347e14fcf49468ef48748c6b120e4",
+    "sweep": "d992c216436d58546bcedc97baa04313255ff41df42981ecc3e7fa352deed392"
+   },
+   "nominal_success": {
+    "episodes": 256,
+    "falls": 0,
+    "rate": 1.0
+   },
+   "policy_id": "s305",
+   "recomputed_matches_recorded": {
+    "check1_flagged": true,
+    "nominal_success": true
+   },
+   "recorded": {
+    "check1_flagged": false,
+    "nominal_success": 1.0
+   },
+   "sim2gate_any_flag": true,
+   "status": "scored"
+  },
+  {
+   "arm": "\u03a6-slip-mild",
+   "check1": {
+    "flagged": false,
+    "flagged_params": [],
+    "reasons": [],
+    "status": "scored"
+   },
+   "check2": {
+    "driving_metric": "foot_slip_p95_mps",
+    "flagged": true,
+    "limit": 1.0540540540540542,
+    "measured_in_task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-slip-mild-mild",
+    "physics_label": "TRAINING PHYSICS: static friction 0.3-0.6",
+    "reasons": [],
+    "score": 2.053427306164465,
+    "status": "scored"
+   },
+   "check5": {
+    "flagged": false,
+    "reasons": [],
+    "risks": [],
+    "status": "scored"
+   },
+   "folder": "/home/claude/data/p2meas/robots/study_s306/measure",
+   "inputs": {
+    "check2": "30b3c2e7e5b4b9ed8cab3e5adcf601d1494bef3e25be0cb81ed6532ae69e9592",
+    "newton": "67b84d46ee2d465058b20bcbe6076f2bfbdae7bfcdf27f61b3d2b4217a9a2fd9",
+    "nominal": "6f4a13d740fb860bc34d94326678195c694b9b1cc6b9ee3b6760f56c5d16b1b4",
+    "sweep": "eaa0dbad57edbd46b5bd1cf8eaa61bc20fd7d3855ef83dd4e9dd00567c5b18db"
+   },
+   "nominal_success": {
+    "episodes": 256,
+    "falls": 0,
+    "rate": 0.9453125
+   },
+   "policy_id": "s306",
+   "recomputed_matches_recorded": {
+    "check1_flagged": true,
+    "nominal_success": true
+   },
+   "recorded": {
+    "check1_flagged": false,
+    "nominal_success": 0.9453125
+   },
+   "sim2gate_any_flag": true,
+   "status": "scored"
+  },
+  {
+   "arm": "\u03a6-slip-mild",
+   "check1": {
+    "flagged": false,
+    "flagged_params": [],
+    "reasons": [],
+    "status": "scored"
+   },
+   "check2": {
+    "driving_metric": "foot_slip_p95_mps",
+    "flagged": true,
+    "limit": 1.0540540540540542,
+    "measured_in_task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-slip-mild-mild",
+    "physics_label": "TRAINING PHYSICS: static friction 0.3-0.6",
+    "reasons": [],
+    "score": 1.5470883822298287,
+    "status": "scored"
+   },
+   "check5": {
+    "flagged": false,
+    "reasons": [],
+    "risks": [],
+    "status": "scored"
+   },
+   "folder": "/home/claude/data/p2meas/robots/study_s307/measure",
+   "inputs": {
+    "check2": "bca97bac7edc490a2718bee5a70da1255a639090b31c794dd55e690aaa39c56f",
+    "newton": "dfc3df30d337b25cfe9557596595c8395eed1bc239aa2390e0ffa3ce651da861",
+    "nominal": "60206980854ab537fa514e383709c8e3274264f342a7e0b13b38bce302baab5a",
+    "sweep": "fe504a3d49632f8f5ad04bf2151fd258b7c5aa595bbd781d49090668cfafba0d"
+   },
+   "nominal_success": {
+    "episodes": 256,
+    "falls": 0,
+    "rate": 0.95703125
+   },
+   "policy_id": "s307",
+   "recomputed_matches_recorded": {
+    "check1_flagged": true,
+    "nominal_success": true
+   },
+   "recorded": {
+    "check1_flagged": false,
+    "nominal_success": 0.95703125
+   },
+   "sim2gate_any_flag": true,
+   "status": "scored"
+  },
+  {
+   "arm": "\u03a6-slip-mild",
+   "check1": {
+    "flagged": false,
+    "flagged_params": [],
+    "reasons": [],
+    "status": "scored"
+   },
+   "check2": {
+    "driving_metric": "foot_slip_p95_mps",
+    "flagged": true,
+    "limit": 1.0540540540540542,
+    "measured_in_task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-slip-mild-mild",
+    "physics_label": "TRAINING PHYSICS: static friction 0.3-0.6",
+    "reasons": [],
+    "score": 1.6089090804241901,
+    "status": "scored"
+   },
+   "check5": {
+    "flagged": false,
+    "reasons": [],
+    "risks": [],
+    "status": "scored"
+   },
+   "folder": "/home/claude/data/p2meas/robots/study_s308/measure",
+   "inputs": {
+    "check2": "48099abf498b371f89b52b653d9c0fbb9b4d6712095d86aee3f40b50937dfacf",
+    "newton": "2c0f53d0f7a118ffeb55a3aa85bbffd9fc58aec74cec53462968a6a70ba5647a",
+    "nominal": "7503db9a04239bb0ac19c25a080f91f510323e1a00a1bf250d4ca6228d229bca",
+    "sweep": "94ad3ecb93409d55f2f1c7cdbac2c3275bda61b90f724b7464947f18d60cd149"
+   },
+   "nominal_success": {
+    "episodes": 256,
+    "falls": 0,
+    "rate": 0.89453125
+   },
+   "policy_id": "s308",
+   "recomputed_matches_recorded": {
+    "check1_flagged": true,
+    "nominal_success": true
+   },
+   "recorded": {
+    "check1_flagged": false,
+    "nominal_success": 0.89453125
+   },
+   "sim2gate_any_flag": true,
+   "status": "scored"
+  },
+  {
+   "arm": "\u03a6-slip-mild",
+   "check1": {
+    "flagged": true,
+    "flagged_params": [
+     "observation_noise_scale"
+    ],
+    "reasons": [],
+    "status": "scored"
+   },
+   "check2": {
+    "driving_metric": "foot_slip_p95_mps",
+    "flagged": true,
+    "limit": 1.0540540540540542,
+    "measured_in_task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-slip-mild-mild",
+    "physics_label": "TRAINING PHYSICS: static friction 0.3-0.6",
+    "reasons": [],
+    "score": 1.4057135357598085,
+    "status": "scored"
+   },
+   "check5": {
+    "flagged": false,
+    "reasons": [],
+    "risks": [],
+    "status": "scored"
+   },
+   "folder": "/home/claude/data/p2meas/robots/study_s309/measure",
+   "inputs": {
+    "check2": "b0b1817c2f2d1247d1bc2b35111ff7f27874aa51d05075e4cbfd87bc30b765bb",
+    "newton": "f1f779bd55a800617903f178465dd2b5819ea3d9867def4fdedc7c6f83604896",
+    "nominal": "7b5a6f843ce42c417a7081d3f45f110b511556e9f947d2eda610b8775ac78024",
+    "sweep": "f78c9777874707d27473e579a137e20b34358b174cf255146312ee0dab668b59"
+   },
+   "nominal_success": {
+    "episodes": 256,
+    "falls": 2,
+    "rate": 0.9375
+   },
+   "policy_id": "s309",
+   "recomputed_matches_recorded": {
+    "check1_flagged": true,
+    "nominal_success": true
+   },
+   "recorded": {
+    "check1_flagged": true,
+    "nominal_success": 0.9375
+   },
+   "sim2gate_any_flag": true,
+   "status": "scored"
+  },
+  {
+   "arm": "\u03a6-slip-mild",
+   "check1": {
+    "flagged": false,
+    "flagged_params": [],
+    "reasons": [],
+    "status": "scored"
+   },
+   "check2": {
+    "driving_metric": "foot_slip_p95_mps",
+    "flagged": true,
+    "limit": 1.0540540540540542,
+    "measured_in_task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-slip-mild-mild",
+    "physics_label": "TRAINING PHYSICS: static friction 0.3-0.6",
+    "reasons": [],
+    "score": 3.221086750321311,
+    "status": "scored"
+   },
+   "check5": {
+    "flagged": false,
+    "reasons": [],
+    "risks": [],
+    "status": "scored"
+   },
+   "folder": "/home/claude/data/p2meas/robots/study_s310/measure",
+   "inputs": {
+    "check2": "5c5f03b9f4ae6f985a608997a4913b81e0e27bebd14cbd70ea4e7ebccfc8407c",
+    "newton": "a1ae3da0ae48ebcf7284ee8f2eb57465b01e58127bd681856a528cf21cc460de",
+    "nominal": "26eb82a5aa48c419a4eb3282d34f690511df98d34e91256cf1cd610edc1b2b93",
+    "sweep": "e3fe4adde4a460b8da0c46ca2ac1d981b9f263eb45ef0f897d8a446465eae609"
+   },
+   "nominal_success": {
+    "episodes": 256,
+    "falls": 0,
+    "rate": 0.9140625
+   },
+   "policy_id": "s310",
+   "recomputed_matches_recorded": {
+    "check1_flagged": true,
+    "nominal_success": true
+   },
+   "recorded": {
+    "check1_flagged": false,
+    "nominal_success": 0.9140625
+   },
+   "sim2gate_any_flag": true,
+   "status": "scored"
+  },
+  {
+   "arm": "\u03a6-delay",
+   "check1": {
+    "flagged": true,
+    "flagged_params": [
+     "action_latency_ms"
+    ],
+    "reasons": [],
+    "status": "scored"
+   },
+   "check2": {
+    "driving_metric": "action_jitter_high_freq_power_share",
+    "flagged": true,
+    "limit": 1.0540540540540542,
+    "measured_in_task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-delay-nodelay",
+    "physics_label": "TRAINING PHYSICS: no command delay",
+    "reasons": [],
+    "score": 1.0923736631309935,
+    "status": "scored"
+   },
+   "check5": {
+    "flagged": false,
+    "reasons": [],
+    "risks": [],
+    "status": "scored"
+   },
+   "folder": "/home/claude/data/p2meas/robots/study_s311/measure",
+   "inputs": {
+    "check2": "1d0985614766d7d9fd653ca733a54bb2142b5834d732860460760b49453a5fe3",
+    "newton": "b9d48542d9e9e124ecbc61e6a33c4c82450dabec3b26a9e99caba2aa85212803",
+    "nominal": "622edd2203bfd31b76e3d001733d72e91d57facebba337d2105ed00f755ed37f",
+    "sweep": "dd048b27b0927347fe9247c8babc60663c76e10076b31907234741072d971469"
+   },
+   "nominal_success": {
+    "episodes": 256,
+    "falls": 0,
+    "rate": 0.984375
+   },
+   "policy_id": "s311",
+   "recomputed_matches_recorded": {
+    "check1_flagged": true,
+    "nominal_success": true
+   },
+   "recorded": {
+    "check1_flagged": true,
+    "nominal_success": 0.984375
+   },
+   "sim2gate_any_flag": true,
+   "status": "scored"
+  },
+  {
+   "arm": "\u03a6-delay",
+   "check1": {
+    "flagged": true,
+    "flagged_params": [
+     "action_latency_ms"
+    ],
+    "reasons": [],
+    "status": "scored"
+   },
+   "check2": {
+    "driving_metric": "action_jitter_high_freq_power_share",
+    "flagged": true,
+    "limit": 1.0540540540540542,
+    "measured_in_task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-delay-nodelay",
+    "physics_label": "TRAINING PHYSICS: no command delay",
+    "reasons": [],
+    "score": 1.26506112035073,
+    "status": "scored"
+   },
+   "check5": {
+    "flagged": false,
+    "reasons": [],
+    "risks": [],
+    "status": "scored"
+   },
+   "folder": "/home/claude/data/p2meas/robots/study_s312/measure",
+   "inputs": {
+    "check2": "72f9916a2fc1967ec191436298f6010d88a5ec8038a8faa5519757100da2726e",
+    "newton": "c7dbcae9054e96dae3ae1dc27da78e8e644f346ba93e1a53e5e8801eca990da0",
+    "nominal": "eec0b5400bb3b73c82fce69d6fdaa15a1194e1c9220edd0782047f006c80a525",
+    "sweep": "952b4823f8927ed2df5a4507a9112100b23845196ef672ee6519b36d3ad75d4a"
+   },
+   "nominal_success": {
+    "episodes": 256,
+    "falls": 0,
+    "rate": 0.99609375
+   },
+   "policy_id": "s312",
+   "recomputed_matches_recorded": {
+    "check1_flagged": true,
+    "nominal_success": true
+   },
+   "recorded": {
+    "check1_flagged": true,
+    "nominal_success": 0.99609375
+   },
+   "sim2gate_any_flag": true,
+   "status": "scored"
+  },
+  {
+   "arm": "\u03a6-delay",
+   "policy_id": "s313",
+   "status": "missing: no final checkpoint (incomplete run)"
+  },
+  {
+   "arm": "\u03a6-delay",
+   "check1": {
+    "flagged": true,
+    "flagged_params": [
+     "action_latency_ms"
+    ],
+    "reasons": [],
+    "status": "scored"
+   },
+   "check2": {
+    "driving_metric": "actuator_limit_step_share",
+    "flagged": true,
+    "limit": 1.0540540540540542,
+    "measured_in_task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-delay-nodelay",
+    "physics_label": "TRAINING PHYSICS: no command delay",
+    "reasons": [],
+    "score": 1.893162393162393,
+    "status": "scored"
+   },
+   "check5": {
+    "flagged": false,
+    "reasons": [],
+    "risks": [],
+    "status": "scored"
+   },
+   "folder": "/home/claude/data/p2meas/robots/study_s314/measure",
+   "inputs": {
+    "check2": "0fc4da4fc6c36e70b6e42c93ae86e1dcb292bd0aa0be77d435f9d04ed7cc0afa",
+    "newton": "5df98107d4d7cda6d797a9753dfac100e6f1acc5cbe5f2d075bbde87bf086813",
+    "nominal": "df1bc04cabbac7f3821ec405d58f9ce7a63d3bfd9ffa7d3705048e7ca5541994",
+    "sweep": "529bde9b62a29fec4ae0f001be7c2199d1b6d1eadee6233f57abb964800ec884"
+   },
+   "nominal_success": {
+    "episodes": 256,
+    "falls": 0,
+    "rate": 0.9921875
+   },
+   "policy_id": "s314",
+   "recomputed_matches_recorded": {
+    "check1_flagged": true,
+    "nominal_success": true
+   },
+   "recorded": {
+    "check1_flagged": true,
+    "nominal_success": 0.9921875
+   },
+   "sim2gate_any_flag": true,
+   "status": "scored"
+  },
+  {
+   "arm": "\u03a6-delay",
+   "check1": {
+    "flagged": true,
+    "flagged_params": [
+     "action_latency_ms"
+    ],
+    "reasons": [],
+    "status": "scored"
+   },
+   "check2": {
+    "driving_metric": "actuator_limit_step_share",
+    "flagged": true,
+    "limit": 1.0540540540540542,
+    "measured_in_task": "Sim2Gate-Velocity-Flat-Go2-P2-Phi-delay-nodelay",
+    "physics_label": "TRAINING PHYSICS: no command delay",
+    "reasons": [],
+    "score": 1.346153846153846,
+    "status": "scored"
+   },
+   "check5": {
+    "flagged": false,
+    "reasons": [],
+    "risks": [],
+    "status": "scored"
+   },
+   "folder": "/home/claude/data/p2meas/robots/study_s315/measure",
+   "inputs": {
+    "check2": "3d40b308d23977243a2b57cb5d0ed518f7c2acfc0faa7da130eb1d0d4e1d87f3",
+    "newton": "3d0a0590c80baa8cc2f588867f89e5b4838bb8e1ec8ee07e388bfdde36c95f83",
+    "nominal": "bdac9dbe866cfa5916cadc51f0979926fa4014c76519c8780dab986898e0e4b0",
+    "sweep": "908bc9fac8d4a19c8ec04c6428e18ee0480103793daedfb7f5213a7542f2dbc0"
+   },
+   "nominal_success": {
+    "episodes": 256,
+    "falls": 0,
+    "rate": 1.0
+   },
+   "policy_id": "s315",
+   "recomputed_matches_recorded": {
+    "check1_flagged": true,
+    "nominal_success": true
+   },
+   "recorded": {
+    "check1_flagged": true,
+    "nominal_success": 1.0
+   },
+   "sim2gate_any_flag": true,
+   "status": "scored"
+  }
+ ],
+ "rules": {
+  "check1": "sim2gate.checks.robustness.score, v2 envelope",
+  "check2_limit": 1.0540540540540542,
+  "check2_source": "src/sim2gate/v2/check2_limit_v2.json",
+  "check5": "sim2gate.checks.transfer.score",
+  "success_source": "src/sim2gate/v2/frozen_success_p0v5b.json",
+  "success_threshold_mps": 0.11870108961379214
+ },
+ "state_sha256": "4f46fe47ec4a751a454fc99b6b28d39e1c73e8a101196cc0ef800b3b26dc8251",
+ "tier": "H (historical, recorded Phase 2 measurements; development only)",
+ "tool_sha256": "2abead45e29cbc8a22a0bcb6697f93ca7c92004a443d3bb6458b80311aa480c3"
+}

@@ -32,7 +32,7 @@ s313 has no measurement.
    - removes the listed randomization events;
    - replaces the actuators with the swept DC motor, which has no delay unless the delay is being swept.
 
-**Runtime check for nominal, Check 1 and Check 5 (PENDING).** Each condition report records `profile_record`, including `contact_material` and `actuators` (`isaaclab_conditions.py:334`). Confirming that every one of the 19 robots' nominal, sweep and Newton reports carries the same `profile_record` turns step 3 from a code reading into runtime evidence.
+**Runtime check for nominal, Check 1 and Check 5 (CONFIRMED for the 14 study robots; controls pending).** All 42 study reports carry the identical `profile: sim2gate-nominal-v1` and `profile_record`, as read on 2026-10-30 from the transferred measurement archive. That is 14 robots × `nominal.json`, `sweep.json` and `newton.json`. The shared record is: `contact_material` static 0.8 / dynamic 0.6; actuators `base_legs: SweptDCMotor`; removed events `add_base_mass`, `add_payload` and `base_com`. Their recorded tasks remain the training tasks; the profile overrides the friction, events and motor model. The control reports (`controls/p0v5b_s10N/*.json`) are still to be checked.
 
 **Limitation of the evidence.** Check 2 records the task, not the friction or delay values actually drawn. The values above are the configured ranges for each recorded task, read from code at the study commit.
 
@@ -41,7 +41,7 @@ s313 has no measurement.
 - **Historical Check 2 metrics for Φ-slip-mild and Φ-delay are confounded** relative to controls. Φ-slip-mild was measured on lower-friction ground; Φ-delay with no command delay. Differences in slip, jitter, actuator-limit share, penetration, contact force and hop measures cannot be attributed to the policy alone.
 - **R-slip vs controls (Check 2): matched evaluation physics.** The policies differ by the intended reward intervention, which is the effect under study, not a confound.
 - **v2 Phase 2 approach A (behaviour only), interpretation qualified.** 7 of A's 15 primary features are Check 2 metrics (`docs/v2/evidence/phase2/scoring/features.json`, columns `A:check2:*`). The recorded results stand as historical results: 17/19 cause identification and 8/10 slip-arm separation. Their reading as policy-only behavioural discrimination is weakened for the Φ-slip-mild and Φ-delay arms. The Phase 2 leak audit checked configuration leakage into features, not evaluation-physics parity.
-- **Nominal success, Check 1 and Check 5: not affected,** subject to the pending runtime check above.
+- **Nominal success, Check 1 and Check 5: not affected** for the 14 study robots (runtime-confirmed above). Controls pending.
 
 ## Required consequences
 
