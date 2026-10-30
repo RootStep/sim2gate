@@ -28,7 +28,8 @@
    "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-25_23-40-15",
    "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-25_23-40-15/model_1999.pt",
    "checkpoint_sha256": "980169c651e5229203c8507c5780caf6f74cc3bf98e290150d99c1503ff542c8",
-   "train_returncode": 0
+   "train_returncode": 0,
+   "bytes": 983989
   },
   "s302": {
    "seed": 302,
@@ -36,7 +37,8 @@
    "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_00-39-37",
    "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_00-39-37/model_1999.pt",
    "checkpoint_sha256": "d600d35b98f0af606812b7a53ba3681ec51992c7e870981a20fb7d9debb3cf9d",
-   "train_returncode": 0
+   "train_returncode": 0,
+   "bytes": 983989
   },
   "s303": {
    "seed": 303,
@@ -44,7 +46,8 @@
    "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_01-34-00",
    "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_01-34-00/model_1999.pt",
    "checkpoint_sha256": "f49cf328ae2c215d2f96973ea6bdb14fa3a8482f8976bdc25194d2f2d42fb17a",
-   "train_returncode": 1
+   "train_returncode": 1,
+   "bytes": 983989
   },
   "s304": {
    "seed": 304,
@@ -52,7 +55,8 @@
    "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_02-29-56",
    "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_02-29-56/model_1999.pt",
    "checkpoint_sha256": "f12069235bf244497b91145a7a5f3244d2318b0dbcdf139ab81df9a6941cfe42",
-   "train_returncode": 0
+   "train_returncode": 0,
+   "bytes": 983989
   },
   "s305": {
    "seed": 305,
@@ -60,7 +64,8 @@
    "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_03-24-40",
    "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_r_slip_k0_1/2026-10-26_03-24-40/model_1999.pt",
    "checkpoint_sha256": "242a2cf058270d5f8774ea0c78f01998d233584320250d82fe95978bcedd8a8a",
-   "train_returncode": 0
+   "train_returncode": 0,
+   "bytes": 983989
   },
   "s306": {
    "seed": 306,
@@ -68,7 +73,8 @@
    "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_04-24-53",
    "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_04-24-53/model_1999.pt",
    "checkpoint_sha256": "bff7d25ae730621e3389e3a24328fa32477d1d636bc6e692e88ee433cd43afe6",
-   "train_returncode": 0
+   "train_returncode": 0,
+   "bytes": 983989
   },
   "s307": {
    "seed": 307,
@@ -76,7 +82,8 @@
    "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_05-18-10",
    "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_05-18-10/model_1999.pt",
    "checkpoint_sha256": "05959e9161e3b52848ec422a0965360e34d2a4e3664559e22ef85a172ea72b55",
-   "train_returncode": 0
+   "train_returncode": 0,
+   "bytes": 983989
   },
   "s308": {
    "seed": 308,
@@ -84,7 +91,8 @@
    "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_06-12-35",
    "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_06-12-35/model_1999.pt",
    "checkpoint_sha256": "c66c79b9ab4c78f28c7a5b9999014ee1172d825af9abe87bcd0f4972cdc5712c",
-   "train_returncode": 0
+   "train_returncode": 0,
+   "bytes": 983989
   },
   "s309": {
    "seed": 309,
@@ -92,7 +100,8 @@
    "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_07-06-43",
    "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_07-06-43/model_1999.pt",
    "checkpoint_sha256": "0bb84992a1855a5fd9e54204eae72e76bd26f80bc326f5941124b4c2988627bd",
-   "train_returncode": 0
+   "train_returncode": 0,
+   "bytes": 983989
   },
   "s310": {
    "seed": 310,
@@ -100,7 +109,8 @@
    "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_08-02-46",
    "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_slip_mild_mild/2026-10-26_08-02-46/model_1999.pt",
    "checkpoint_sha256": "2343f1872f5e8a3bec944f5ffc07b5ba2b4b9412ec03291e2f27c162692b2657",
-   "train_returncode": 0
+   "train_returncode": 0,
+   "bytes": 983989
   },
   "s311": {
    "seed": 311,
@@ -108,7 +118,8 @@
    "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_08-57-50",
    "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_08-57-50/model_1999.pt",
    "checkpoint_sha256": "0b5f64992656f0c1d8921fb2ca8f8587ecfdee24a09442aa569f4d5ddb7ec7ac",
-   "train_returncode": 0
+   "train_returncode": 0,
+   "bytes": 983989
   },
   "s312": {
    "seed": 312,
@@ -116,7 +127,8 @@
    "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_09-54-34",
    "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_09-54-34/model_1999.pt",
    "checkpoint_sha256": "49508d134223c13fcd5fa02c3134c5f414569bc56e1c87dbc15cef381319b30b",
-   "train_returncode": 1
+   "train_returncode": 1,
+   "bytes": 983989
   },
   "s314": {
    "seed": 314,
@@ -124,7 +136,8 @@
    "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_12-12-57",
    "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_12-12-57/model_1999.pt",
    "checkpoint_sha256": "bbaf8258dbce5e679a73b9479198563181e5fb62c781f2b7999ce0bea96c0b12",
-   "train_returncode": 0
+   "train_returncode": 0,
+   "bytes": 983989
   },
   "s315": {
    "seed": 315,
@@ -132,11 +145,13 @@
    "run_dir": "/workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_13-09-26",
    "archive_member": "workspaces/isaaclab_arena/logs/rsl_rl/sim2gate_go2_flat_p2_phi_delay_nodelay/2026-10-26_13-09-26/model_1999.pt",
    "checkpoint_sha256": "9cb30174033a157904bb74501cb8b58d900bba98d18b70c01ebc3e71c1b92b88",
-   "train_returncode": 0
+   "train_returncode": 0,
+   "bytes": 983989
   }
  },
  "s313": "no final checkpoint (training exited 1, problems: 'training exited 1; 1 new run folder(s)'); remains INCOMPLETE_RUN",
  "observations": [
   "s303 and s312 have train_returncode 1 but a complete final checkpoint, matching the pilot pattern (s205, s210, s214); cause not established"
- ]
+ ],
+ "size_check": "tar tvf unsealed.tar | grep model_1999.pt (operator, 2026-10-30): exactly 14 final checkpoints, each 983,989 bytes, at the 14 recorded archive members"
 }
