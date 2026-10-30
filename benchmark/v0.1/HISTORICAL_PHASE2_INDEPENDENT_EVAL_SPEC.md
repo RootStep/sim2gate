@@ -41,7 +41,7 @@ The arms were kept after earlier pilots because they showed symptoms while keepi
 - 14 study checkpoints are verified in [phase2_checkpoint_byte_verification_2026-10-30.json](phase2_checkpoint_byte_verification_2026-10-30.json). The source is `unsealed.tar`, operator-attested as decrypted from `sealed_for_vihaan.tar.enc`, whose SHA-256 `60228f28…` matches `docs/v2/PHASE2_FREEZE.md`. Each digest equals the study's `state.json` `checkpoint.sha256` at its recorded run folder.
 - 5 controls are verified in [phase1_checkpoint_byte_verification_2026-10-30.json](phase1_checkpoint_byte_verification_2026-10-30.json), on the Brev instance.
 - No digest equals the empty-file SHA-256 (`e3b0c442…`).
-- 7 of the 14 study files were reported at 983,989 bytes in the operator's verifier output. **Pending:** the byte sizes of all 14 study members, taken from the archive listing and added to the verification record.
+- All 14 study files are 983,989 bytes, taken from the archive listing and recorded in the verification file.
 - These records are both operator-run on 2026-10-30, using `verify_checkpoints.py` at `f63c55e`.
 
 **Still open before any new trajectory:**
