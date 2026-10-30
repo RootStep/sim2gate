@@ -3,7 +3,7 @@
  "review_status": {
   "G1": "provisional",
   "G2": "provisionally accepted (revision 2, 2026-10-30)",
-  "S0": "authorized by the manager 2026-10-30T20:04:00Z (one run, cap 0.5 GPU-hours / 1.75 USD)",
+  "S0": "authorized by the manager 2026-10-30T20:04Z; attempts 1-2 aborted at runtime verification; attempt 3 authorized 2026-10-30T20:56Z",
   "S1": "not authorized",
   "S2": "not authorized",
   "open_runtime_uncertainties": [
@@ -321,12 +321,19 @@
      "utc": "2026-10-30T20:21:29Z start (end 20:21:57Z, from s0_evidence.txt)",
      "collector_exit": 1,
      "wall_seconds": 28
+    },
+    {
+     "attempt": 3,
+     "authorization": "manager, 2026-10-30T20:56Z ('make run successful'); revised check committed first (423dc41)",
+     "tools_commit": "see run_s0_smoke.sh",
+     "result": null
     }
    ],
    "budget_used": {
     "run_wall_seconds_total": 70,
     "run_wall_hours_total": 0.0194,
-    "note": "Wall time of the collector process per attempt, as measured by the runbook. Under the manifest's literal cap unit (instance time from the first run's start to the last run's end) the stage window since 20:10:24Z already exceeds 0.5 h; the manager must choose how S0 budget is counted before attempt 3."
+    "note": "Wall time of the collector process per attempt, as measured by the runbook. Under the manifest's literal cap unit (instance time from the first run's start to the last run's end) the stage window since 20:10:24Z already exceeds 0.5 h; the manager must choose how S0 budget is counted before attempt 3.",
+    "manager_decision": "2026-10-30T20:56Z: the manager waived the S0 budget question ('dont worry about budget') and directed attempt 3. Recorded accounting: summed collector wall time per attempt (70 s so far), each attempt still bounded by the runbook's 25-minute timeout. Remaining under the 0.5 h cap on that basis: about 0.48 h."
    }
   },
   {

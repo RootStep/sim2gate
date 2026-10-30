@@ -97,6 +97,9 @@ class EpisodeLogTests(unittest.TestCase):
             self.assertTrue(header["completed"])
             self.assertFalse(Path(str(p) + ".tmp").exists())
             self.assertEqual(ic.verify_written(p), [])
+            q = Path(d) / "odd.jsonl.gz"                                 # non-JSON header value still writes
+            write_run(q, m, "m", "s301", "F040", 4, header_changes={"cfg_changes": {"cls": object}})
+            self.assertEqual(ic.verify_written(q), [])
             rewrite_lines(p, lambda ls: ls[:-1])                         # truncated: collector would exit 1
             self.assertEqual(ic.verify_written(p), ["no footer"])
 

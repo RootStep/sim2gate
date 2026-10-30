@@ -400,7 +400,8 @@ class EpisodeLog:
         tmp = str(path) + ".tmp"
         h = hashlib.sha256()
         with gzip.open(tmp, "wt") as f:
-            f.write(json.dumps({"header": dict(header, completed=True)}) + "\n")
+            # default=str: a non-JSON value in the evidence (e.g. a USD token) must not lose a completed run
+            f.write(json.dumps({"header": dict(header, completed=True)}, default=str) + "\n")
             for i in range(self.n):
                 rec = self.record(i)
                 it.validate_episode(rec)
