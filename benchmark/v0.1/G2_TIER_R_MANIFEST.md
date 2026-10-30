@@ -90,11 +90,11 @@ If any required run is missing or invalid:
 
 ## Staged execution and caps
 
-All caps are instance wall-clock hours, from the start of a stage's first run (container setup included) to the end of its last run. Costs use a conservative planning rate of **$3.50/h**. The AWS on-demand list price for g6e.2xlarge in us-east-1 is about $2.24/h. The Brev billed rate must be confirmed by the custodian before S0 is approved.
+All caps are instance wall-clock hours, from the start of a stage's first run (container setup included) to the end of its last run. Costs use the **Brev billed rate of $3.50/h**, stated by the custodian on 2026-10-30. For comparison, the AWS on-demand list price for g6e.2xlarge in us-east-1 is about $2.24/h.
 
 | Stage | Runs | Estimate | GPU-hour cap | Cost cap at $3.50/h | Gate to start |
 |---|---|---|---|---|---|
-| S0 smoke | 1: p0v5b_s101 × N080, written to a separate directory, never analysed | under 0.1 h | 0.5 | $1.75 | Manifest and S0 approved; Brev rate confirmed |
+| S0 smoke | 1: p0v5b_s101 × N080, written to a separate directory, never analysed | under 0.1 h | 0.5 | $1.75 | Manifest and S0 approved |
 | S1 pilot | 40: controls s101 and s102, plus s301, s306 and s311, × 8 cells | 2.0 h at 3 min/run | 3.0 | $10.50 | S0 exit criteria met; thresholds confirmed; cap re-derived from S0's measured time |
 | S2 | 112: remaining 14 policies × 8 cells | 5.6 h at 3 min/run | 7.5 | $26.25 | S1 runs valid; cap re-derived from S1's times |
 | **Total** | **153** | | **11.0** | **$38.50** ($24.66 at AWS list) | |
@@ -150,6 +150,6 @@ Before any truth analysis, run the tier-R Sim2Gate rerun (spec section 6) in the
 
 ## Open decisions (also in the JSON)
 
-1. The Brev billed rate, and approval of S0.
+1. Approval of S0. The Brev rate is confirmed at $3.50/h.
 2. `truth_rules` values: provisional until they are confirmed before S1.
 3. Episodes per cell: 128, or 256 (see Power).

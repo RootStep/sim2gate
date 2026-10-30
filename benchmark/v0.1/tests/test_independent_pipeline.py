@@ -470,7 +470,7 @@ class ManifestTests(unittest.TestCase):
         pilot = {p for p, _ in s1}
         self.assertEqual({MANIFEST["policies"][p]["arm"] for p in pilot},
                          {"control", "R-slip", "Phi-slip-mild", "Phi-delay"})
-        rate = MANIFEST["cost_model"]["rate_usd_per_hour_assumed"]
+        rate = MANIFEST["cost_model"]["rate_usd_per_hour"]
         for s in st.values():
             self.assertGreater(s["gpu_hour_cap"], 0)
             self.assertAlmostEqual(s["cost_cap_usd"], s["gpu_hour_cap"] * rate)

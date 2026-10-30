@@ -893,8 +893,8 @@
  ],
  "cost_model": {
   "instance": "Brev sim2gate-arena-2, AWS g6e.2xlarge (1x L40S)",
-  "rate_usd_per_hour_assumed": 3.5,
-  "rate_basis": "conservative planning rate; AWS on-demand list price for g6e.2xlarge in us-east-1 is about 2.24 USD/h. To be replaced by the Brev billed rate, confirmed by the custodian, before S0 approval.",
+  "rate_usd_per_hour": 3.5,
+  "rate_basis": "Brev billed rate for sim2gate-arena-2, stated by the custodian on 2026-10-30 (operator statement; no invoice in the repo). AWS on-demand list for g6e.2xlarge in us-east-1 is about 2.24 USD/h, shown for comparison only.",
   "unit": "instance wall-clock hours from the start of a stage's first run (including container setup) to the end of its last run",
   "per_run_minutes_assumed": 3.0,
   "per_run_basis": "one Isaac Sim launch plus 1000 control steps x 128 environments; Phase 2 measurement blocks (several launches per robot) took 4-10 min per robot (state.json). S0 measures it."
@@ -948,7 +948,7 @@
   "reading": "128 episodes detect a true excess of 0.15 or more with power >= 0.90; an excess near the 0.10 floor is detected about half the time. A 'not manifested' label therefore means 'no excess >= ~0.15 detected', not 'no flaw'. Doubling to 256 episodes is the option if the reviewer wants >= 0.8 power at +0.10; it doubles S1 and S2 cost."
  },
  "decisions_open": [
-  "Brev billed rate (replaces the 3.50 USD/h planning rate) and approval of S0",
+  "approval of S0 (Brev rate confirmed by the custodian at 3.50 USD/h on 2026-10-30)",
   "truth_rules values: provisional, smoke test only, until confirmed before S1",
   "episodes per cell: 128 (power above) or 256"
  ],
