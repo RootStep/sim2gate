@@ -7,6 +7,7 @@ on:
     paths:
       - "benchmark/v0.1/SEEN_POLICIES_PROVISIONAL.csv"
       - "benchmark/v0.1/validate_seen_policies.py"
+      - "benchmark/v0.1/tests/test_seen_policy_register_v2.py"
       - "benchmark/v0.1/public_feature_boundary.py"
       - "benchmark/v0.1/commit_public_inputs.py"
       - "benchmark/v0.1/blinded_scorer_smoke.py"
@@ -42,6 +43,8 @@ jobs:
           python-version: "3.12"
       - name: Validate historical exclusion register
         run: python benchmark/v0.1/validate_seen_policies.py
+      - name: Exercise seen-register source-tamper regressions
+        run: python -m unittest discover -s benchmark/v0.1/tests -p test_seen_policy_register_v2.py -v
       - name: Exercise synthetic metadata boundary tests
         run: python -m unittest discover -s benchmark/v0.1/tests -p "test_*public*.py" -v
       - name: Exercise deterministic input commitment tests
